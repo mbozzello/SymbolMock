@@ -269,7 +269,8 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
             {filteredSorted.length === 0 ? (
               <div className="muted px-1 py-6 text-center text-sm">No events in range</div>
             ) : (
-              <div className="space-y-3">
+              <div className={clsx('space-y-3', variant === 'embedded' && 'overflow-y-auto max-h-44')}
+              >
                 {filteredSorted.map((e, idx) => (
                   <EventRow key={e.id} event={e} isLast={idx === filteredSorted.length - 1} />)
                 )}
