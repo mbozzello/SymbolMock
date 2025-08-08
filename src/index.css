@@ -28,6 +28,9 @@
 
 @layer base {
   :root {
+    color-scheme: light;
+  }
+  .dark {
     color-scheme: dark;
   }
   html,
@@ -36,22 +39,22 @@
     height: 100%;
   }
   body {
-    @apply bg-background text-text antialiased;
+    @apply bg-background text-text antialiased transition-colors duration-300;
   }
 }
 
 @layer components {
   .card-surface {
-    @apply bg-surface rounded-xl border border-white/5 shadow-sm;
+    @apply bg-surface rounded-xl border border-black/10 dark:border-white/5 shadow-sm transition-colors duration-300;
   }
   .muted {
     @apply text-textMuted;
   }
   .badge {
-    @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-white/5 border border-white/10;
+    @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 transition-colors duration-300;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text hover:bg-white/10 transition;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-3 py-2 text-sm font-medium text-text hover:bg-black/10 dark:hover:bg-white/10 transition-colors duration-200;
   }
   .btn-primary {
     @apply bg-primary/20 border-primary/40 text-primary hover:bg-primary/30;
