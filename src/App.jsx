@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import SentimentMeters from './components/SentimentMeters.jsx'
 import EarningsRecap from './components/EarningsRecap.jsx'
+import PredictionLeaderboard from './components/PredictionLeaderboard.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -320,10 +321,7 @@ export default function App() {
                 <img src="https://placehold.co/400x200/0f141a/9aa9b2?text=Ad" className="w-full rounded-md" alt="Ad" />
               </div>
 
-              <div className="card-surface p-4">
-                <div className="muted mb-2 text-sm">Widget</div>
-                <img src="https://placehold.co/400x150/0f141a/9aa9b2?text=Widget" className="w-full rounded-md" alt="Widget" />
-              </div>
+              <PredictionLeaderboard />
             </aside>
           </div>
         </div>
