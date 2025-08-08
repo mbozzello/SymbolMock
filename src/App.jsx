@@ -49,7 +49,7 @@ function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
         <button className="btn"><span>✉️</span> Messages</button>
         <button className="btn"><span>⚙️</span> Settings</button>
         <button onClick={onToggleDark} className="btn">
-          <span>🌙</span> {isDark ? 'Light Mode' : 'Dark Mode'}
+          <span>{isDark ? '🌞' : '🌙'}</span> {isDark ? 'Light Mode' : 'Dark Mode'}
         </button>
       </div>
       <button className="btn btn-primary w-full text-base">Post</button>
@@ -133,14 +133,26 @@ function Post({ post }) {
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(() => {
+    try {
+      const stored = localStorage.getItem('theme')
+      if (stored === 'dark') return true
+      if (stored === 'light') return false
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    } catch {
+      return false
+    }
+  })
   const [activeTab, setActiveTab] = useState('Feed')
 
   useEffect(() => {
-    const root = document.querySelector('body')
+    const root = document.documentElement
     if (!root) return
     if (dark) root.classList.add('dark')
     else root.classList.remove('dark')
+    try {
+      localStorage.setItem('theme', dark ? 'dark' : 'light')
+    } catch {}
   }, [dark])
 
   const watchlist = useMemo(
