@@ -1,0 +1,62 @@
+@import "tailwindcss";
+@reference "tailwindcss/utilities";
+
+/* Tailwind v4 theme colors */
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --color-background: #f8fafc; /* light */
+  --color-surface: #ffffff;
+  --color-surfaceMuted: #f1f5f9;
+  --color-text: #0b1220;
+  --color-textMuted: #475569;
+  --color-primary: #2aa6ff;
+  --color-success: #17c964;
+  --color-danger: #f31260;
+  --color-warning: #f5a524;
+}
+@theme dark {
+  --color-background: #0b0f14; /* dark */
+  --color-surface: #0f141a;
+  --color-surfaceMuted: #111820;
+  --color-text: #e6edf3;
+  --color-textMuted: #9aa9b2;
+  --color-primary: #2aa6ff;
+  --color-success: #17c964;
+  --color-danger: #f31260;
+  --color-warning: #f5a524;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-text antialiased;
+  }
+}
+
+@layer components {
+  .card-surface {
+    @apply bg-surface rounded-xl border border-white/5 shadow-sm;
+  }
+  .muted {
+    @apply text-textMuted;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-white/5 border border-white/10;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text hover:bg-white/10 transition;
+  }
+  .btn-primary {
+    @apply bg-primary/20 border-primary/40 text-primary hover:bg-primary/30;
+  }
+  .btn-success {
+    @apply bg-success/20 border-success/40 text-success hover:bg-success/30;
+  }
+}
