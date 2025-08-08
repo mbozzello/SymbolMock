@@ -45,7 +45,7 @@ function TypeBadge({ type }) {
 }
 
 function EventRow({ event, isLast }) {
-  const { type, date, title, details, source, link } = event
+  const { type, date, title, details, link } = event
   const meta = TYPE_META[type] ?? { color: '#9aa9b2', icon: '•' }
   return (
     <div className="grid grid-cols-[1rem_1fr] gap-3">
@@ -58,7 +58,6 @@ function EventRow({ event, isLast }) {
           <span>{meta.icon}</span>
           <span className="tabular-nums">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
           <TypeBadge type={type} />
-          {source && <span className="rounded bg-white/5 px-1.5 py-0.5">{source}</span>}
         </div>
         <div className="mt-1 font-medium leading-snug">
           {title}
@@ -143,83 +142,83 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
         id: 1,
         type: 'News',
         date: daysAgo(4),
-        title: 'Defense contract awarded; backlog expands',
-        details: 'Multi-year award increases visibility; aligns with pipeline commentary.',
-        source: 'Bloomberg',
-        link: '#',
+          title: 'Defense contract chatter trending',
+          details: 'Coverage picked up; stream sentiment skewed bullish.',
+          source: 'Stocktwits',
+          link: '#',
       },
       {
         id: 2,
         type: 'Price/Volume',
         date: daysAgo(7),
-        title: 'Gap up +9% on open with 2.4x volume',
-        details: 'Follow-through into close after pre-market news.',
-        source: 'Tape',
+          title: 'Gap up +9% on open with 2.4x volume',
+          details: 'Spike highlighted in market data stream.',
+          source: 'Stocktwits',
       },
       {
         id: 3,
         type: 'Earnings',
         date: daysAgo(18),
-        title: 'Q2 beat; FY guide raised',
-        details: 'Rev +6% vs. cons; GM +120bps; FCF guide +$25M.',
-        source: 'Company',
-        link: '#',
+          title: 'Q2 beat; FY guide raised',
+          details: 'Rev +6% vs. cons; GM +120bps; FCF guide +$25M. Live thread available.',
+          source: 'Stocktwits',
+          link: '#',
       },
       {
         id: 4,
         type: 'Sentiment',
         date: daysAgo(20),
         title: 'Message volume spike 3.1x vs 30d baseline',
-        details: 'Tone skewed bullish; options chatter elevated.',
-        source: 'Platform',
+          details: 'Tone skewed bullish; options chatter elevated.',
+          source: 'Stocktwits',
       },
       {
         id: 5,
         type: 'News',
         date: daysAgo(33),
-        title: 'Analyst upgrade to Outperform; PT +18%',
-        details: 'Cites execution and improving margin profile.',
-        source: 'Barron’s',
+          title: 'Analyst upgrade; PT +18%',
+          details: 'Aggregated; cites execution and margin profile.',
+          source: 'Stocktwits',
       },
       {
         id: 6,
         type: 'Price/Volume',
         date: daysAgo(45),
         title: 'Outside day; closes +5.4% on 1.8x volume',
-        details: 'Breakout watch as price clears recent range.',
-        source: 'Tape',
+          details: 'Breakout watch flagged in daily market recap.',
+          source: 'Stocktwits',
       },
       {
         id: 7,
         type: 'News',
         date: daysAgo(52),
-        title: 'Product milestone reached ahead of schedule',
-        details: 'Validation reduces execution risk on roadmap.',
-        source: 'Company',
+          title: 'Company post: product milestone ahead of schedule',
+          details: 'Verified via the company stream.',
+          source: 'Stocktwits',
       },
       {
         id: 8,
         type: 'Sentiment',
         date: daysAgo(63),
         title: 'Bullish sentiment surges to 92/100',
-        details: 'Retail inflows observed across platforms.',
-        source: 'Platform',
+          details: 'Reading from sentiment signals.',
+          source: 'Stocktwits',
       },
       {
         id: 9,
         type: 'Earnings',
         date: daysAgo(74),
         title: 'Pre-ann: narrows range, reiterates FY targets',
-        details: 'Signals confidence into the quarter.',
-        source: 'Company',
+          details: 'Signals confidence into the quarter; surfaced in news flow.',
+          source: 'Stocktwits',
       },
       {
         id: 10,
         type: 'Price/Volume',
         date: daysAgo(82),
         title: 'Down gap −7% on 2.2x volume; fills after hours',
-        details: 'Volatility elevated; liquidity intact.',
-        source: 'Tape',
+          details: 'Volatility elevated; liquidity intact. Flagged by alerts.',
+          source: 'Stocktwits',
       },
     ]
   }, [])
@@ -241,7 +240,7 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
   return (
     <div className="card-surface">
       <div className={clsx('flex items-center justify-between', containerPadding)}>
-        <h3 className="text-base font-semibold">Narrative ({rangeDays}d)</h3>
+        <h3 className="text-base font-semibold">RKLB Narrative Timeline</h3>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
