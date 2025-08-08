@@ -255,7 +255,7 @@ export default function App() {
               {/* Tabs header at top */}
               <div className="card-surface">
                 <div className="flex items-center gap-2 border-b border-white/5 px-3 pt-2">
-                  {['About', 'Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals'].map((tab) => (
+                  {['About', 'Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals', 'Timeline'].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -298,6 +298,8 @@ export default function App() {
                     {posts.map((p) => <Post key={p.id} post={p} />)}
                   </div>
                 </>
+              ) : activeTab === 'Timeline' ? (
+                <NarrativeTimeline variant="full" />
               ) : (
                 <div className="card-surface p-6 text-center muted">No content yet for {activeTab}</div>
               )}
@@ -324,7 +326,6 @@ export default function App() {
 
               <PredictionLeaderboard />
 
-              <NarrativeTimeline />
             </aside>
           </div>
         </div>

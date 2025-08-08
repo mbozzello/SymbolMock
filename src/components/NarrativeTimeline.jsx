@@ -124,7 +124,7 @@ function RangeChips({ rangeDays, onChange }) {
   )
 }
 
-export default function NarrativeTimeline() {
+export default function NarrativeTimeline({ variant = 'sidebar' }) {
   const [open, setOpen] = useState(true)
   const [rangeDays, setRangeDays] = useState(90)
   const [selectedTypes, setSelectedTypes] = useState({
@@ -236,9 +236,11 @@ export default function NarrativeTimeline() {
     setSelectedTypes((prev) => ({ ...prev, [type]: !prev[type] }))
   }
 
+  const containerPadding = variant === 'sidebar' ? 'p-4' : 'p-6'
+
   return (
-    <div className="card-surface overflow-hidden">
-      <div className="flex items-center justify-between p-4">
+    <div className="card-surface">
+      <div className={clsx('flex items-center justify-between', containerPadding)}>
         <h3 className="text-base font-semibold">Narrative ({rangeDays}d)</h3>
         <button
           type="button"
@@ -253,22 +255,21 @@ export default function NarrativeTimeline() {
 
       <div
         className={clsx(
-          'px-4 pb-4 transition-all duration-300 ease-in-out',
-          open ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
+          variant === 'sidebar' ? 'px-4 pb-4' : 'px-6 pb-6',
+          open ? 'block' : 'hidden'
         )}
-        style={{ overflow: 'hidden' }}
       >
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <SectionFilterChips selectedTypes={selectedTypes} onToggle={toggleType} />
             <RangeChips rangeDays={rangeDays} onChange={setRangeDays} />
           </div>
 
-          <div className="mt-1 max-h-96 overflow-y-auto pr-1">
+          <div className="mt-1">
             {filteredSorted.length === 0 ? (
               <div className="muted px-1 py-6 text-center text-sm">No events in range</div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {filteredSorted.map((e, idx) => (
                   <EventRow key={e.id} event={e} isLast={idx === filteredSorted.length - 1} />)
                 )}
