@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import SentimentMeters from './components/SentimentMeters.jsx'
+import EarningsRecap from './components/EarningsRecap.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -274,6 +275,9 @@ export default function App() {
 
                   {/* Sentiment + Volume meters below chart */}
                   <SentimentMeters />
+
+                  {/* Earnings Recap below meters */}
+                  <EarningsRecap />
 
                   {/* Posts (Feed only) */}
                   <div className="space-y-3">
