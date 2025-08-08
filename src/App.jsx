@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import SentimentMeters from './components/SentimentMeters.jsx'
 import EarningsRecap from './components/EarningsRecap.jsx'
 import PredictionLeaderboard from './components/PredictionLeaderboard.jsx'
+import NarrativeTimeline from './components/NarrativeTimeline.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -322,6 +323,8 @@ export default function App() {
               </div>
 
               <PredictionLeaderboard />
+
+              <NarrativeTimeline />
             </aside>
           </div>
         </div>
