@@ -19,10 +19,10 @@ function Chevron({ open }) {
 }
 
 const TYPE_META = {
-  News: { color: '#3b82f6', icon: '📰' },
-  Earnings: { color: '#a855f7', icon: '💰' },
-  Sentiment: { color: '#17c964', icon: '💬' },
-  'Price/Volume': { color: '#f59e0b', icon: '📈' },
+  News: { color: '#3b82f6', icon: '' },
+  Earnings: { color: '#a855f7', icon: '' },
+  Sentiment: { color: '#17c964', icon: '' },
+  Trending: { color: '#f59e0b', icon: '' },
 }
 
 function Dot({ type }) {
@@ -55,7 +55,6 @@ function EventRow({ event, isLast }) {
       </div>
       <div className="pb-4">
         <div className="flex items-center gap-2 text-xs muted">
-          <span>{meta.icon}</span>
           <span className="tabular-nums">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
           <TypeBadge type={type} />
         </div>
@@ -94,7 +93,7 @@ function SectionFilterChips({ selectedTypes, onToggle }) {
             )}
             aria-pressed={active}
           >
-            {TYPE_META[t].icon} {t}
+            {t}
           </button>
         )
       })}
@@ -130,7 +129,7 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
     News: true,
     Earnings: true,
     Sentiment: true,
-    'Price/Volume': true,
+    Trending: true,
   })
 
   const allEvents = useMemo(() => {
@@ -149,10 +148,10 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
       },
       {
         id: 2,
-        type: 'Price/Volume',
+        type: 'Trending',
         date: daysAgo(7),
-          title: 'Gap up +9% on open with 2.4x volume',
-          details: 'Spike highlighted in market data stream.',
+          title: 'Ranked #1 Trending on Stocktwits',
+          details: 'Gap up +9% on 2.4x volume drove a surge in mentions.',
           source: 'Stocktwits',
       },
       {
@@ -182,10 +181,10 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
       },
       {
         id: 6,
-        type: 'Price/Volume',
+        type: 'Trending',
         date: daysAgo(45),
-        title: 'Outside day; closes +5.4% on 1.8x volume',
-          details: 'Breakout watch flagged in daily market recap.',
+        title: 'Ranked #1 Trending on Stocktwits',
+          details: 'Breakout action (+5.4% on 1.8x volume) pushed it to #1.',
           source: 'Stocktwits',
       },
       {
@@ -214,10 +213,10 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
       },
       {
         id: 10,
-        type: 'Price/Volume',
+        type: 'Trending',
         date: daysAgo(82),
-        title: 'Down gap −7% on 2.2x volume; fills after hours',
-          details: 'Volatility elevated; liquidity intact. Flagged by alerts.',
+        title: 'Ranked #1 Trending on Stocktwits',
+          details: 'Volatility (−7% gap, heavy volume, AH reversal) spiked conversation.',
           source: 'Stocktwits',
       },
     ]
@@ -268,7 +267,7 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
             {filteredSorted.length === 0 ? (
               <div className="muted px-1 py-6 text-center text-sm">No events in range</div>
             ) : (
-              <div className={clsx('space-y-3', variant === 'embedded' && 'overflow-y-auto max-h-72')}
+              <div className={clsx('space-y-3', variant === 'embedded' && 'overflow-y-auto max-h-62')}
               >
                 {filteredSorted.map((e, idx) => (
                   <EventRow key={e.id} event={e} isLast={idx === filteredSorted.length - 1} />)
