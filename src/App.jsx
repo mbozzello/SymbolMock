@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import SentimentMeters from './components/SentimentMeters.jsx'
 import EarningsRecap from './components/EarningsRecap.jsx'
+import CommunityPerspectives from './components/CommunityPerspectives.jsx'
 import PredictionLeaderboard from './components/PredictionLeaderboard.jsx'
 import NarrativeTimeline from './components/NarrativeTimeline.jsx'
 
@@ -289,6 +290,9 @@ export default function App() {
 
                   {/* Sentiment + Volume meters below chart */}
                   <SentimentMeters />
+
+                  {/* Community Perspectives above earnings recap */}
+                  <CommunityPerspectives />
 
                   {/* Earnings Recap below meters */}
                   <EarningsRecap />
