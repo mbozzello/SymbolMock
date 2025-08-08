@@ -147,6 +147,7 @@ export default function App() {
     }
   })
   const [activeTab, setActiveTab] = useState('Feed')
+  const [streamTab, setStreamTab] = useState('Latest')
 
   useEffect(() => {
     const root = document.documentElement
@@ -301,6 +302,27 @@ export default function App() {
                   <NarrativeTimeline variant="embedded" />
 
                   {/* Posts (Feed only) */}
+                  <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1">
+                    <div className="flex items-center gap-1">
+                      {['Latest', 'Popular'].map((label) => (
+                        <button
+                          key={label}
+                          onClick={() => setStreamTab(label)}
+                          className={clsx(
+                            'px-2 py-1 text-sm',
+                            streamTab === label ? 'border-b-2 border-primary text-primary' : 'muted hover:text-text'
+                          )}
+                          aria-pressed={streamTab === label}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button className="rounded-md p-1 hover:bg-white/5" aria-label="Settings">⚙️</button>
+                      <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
+                    </div>
+                  </div>
                   <div className="space-y-3">
                     {posts.map((p) => <Post key={p.id} post={p} />)}
                   </div>
