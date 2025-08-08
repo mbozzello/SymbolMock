@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import SentimentMeters from './components/SentimentMeters.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -33,7 +34,7 @@ function MiniSparkline({ values = [] }) {
 
 function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
   const content = (
-    <div className="flex h-full flex-col gap-4 bg-surface p-4">
+    <div className="flex h-full w-full flex-col gap-4 bg-surface p-4">
       <div className="flex items-center gap-3">
         <img
           src="https://placehold.co/40x40"
@@ -81,7 +82,7 @@ function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
   return (
     <>
       {/* Desktop fixed sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-96 lg:flex">
         {content}
       </aside>
 
@@ -89,7 +90,7 @@ function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-72 bg-surface shadow-xl">
+          <div className="absolute inset-y-0 left-0 w-96 bg-surface shadow-xl">
             {content}
           </div>
         </div>
@@ -201,8 +202,8 @@ export default function App() {
       />
 
       {/* Main content area shifted for fixed sidebar on lg+ */}
-      <main className="lg:pl-72">
-        <div className="mx-auto max-w-[1600px] p-4">
+      <main className="lg:pl-96">
+        <div className="mx-auto max-w-[1200px] p-4">
           {/* Header Section */}
           <div className="card-surface p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -236,24 +237,10 @@ export default function App() {
           <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
             {/* Middle Column */}
             <section className="space-y-4">
-              {/* Chart Section */}
-              <div className="card-surface p-4">
-                <img
-                  src="https://placehold.co/1200x400/0f141a/9aa9b2?text=Stock+Chart"
-                  alt="Chart placeholder"
-                  className="h-64 w-full rounded-md object-cover md:h-80"
-                />
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((t) => (
-                    <button key={t} className="btn px-2 py-1 text-xs">{t}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tabs */}
+              {/* Tabs header at top */}
               <div className="card-surface">
                 <div className="flex items-center gap-2 border-b border-white/5 px-3 pt-2">
-                  {['About', 'Feed', 'News', 'Sentiment'].map((tab) => (
+                  {['About', 'Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals'].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -266,13 +253,36 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <div className="space-y-3 p-3">
-                  {activeTab === 'Feed' && posts.map((p) => <Post key={p.id} post={p} />)}
-                  {activeTab !== 'Feed' && (
-                    <div className="p-6 text-center muted">Mock content for {activeTab}</div>
-                  )}
-                </div>
               </div>
+
+              {/* Tab content */}
+              {activeTab === 'Feed' ? (
+                <>
+                  {/* Chart Section (Feed only) */}
+                  <div className="card-surface p-4">
+                    <img
+                      src="https://placehold.co/1200x400/0f141a/9aa9b2?text=Stock+Chart"
+                      alt="Chart placeholder"
+                      className="h-64 w-full rounded-md object-cover md:h-80"
+                    />
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((t) => (
+                        <button key={t} className="btn px-2 py-1 text-xs">{t}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sentiment + Volume meters below chart */}
+                  <SentimentMeters />
+
+                  {/* Posts (Feed only) */}
+                  <div className="space-y-3">
+                    {posts.map((p) => <Post key={p.id} post={p} />)}
+                  </div>
+                </>
+              ) : (
+                <div className="card-surface p-6 text-center muted">No content yet for {activeTab}</div>
+              )}
             </section>
 
             {/* Right Column */}
