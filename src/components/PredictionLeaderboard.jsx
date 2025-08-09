@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import PredictionCreatorModal from './PredictionCreatorModal.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -49,6 +50,7 @@ export default function PredictionLeaderboard() {
   const [open, setOpen] = useState(true)
   const [metric, setMetric] = useState('Streaks') // 'Streaks' | 'Win rate'
   const [scope, setScope] = useState('Overall') // 'Overall' | 'Following'
+  const [creatorOpen, setCreatorOpen] = useState(false)
 
   const rows = useMemo(
     () => [
@@ -130,9 +132,10 @@ export default function PredictionLeaderboard() {
 
         <div className="mt-3 flex items-center justify-between gap-2">
           <button className="btn px-3">Share top</button>
-          <button className="btn btn-primary">Make a Prediction</button>
+          <button className="btn btn-primary" onClick={() => setCreatorOpen(true)}>Make a Prediction</button>
         </div>
       </div>
+      <PredictionCreatorModal open={creatorOpen} onClose={() => setCreatorOpen(false)} />
     </div>
   )
 }
