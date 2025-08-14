@@ -4,6 +4,7 @@ import EarningsRecap from './components/EarningsRecap.jsx'
 import CommunityPerspectives from './components/CommunityPerspectives.jsx'
 import PredictionLeaderboard from './components/PredictionLeaderboard.jsx'
 import NarrativeTimeline from './components/NarrativeTimeline.jsx'
+import DynamicThemes from './components/DynamicThemes.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -113,6 +114,15 @@ function StatItem({ label, value }) {
 }
 
 function Post({ post }) {
+  const themeLabels = {
+    'china-tariffs': 'China Tariffs',
+    'fed-decision': 'Fed Decision',
+    'product-launch': 'Product Launch',
+    'earnings-call': 'Earnings Call',
+    'space-contracts': 'Space Contracts',
+    'market-sentiment': 'Market Sentiment'
+  }
+
   return (
     <div className="card-surface p-4">
       <div className="flex items-start gap-3">
@@ -121,6 +131,11 @@ function Post({ post }) {
           <div className="flex items-center gap-2">
             <div className="font-semibold">{post.user}</div>
             <div className="text-xs muted">{post.time}</div>
+            {post.theme && (
+              <span className="badge badge-sm text-xs">
+                {themeLabels[post.theme]}
+              </span>
+            )}
           </div>
           <div className="mt-1 whitespace-pre-wrap">{post.body}</div>
           <div className="mt-3 flex gap-3 text-sm muted">
@@ -148,6 +163,7 @@ export default function App() {
   })
   const [activeTab, setActiveTab] = useState('Feed')
   const [streamTab, setStreamTab] = useState('Latest')
+  const [selectedTheme, setSelectedTheme] = useState(null)
 
   useEffect(() => {
     const root = document.documentElement
@@ -175,15 +191,30 @@ export default function App() {
 
   const posts = useMemo(
     () =>
-      Array.from({ length: 8 }).map((_, i) => ({
+      Array.from({ length: 12 }).map((_, i) => ({
         id: i + 1,
-        user: ['astrotrader', 'quantqueen', 'valueviking', 'optionsowl'][i % 4],
+        user: ['astrotrader', 'quantqueen', 'valueviking', 'optionsowl', 'spacebull', 'rocketman'][i % 6],
         time: `${1 + i}h`,
         avatar: `https://placehold.co/40x40?text=${i + 1}`,
-        body:
-          i % 2 === 0
-            ? 'Accumulating on dips. Watching volume into the close. $RKLB looks strong.'
-            : 'Breakout setting up if it clears the recent high. Risk defined. 🚀',
+        body: [
+          'Accumulating on dips. Watching volume into the close. $RKLB looks strong.',
+          'Breakout setting up if it clears the recent high. Risk defined. 🚀',
+          'China tariffs could impact supply chain. Watching for guidance on next earnings call.',
+          'Fed decision this week could shake up the market. Positioning accordingly.',
+          'New product launch rumors circulating. This could be huge for the space sector.',
+          'Earnings call next week should provide clarity on growth trajectory.',
+          'Space contracts with government agencies looking promising for Q4.',
+          'Market sentiment shifting bullish on aerospace stocks.',
+          'Technical analysis shows strong support at current levels.',
+          'Institutional buying picking up. Smart money knows something.',
+          'Competition heating up but RKLB has first mover advantage.',
+          'Supply chain issues resolving. Production ramping up nicely.'
+        ][i % 12],
+        theme: [
+          'market-sentiment', 'market-sentiment', 'china-tariffs', 'fed-decision', 
+          'product-launch', 'earnings-call', 'space-contracts', 'market-sentiment',
+          'market-sentiment', 'market-sentiment', 'product-launch', 'earnings-call'
+        ][i % 12]
       })),
     []
   )
@@ -323,8 +354,17 @@ export default function App() {
                       <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
                     </div>
                   </div>
+                  
+                  {/* Dynamic Themes Section */}
+                  <DynamicThemes 
+                    onThemeSelect={setSelectedTheme}
+                    selectedTheme={selectedTheme}
+                  />
+                  
                   <div className="space-y-3">
-                    {posts.map((p) => <Post key={p.id} post={p} />)}
+                    {posts
+                      .filter(post => !selectedTheme || post.theme === selectedTheme)
+                      .map((p) => <Post key={p.id} post={p} />)}
                   </div>
                 </>
               ) : (
