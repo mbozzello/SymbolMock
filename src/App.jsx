@@ -37,24 +37,38 @@ function MiniSparkline({ values = [] }) {
   )
 }
 
-function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
+function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   const content = (
     <div className="flex h-full w-full flex-col gap-4 bg-surface p-4">
-      <div className="flex items-center gap-3">
-        <img
-          src="https://placehold.co/40x40"
-          className="h-10 w-10 rounded-full border border-white/10"
-          alt="avatar"
-        />
-        <div className="font-semibold">Profile</div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <img
+            src="https://placehold.co/40x40"
+            className="h-10 w-10 rounded-full border border-white/10"
+            alt="avatar"
+          />
+          <div className="font-semibold">Profile</div>
+        </div>
+        <button 
+          onClick={toggleDarkMode}
+          className="p-2 rounded-full hover:bg-white/10 transition-colors opacity-50 hover:opacity-100"
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {darkMode ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          )}
+        </button>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
         <button className="btn"><span>🔔</span> Notifications</button>
         <button className="btn"><span>✉️</span> Messages</button>
         <button className="btn"><span>⚙️</span> Settings</button>
-        <button onClick={onToggleDark} className="btn">
-          <span>{isDark ? '🌞' : '🌙'}</span> {isDark ? 'Light Mode' : 'Dark Mode'}
-        </button>
       </div>
       <button className="btn btn-primary w-full text-base">Post</button>
 
@@ -87,7 +101,7 @@ function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
   return (
     <>
       {/* Desktop fixed sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-96 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[269px] lg:flex">
         {content}
       </aside>
 
@@ -95,7 +109,7 @@ function LeftSidebar({ isOpen, onClose, onToggleDark, isDark, watchlist }) {
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-96 bg-surface shadow-xl">
+          <div className="absolute inset-y-0 left-0 w-[269px] bg-surface shadow-xl">
             {content}
           </div>
         </div>
@@ -151,29 +165,33 @@ function Post({ post }) {
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [dark, setDark] = useState(() => {
-    try {
-      const stored = localStorage.getItem('theme')
-      if (stored === 'dark') return true
-      if (stored === 'light') return false
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    } catch {
-      return false
-    }
-  })
   const [activeTab, setActiveTab] = useState('Feed')
   const [streamTab, setStreamTab] = useState('Latest')
   const [selectedTheme, setSelectedTheme] = useState(null)
-
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check localStorage for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      return savedTheme === 'dark';
+    }
+    // Default to dark theme
+    return true;
+  });
+  
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+  
+  // Apply theme to document on initial load and when theme changes
   useEffect(() => {
-    const root = document.documentElement
-    if (!root) return
-    if (dark) root.classList.add('dark')
-    else root.classList.remove('dark')
-    try {
-      localStorage.setItem('theme', dark ? 'dark' : 'light')
-    } catch {}
-  }, [dark])
+    if (darkMode) {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
 
   const watchlist = useMemo(
     () => [
@@ -244,13 +262,13 @@ export default function App() {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        onToggleDark={() => setDark((d) => !d)}
-        isDark={dark}
         watchlist={watchlist}
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
       />
 
       {/* Main content area shifted for fixed sidebar on lg+ */}
-      <main className="lg:pl-96">
+      <main className="lg:pl-[269px]">
         <div className="mx-auto max-w-[1200px] p-4">
           {/* Header Section */}
           <div className="card-surface p-4">
