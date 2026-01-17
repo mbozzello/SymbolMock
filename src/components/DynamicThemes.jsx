@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 
-function DynamicThemes({ onThemeSelect, selectedTheme }) {
+function clsx(...values) {
+  return values.filter(Boolean).join(' ')
+}
+
+function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', className }) {
   // Mock themes data - in real implementation this would come from AI analysis
   const [themes, setThemes] = useState([
     { 
@@ -65,17 +69,18 @@ function DynamicThemes({ onThemeSelect, selectedTheme }) {
     onThemeSelect(themeId === selectedTheme ? null : themeId)
   }
 
+  const isVertical = layout === 'vertical'
+
   return (
-    <div className="card-surface p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">Dynamic Themes</span>
-          <span className="badge badge-sm">AI Generated</span>
-        </div>
-        <div className="text-xs muted">Updates hourly</div>
-      </div>
+    <div className={clsx('card-surface p-4', className)}>
+      <div className="mb-3 text-sm font-semibold">Dynamic Themes</div>
       
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div
+        className={clsx(
+          'flex gap-2',
+          isVertical ? 'flex-col' : 'overflow-x-auto pb-2 scrollbar-hide'
+        )}
+      >
         {themes.map((theme) => (
           <button
             key={theme.id}

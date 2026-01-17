@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import SentimentMeters from './components/SentimentMeters.jsx'
-import EarningsRecap from './components/EarningsRecap.jsx'
 import CommunityPerspectives from './components/CommunityPerspectives.jsx'
 import PredictionLeaderboard from './components/PredictionLeaderboard.jsx'
 import NarrativeTimeline from './components/NarrativeTimeline.jsx'
 import DynamicThemes from './components/DynamicThemes.jsx'
+import CollapsibleStockHeader from './components/CollapsibleStockHeader.jsx'
+import CreatorSpotlight from './components/CreatorSpotlight.jsx'
+import FeaturedPosts from './components/FeaturedPosts.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -118,15 +121,6 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   )
 }
 
-function StatItem({ label, value }) {
-  return (
-    <div className="card-surface p-3">
-      <div className="text-xs uppercase tracking-wide muted">{label}</div>
-      <div className="mt-1 text-lg font-semibold">{value}</div>
-    </div>
-  )
-}
-
 function Post({ post }) {
   const themeLabels = {
     'china-tariffs': 'China Tariffs',
@@ -163,9 +157,8 @@ function Post({ post }) {
   )
 }
 
-export default function App() {
+export function Dashboard() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('Feed')
   const [streamTab, setStreamTab] = useState('Latest')
   const [selectedTheme, setSelectedTheme] = useState(null)
   const [darkMode, setDarkMode] = useState(() => {
@@ -205,6 +198,11 @@ export default function App() {
       { ticker: 'RKLB', name: 'Rocket Lab USA Inc.', sector: 'Aerospace', price: 44.21, change: 3.45, spark: [10, 10.5, 10.2, 10.8, 11, 11.6, 11.2, 12.5] },
     ],
     []
+  )
+
+  const headerSpark = useMemo(
+    () => watchlist.find((s) => s.ticker === 'RKLB')?.spark ?? [],
+    [watchlist]
   )
 
   const posts = useMemo(
@@ -247,6 +245,55 @@ export default function App() {
     []
   )
 
+  const headerStats = useMemo(
+    () => [
+      { label: 'Mkt Cap', value: '$2.3B' },
+      { label: 'Volume', value: '12.4M' },
+      { label: '52W High', value: '$52.60' },
+      { label: '52W Low', value: '$14.80' },
+    ],
+    []
+  )
+
+  const featuredPosts = useMemo(
+    () => [
+      {
+        id: 'featured-1',
+        user: 'quantqueen',
+        time: '45m',
+        avatar: 'https://placehold.co/40x40?text=Q',
+        body: 'Consensus view: demand tailwinds + contract momentum. Watching for confirmation on the next guidance update.',
+        comments: 28,
+        likes: 214,
+        reposts: 41,
+        featured: true,
+      },
+      {
+        id: 'featured-2',
+        user: 'spacebull',
+        time: '2h',
+        avatar: 'https://placehold.co/40x40?text=S',
+        body: 'Thread recap: top 5 community catalysts into the earnings window.',
+        comments: 19,
+        likes: 162,
+        reposts: 33,
+        featured: true,
+      },
+      {
+        id: 'featured-3',
+        user: 'optionsowl',
+        time: '4h',
+        avatar: 'https://placehold.co/40x40?text=O',
+        body: 'Volatility snapshot: bullish flows concentrated in the 45-50 strike ladder.',
+        comments: 12,
+        likes: 98,
+        reposts: 21,
+        featured: false,
+      },
+    ],
+    []
+  )
+
   return (
     <div className="min-h-screen bg-background text-text">
       {/* Mobile top bar */}
@@ -270,128 +317,74 @@ export default function App() {
       {/* Main content area shifted for fixed sidebar on lg+ */}
       <main className="lg:pl-[269px]">
         <div className="mx-auto max-w-[1200px] p-4">
-          {/* Header Section */}
-          <div className="card-surface p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-semibold md:text-2xl">Rocket Lab USA Inc.</h1>
-                  <span className="badge">$RKLB</span>
-                </div>
-                <div className="mt-2 flex items-baseline gap-3">
-                  <div className="text-3xl font-bold">$44.21</div>
-                  <div className="text-success">+1.23 (3.45%)</div>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button className="btn">👀 Watching</button>
-                <button className="btn">⏰ Alerts</button>
-                <button className="btn btn-success">💹 Trade</button>
-              </div>
-            </div>
-          </div>
+          <CollapsibleStockHeader
+            title="Rocket Lab USA Inc."
+            ticker="RKLB"
+            price={44.21}
+            change={1.23}
+            changePct={3.45}
+            stats={headerStats}
+            chartSrc="https://placehold.co/1200x400/0f141a/9aa9b2?text=Stock+Chart"
+            sparkValues={headerSpark}
+          />
 
-          {/* Stats Bar */}
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatItem label="Mkt Cap" value="$2.3B" />
-            <StatItem label="Volume" value="12.4M" />
-            <StatItem label="52W High" value="$52.60" />
-            <StatItem label="52W Low" value="$14.80" />
-          </div>
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[240px_minmax(0,1fr)_320px]">
+            <aside className="hidden flex-col gap-4 xl:flex">
+              <DynamicThemes
+                onThemeSelect={setSelectedTheme}
+                selectedTheme={selectedTheme}
+                layout="vertical"
+              />
+              <NarrativeTimeline />
+              <SentimentMeters />
+            </aside>
 
-          {/* Content Columns: Middle + Right */}
-          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            {/* Middle Column */}
             <section className="space-y-4">
-              {/* Tabs header at top */}
-              <div className="card-surface">
-                <div className="flex items-center gap-2 border-b border-white/5 px-3 pt-2">
-                  {['About', 'Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals'].map((tab) => (
+              <div className="space-y-4 xl:hidden">
+                <DynamicThemes
+                  onThemeSelect={setSelectedTheme}
+                  selectedTheme={selectedTheme}
+                  layout="horizontal"
+                />
+                <NarrativeTimeline variant="embedded" />
+                <SentimentMeters />
+              </div>
+
+              <CommunityPerspectives />
+              <FeaturedPosts posts={featuredPosts} />
+
+              <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1">
+                <div className="flex items-center gap-1">
+                  {['Latest', 'Popular'].map((label) => (
                     <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
+                      key={label}
+                      onClick={() => setStreamTab(label)}
                       className={clsx(
-                        'px-3 py-2 text-sm',
-                        activeTab === tab ? 'border-b-2 border-primary text-primary' : 'muted'
+                        'px-2 py-1 text-sm',
+                        streamTab === label ? 'border-b-2 border-primary text-primary' : 'muted hover:text-text'
                       )}
+                      aria-pressed={streamTab === label}
                     >
-                      {tab}
+                      {label}
                     </button>
                   ))}
                 </div>
+                <div className="flex items-center gap-1">
+                  <button className="rounded-md p-1 hover:bg-white/5" aria-label="Settings">⚙️</button>
+                  <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
+                </div>
               </div>
 
-              {/* Tab content */}
-              {activeTab === 'Feed' ? (
-                <>
-                  {/* Chart Section (Feed only) */}
-                  <div className="card-surface p-4">
-                    <img
-                      src="https://placehold.co/1200x400/0f141a/9aa9b2?text=Stock+Chart"
-                      alt="Chart placeholder"
-                      className="h-64 w-full rounded-md object-cover md:h-80"
-                    />
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((t) => (
-                        <button key={t} className="btn px-2 py-1 text-xs">{t}</button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sentiment + Volume meters below chart */}
-                  <SentimentMeters />
-
-                  {/* Community Perspectives above earnings recap */}
-                  <CommunityPerspectives />
-
-                  {/* Earnings Recap below meters */}
-                  <EarningsRecap />
-
-                  {/* Embedded Narrative Timeline below Earnings Recap */}
-                  <NarrativeTimeline variant="embedded" />
-
-                  {/* Posts (Feed only) */}
-                  <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1">
-                    <div className="flex items-center gap-1">
-                      {['Latest', 'Popular'].map((label) => (
-                        <button
-                          key={label}
-                          onClick={() => setStreamTab(label)}
-                          className={clsx(
-                            'px-2 py-1 text-sm',
-                            streamTab === label ? 'border-b-2 border-primary text-primary' : 'muted hover:text-text'
-                          )}
-                          aria-pressed={streamTab === label}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button className="rounded-md p-1 hover:bg-white/5" aria-label="Settings">⚙️</button>
-                      <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
-                    </div>
-                  </div>
-                  
-                  {/* Dynamic Themes Section */}
-                  <DynamicThemes 
-                    onThemeSelect={setSelectedTheme}
-                    selectedTheme={selectedTheme}
-                  />
-                  
-                  <div className="space-y-3">
-                    {posts
-                      .filter(post => !selectedTheme || post.theme === selectedTheme)
-                      .map((p) => <Post key={p.id} post={p} />)}
-                  </div>
-                </>
-              ) : (
-                <div className="card-surface p-6 text-center muted">No content yet for {activeTab}</div>
-              )}
+              <div className="space-y-3">
+                {posts
+                  .filter(post => !selectedTheme || post.theme === selectedTheme)
+                  .map((p) => <Post key={p.id} post={p} />)}
+              </div>
             </section>
 
-            {/* Right Column */}
             <aside className="space-y-4">
+              <CreatorSpotlight />
+              <PredictionLeaderboard />
               <div className="card-surface p-4">
                 <div className="mb-2 text-sm uppercase tracking-wide muted">Latest $RKLB News</div>
                 <div className="space-y-3">
@@ -403,14 +396,6 @@ export default function App() {
                   ))}
                 </div>
               </div>
-
-              <div className="card-surface p-4">
-                <div className="muted mb-2 text-sm">Ad Slot</div>
-                <img src="https://placehold.co/400x200/0f141a/9aa9b2?text=Ad" className="w-full rounded-md" alt="Ad" />
-              </div>
-
-              <PredictionLeaderboard />
-
             </aside>
           </div>
         </div>
@@ -418,4 +403,23 @@ export default function App() {
     </div>
   )
 }
+
+function RegisteredPage() {
+  return <Dashboard />
+}
+
+function UnregisteredPage() {
+  return <Dashboard />
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/registered" replace />} />
+      <Route path="/registered" element={<RegisteredPage />} />
+      <Route path="/unreg" element={<UnregisteredPage />} />
+    </Routes>
+  )
+}
+
 
