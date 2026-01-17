@@ -43,12 +43,19 @@ export default function CollapsibleStockHeader({
   stats = [],
   chartSrc,
   sparkValues = [],
+  headerAction,
+  isUnregistered = false,
 }) {
   const [open, setOpen] = useState(false)
   const isUp = change >= 0
 
   return (
     <div className="card-surface">
+      {headerAction && (
+        <div className="border-b border-white/5 p-4">
+          {headerAction}
+        </div>
+      )}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -106,7 +113,9 @@ export default function CollapsibleStockHeader({
                 <div className="mt-1 text-lg font-semibold">{stat.value}</div>
               </div>
             ))}
-            <button className="btn btn-primary w-full">View fundamentals</button>
+            <button className="btn btn-primary w-full">
+              {isUnregistered ? 'Register to view fundamentals' : 'View fundamentals'}
+            </button>
           </div>
         </div>
       </div>

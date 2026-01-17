@@ -121,7 +121,7 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   )
 }
 
-function Post({ post }) {
+function Post({ post, isUnregistered }) {
   const themeLabels = {
     'china-tariffs': 'China Tariffs',
     'fed-decision': 'Fed Decision',
@@ -146,10 +146,15 @@ function Post({ post }) {
             )}
           </div>
           <div className="mt-1 whitespace-pre-wrap">{post.body}</div>
-          <div className="mt-3 flex gap-3 text-sm muted">
-            <button className="hover:text-text">❤️ Like</button>
-            <button className="hover:text-text">🔁 Repost</button>
-            <button className="hover:text-text">💬 Comment</button>
+          <div
+            className={clsx(
+              'mt-3 flex gap-3 text-sm muted',
+              isUnregistered && 'pointer-events-none opacity-60'
+            )}
+          >
+            <button className="hover:text-text">{isUnregistered ? '🔒 Like' : '❤️ Like'}</button>
+            <button className="hover:text-text">{isUnregistered ? '🔒 Repost' : '🔁 Repost'}</button>
+            <button className="hover:text-text">{isUnregistered ? '🔒 Comment' : '💬 Comment'}</button>
           </div>
         </div>
       </div>
@@ -157,10 +162,47 @@ function Post({ post }) {
   )
 }
 
-export function Dashboard() {
+function HardGate({ isLocked, label, ctaText = 'Register to unlock', children }) {
+  if (!isLocked) {
+    return children
+  }
+
+  return (
+    <div className="relative">
+      <div className="pointer-events-none select-none opacity-40 blur-[1px]">
+        {children}
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="card-surface flex flex-wrap items-center justify-center gap-3 px-4 py-2 text-sm">
+          <span className="uppercase tracking-wide muted">{label}</span>
+          <button className="btn btn-primary">{ctaText}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SoftGate({ isLocked, label, ctaText = 'Register to unlock more', children }) {
+  if (!isLocked) {
+    return children
+  }
+
+  return (
+    <div className="space-y-2">
+      {children}
+      <div className="card-surface flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+        <span className="uppercase tracking-wide muted">{label}</span>
+        <button className="btn btn-primary">{ctaText}</button>
+      </div>
+    </div>
+  )
+}
+
+export function Dashboard({ isUnregistered = false }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [streamTab, setStreamTab] = useState('Latest')
   const [selectedTheme, setSelectedTheme] = useState(null)
+  const [quickStartActive, setQuickStartActive] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage for saved theme preference
     const savedTheme = localStorage.getItem('theme');
@@ -197,6 +239,11 @@ export function Dashboard() {
       { ticker: 'META', name: 'Meta Platforms', sector: 'Social', price: 497.88, change: -0.23, spark: [40, 39.5, 39.8, 40.6, 40.1, 41, 41.2, 40.7] },
       { ticker: 'RKLB', name: 'Rocket Lab USA Inc.', sector: 'Aerospace', price: 44.21, change: 3.45, spark: [10, 10.5, 10.2, 10.8, 11, 11.6, 11.2, 12.5] },
     ],
+    []
+  )
+
+  const quickStartBundle = useMemo(
+    () => ['RKLB', 'SPCE', 'LMT', 'NOC', 'BA', 'RTX', 'AVAV', 'IRDM', 'MAXR', 'PL', 'RDW'],
     []
   )
 
@@ -294,6 +341,9 @@ export function Dashboard() {
     []
   )
 
+  const filteredPosts = posts.filter((post) => !selectedTheme || post.theme === selectedTheme)
+  const visiblePosts = isUnregistered ? filteredPosts.slice(0, 3) : filteredPosts
+
   return (
     <div className="min-h-screen bg-background text-text">
       {/* Mobile top bar */}
@@ -326,6 +376,41 @@ export function Dashboard() {
             stats={headerStats}
             chartSrc="https://placehold.co/1200x400/0f141a/9aa9b2?text=Stock+Chart"
             sparkValues={headerSpark}
+            isUnregistered={isUnregistered}
+            headerAction={
+              isUnregistered ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs uppercase tracking-wide muted">Quick start watchlist</div>
+                      <div className="text-base font-semibold">RKLB + 10 peers in one click</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button className="btn btn-success" onClick={() => setQuickStartActive(true)}>
+                        Activate bundle
+                      </button>
+                      <button className="btn btn-primary">Register to unlock full data</button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {quickStartBundle.map((symbol) => (
+                      <span key={symbol} className="badge">
+                        {symbol}
+                      </span>
+                    ))}
+                  </div>
+                  {quickStartActive && (
+                    <div className="card-surface flex items-center justify-between gap-3 p-3 text-sm">
+                      <div>
+                        <div className="font-semibold">Watchlist created</div>
+                        <div className="muted">We added RKLB and 10 related symbols to your watchlist.</div>
+                      </div>
+                      <button className="btn btn-primary">View watchlist</button>
+                    </div>
+                  )}
+                </div>
+              ) : null
+            }
           />
 
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[240px_minmax(0,1fr)_320px]">
@@ -335,8 +420,12 @@ export function Dashboard() {
                 selectedTheme={selectedTheme}
                 layout="vertical"
               />
-              <NarrativeTimeline />
-              <SentimentMeters />
+              <HardGate isLocked={isUnregistered} label="Timeline locked" ctaText="Register">
+                <NarrativeTimeline />
+              </HardGate>
+              <HardGate isLocked={isUnregistered} label="Sentiment locked" ctaText="Register">
+                <SentimentMeters />
+              </HardGate>
             </aside>
 
             <section className="space-y-4">
@@ -346,56 +435,87 @@ export function Dashboard() {
                   selectedTheme={selectedTheme}
                   layout="horizontal"
                 />
-                <NarrativeTimeline variant="embedded" />
-                <SentimentMeters />
+                <HardGate isLocked={isUnregistered} label="Timeline locked" ctaText="Register">
+                  <NarrativeTimeline variant="embedded" />
+                </HardGate>
+                <HardGate isLocked={isUnregistered} label="Sentiment locked" ctaText="Register">
+                  <SentimentMeters />
+                </HardGate>
               </div>
 
-              <CommunityPerspectives />
-              <FeaturedPosts posts={featuredPosts} />
+              <SoftGate
+                isLocked={isUnregistered}
+                label="Community perspectives"
+                ctaText="Register to unlock"
+              >
+                <CommunityPerspectives />
+              </SoftGate>
+              <SoftGate
+                isLocked={isUnregistered}
+                label="Featured posts"
+                ctaText="Join to view"
+              >
+                <FeaturedPosts posts={featuredPosts} />
+              </SoftGate>
 
-              <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1">
-                <div className="flex items-center gap-1">
-                  {['Latest', 'Popular'].map((label) => (
-                    <button
-                      key={label}
-                      onClick={() => setStreamTab(label)}
-                      className={clsx(
-                        'px-2 py-1 text-sm',
-                        streamTab === label ? 'border-b-2 border-primary text-primary' : 'muted hover:text-text'
-                      )}
-                      aria-pressed={streamTab === label}
-                    >
-                      {label}
-                    </button>
+              <div>
+                <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1">
+                  <div className="flex items-center gap-1">
+                    {['Latest', 'Popular'].map((label) => (
+                      <button
+                        key={label}
+                        onClick={() => setStreamTab(label)}
+                        className={clsx(
+                          'px-2 py-1 text-sm',
+                          streamTab === label ? 'border-b-2 border-primary text-primary' : 'muted hover:text-text'
+                        )}
+                        aria-pressed={streamTab === label}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button className="rounded-md p-1 hover:bg-white/5" aria-label="Settings">⚙️</button>
+                    <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {visiblePosts.map((p) => (
+                    <Post key={p.id} post={p} isUnregistered={isUnregistered} />
                   ))}
                 </div>
-                <div className="flex items-center gap-1">
-                  <button className="rounded-md p-1 hover:bg-white/5" aria-label="Settings">⚙️</button>
-                  <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
-                </div>
-              </div>
 
-              <div className="space-y-3">
-                {posts
-                  .filter(post => !selectedTheme || post.theme === selectedTheme)
-                  .map((p) => <Post key={p.id} post={p} />)}
+                {isUnregistered && filteredPosts.length > visiblePosts.length && (
+                  <div className="mt-3 card-surface flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                    <span className="uppercase tracking-wide muted">More posts locked</span>
+                    <button className="btn btn-primary">Register to view full feed</button>
+                  </div>
+                )}
               </div>
             </section>
 
             <aside className="space-y-4">
-              <CreatorSpotlight />
-              <PredictionLeaderboard />
-              <div className="card-surface p-4">
-                <div className="mb-2 text-sm uppercase tracking-wide muted">Latest $RKLB News</div>
-                <div className="space-y-3">
-                  {news.map((n, i) => (
-                    <div key={i} className="border-b border-white/5 pb-3 last:border-0 last:pb-0">
-                      <div className="font-medium leading-snug">{n.title}</div>
-                      <div className="mt-1 text-xs muted">{n.source} • {n.time}</div>
-                    </div>
-                  ))}
+              <SoftGate isLocked={isUnregistered} label="Creator spotlight" ctaText="Join to view">
+                <CreatorSpotlight />
+              </SoftGate>
+              <HardGate isLocked={isUnregistered} label="Leaderboard locked" ctaText="Register">
+                <PredictionLeaderboard />
+              </HardGate>
+              <SoftGate isLocked={isUnregistered} label="More news" ctaText="Register to view">
+                <div className="card-surface p-4">
+                  <div className="mb-2 text-sm uppercase tracking-wide muted">Latest $RKLB News</div>
+                  <div className="space-y-3">
+                    {(isUnregistered ? news.slice(0, 2) : news).map((n, i) => (
+                      <div key={i} className="border-b border-white/5 pb-3 last:border-0 last:pb-0">
+                        <div className="font-medium leading-snug">{n.title}</div>
+                        <div className="mt-1 text-xs muted">{n.source} • {n.time}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </SoftGate>
             </aside>
           </div>
         </div>
@@ -409,7 +529,7 @@ function RegisteredPage() {
 }
 
 function UnregisteredPage() {
-  return <Dashboard />
+  return <Dashboard isUnregistered />
 }
 
 export default function App() {
