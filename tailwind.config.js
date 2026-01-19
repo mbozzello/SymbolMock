@@ -7,20 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Dark theme (default)
-        background: '#0b0f14',
-        surface: '#0f141a',
-        surfaceMuted: '#111820',
-        text: '#e6edf3',
-        textMuted: '#9aa9b2',
-        primary: '#2aa6ff',
-        success: '#17c964',
-        danger: '#f31260',
-        warning: '#f5a524',
+        background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
+        surfaceMuted: 'var(--color-surfaceMuted)',
+        text: 'var(--color-text)',
+        textMuted: 'var(--color-textMuted)',
+        primary: 'var(--color-primary)',
+        accent: 'var(--color-accent)',
+        success: 'var(--color-success)',
+        danger: 'var(--color-danger)',
+        warning: 'var(--color-warning)',
+        border: 'var(--color-border)',
+        'border-strong': 'var(--color-border-strong)',
       },
     },
   },
   plugins: [],
 }
-
-

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useRef, useEffect } from 'react'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -19,10 +19,10 @@ function Chevron({ open }) {
 }
 
 const TYPE_META = {
-  News: { color: '#3b82f6', icon: '' },
-  Earnings: { color: '#a855f7', icon: '' },
-  Sentiment: { color: '#17c964', icon: '' },
-  Trending: { color: '#f59e0b', icon: '' },
+  News: { color: 'var(--color-text)', icon: '' },
+  Earnings: { color: 'var(--color-success)', icon: '' },
+  Sentiment: { color: '#2aa6ff', icon: '' },
+  Trending: { color: 'var(--color-warning)', icon: '' },
 }
 
 function Dot({ type }) {
@@ -37,7 +37,7 @@ function TypeBadge({ type }) {
   return (
     <span
       className="rounded-full px-2 py-0.5 text-xs font-medium"
-      style={{ backgroundColor: `${meta.color}1A`, color: meta.color }}
+      style={{ color: meta.color }}
     >
       {type}
     </span>
@@ -51,7 +51,7 @@ function EventRow({ event, isLast }) {
     <div className="grid grid-cols-[1rem_1fr] gap-3">
       <div className="relative flex flex-col items-center">
         <Dot type={type} />
-        {!isLast && <div className="absolute top-3 left-1/2 -ml-px h-[calc(100%-0.75rem)] w-px bg-white/10" aria-hidden="true" />}
+        {!isLast && <div className="absolute top-3 left-1/2 -ml-px h-[calc(100%-0.75rem)] w-px bg-border" aria-hidden="true" />}
       </div>
       <div className="pb-4">
         <div className="flex items-center gap-2 text-xs muted">
@@ -65,7 +65,7 @@ function EventRow({ event, isLast }) {
               href={link}
               target="_blank"
               rel="noreferrer"
-              className="ml-2 align-middle text-sm text-primary hover:underline"
+              className="ml-2 align-middle text-sm text-text font-semibold hover:underline"
             >
               Link ›
             </a>
@@ -77,47 +77,103 @@ function EventRow({ event, isLast }) {
   )
 }
 
-function SectionFilterChips({ selectedTypes, onToggle }) {
-  const entries = Object.keys(TYPE_META)
-  return (
-    <div className="flex flex-wrap gap-2">
-      {entries.map((t) => {
-        const active = selectedTypes[t]
-        return (
-          <button
-            key={t}
-            onClick={() => onToggle(t)}
-            className={clsx(
-              'rounded-full px-3 py-1 text-sm',
-              active ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'
-            )}
-            aria-pressed={active}
-          >
-            {t}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
+function ConfigDropdown({ rangeDays, onRangeChange, selectedTypes, onToggleType }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef(null)
 
-function RangeChips({ rangeDays, onChange }) {
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
+
+  const activeCount = Object.values(selectedTypes).filter(Boolean).length
+  const typeEntries = Object.keys(TYPE_META)
   const ranges = [30, 60, 90]
+
   return (
-    <div className="flex gap-2">
-      {ranges.map((r) => (
-        <button
-          key={r}
-          onClick={() => onChange(r)}
-          className={clsx(
-            'rounded-full px-2.5 py-1 text-sm',
-            rangeDays === r ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'
-          )}
-          aria-pressed={rangeDays === r}
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 rounded-md bg-surface-muted px-2.5 py-1.5 text-xs border border-border hover:border-border-strong"
+        aria-label="Configure timeline filters"
+        aria-expanded={isOpen}
+      >
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {r}d
-        </button>
-      ))}
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+        <span>{rangeDays}d</span>
+        <span className="text-muted">•</span>
+        <span>{activeCount}/{typeEntries.length}</span>
+        <Chevron open={isOpen} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full z-20 mt-1 w-48 rounded-md border border-border bg-surface p-2 shadow-lg backdrop-blur-sm">
+          <div className="space-y-3">
+            <div>
+              <div className="mb-1.5 text-xs font-medium text-text-muted">Time Range</div>
+              <div className="flex gap-1.5">
+                {ranges.map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => {
+                      onRangeChange(r)
+                      setIsOpen(false)
+                    }}
+                    className={clsx(
+                      'flex-1 rounded px-2 py-1 text-xs transition-colors',
+                      rangeDays === r ? 'bg-text text-surface' : 'bg-surface-muted hover:bg-border'
+                    )}
+                  >
+                    {r}d
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-1.5 text-xs font-medium text-text-muted">Event Types</div>
+              <div className="space-y-1">
+                {typeEntries.map((type) => {
+                  const meta = TYPE_META[type]
+                  const active = selectedTypes[type]
+                  return (
+                    <label
+                      key={type}
+                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-surface-muted"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={active}
+                        onChange={() => onToggleType(type)}
+                        className="h-3.5 w-3.5 rounded border-border bg-surface text-primary focus:ring-1 focus:ring-border-strong"
+                      />
+                      <div
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: meta.color }}
+                      />
+                      <span className="text-xs">{type}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -239,11 +295,11 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
   return (
     <div className="card-surface">
       <div className={clsx('flex items-center justify-between', containerPadding)}>
-        <h3 className="text-base font-semibold">RKLB Narrative Timeline</h3>
+        <h3 className="text-base font-semibold">RKLB Timeline</h3>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          aria-label={open ? 'Collapse narrative timeline' : 'Expand narrative timeline'}
+          aria-label={open ? 'Collapse timeline' : 'Expand timeline'}
           aria-expanded={open}
           className="rounded-md p-1 hover:bg-white/5"
         >
@@ -258,9 +314,13 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
         )}
       >
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <SectionFilterChips selectedTypes={selectedTypes} onToggle={toggleType} />
-            <RangeChips rangeDays={rangeDays} onChange={setRangeDays} />
+          <div className="flex justify-start">
+            <ConfigDropdown
+              rangeDays={rangeDays}
+              onRangeChange={setRangeDays}
+              selectedTypes={selectedTypes}
+              onToggleType={toggleType}
+            />
           </div>
 
           <div className="mt-1">

@@ -63,20 +63,20 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
       <div className="absolute inset-0 grid place-items-center p-4">
         <div className="card-surface w-full max-w-lg overflow-hidden">
           {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/5 p-4">
+            <div className="flex items-center justify-between border-b border-border p-4">
             <div className="flex items-center gap-2">
               <h3 className="text-base font-semibold">Make a Prediction</h3>
               <button
                 type="button"
-                className="rounded-md p-1 hover:bg-white/5"
+                className="rounded-md p-1 hover:bg-surface-muted"
                 aria-label="Show prediction rules"
                 onClick={() => setShowRules((v) => !v)}
               >
-                <span className="text-sm font-medium text-primary">Rules</span>
+                <span className="text-sm font-bold text-text">Rules</span>
               </button>
               {showRules && (
-                <div ref={rulesRef} className="absolute z-50 mt-10 w-80 rounded-lg border border-white/10 bg-surface p-3 text-sm shadow-xl">
-                  <div className="font-medium">Rules & Tips</div>
+                <div ref={rulesRef} className="absolute z-50 mt-10 w-80 rounded-lg border border-border-strong bg-surface p-3 text-sm shadow-xl">
+                  <div className="font-semibold">Rules & Tips</div>
                   <ul className="mt-2 list-disc space-y-1 pl-5 muted">
                     <li>Pick a direction: Bullish expects higher price; Bearish expects lower.</li>
                     <li>Only 1D/1W predictions count towards streak.</li>
@@ -86,24 +86,24 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                 </div>
               )}
             </div>
-            <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-white/5" aria-label="Close">
+            <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-surface-muted" aria-label="Close">
               ✕
             </button>
           </div>
 
           {/* First-time explainer */}
             {showExplainer && (
-            <div className="mx-4 mt-3 rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm">
+            <div className="mx-4 mt-3 rounded-lg border border-border bg-surface-muted p-3 text-sm">
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium">Welcome to Prediction Creator</div>
+                  <div className="font-semibold">Welcome to Prediction Creator</div>
                   <div className="muted">
                     Make a directional call on {`$${defaultTicker}`} for a 1 day or 1 week horizon. Only 1D/1W predictions
                     count towards streak. Custom target dates are supported but do not count towards streak.
                   </div>
                 </div>
                 <button
-                  className="rounded-md px-2 py-1 text-xs hover:bg-white/5"
+                  className="rounded-md px-2 py-1 text-xs hover:bg-surface"
                   onClick={() => {
                     setShowExplainer(false)
                     try { localStorage.setItem('hasSeenPredictionExplainer', 'true') } catch {}
@@ -123,14 +123,14 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
               onChange={(e) => setMessage(e.target.value)}
               rows={4}
               placeholder="Share an idea (use $ before ticker: eg $SYMBL)"
-              className="w-full resize-y rounded-lg border border-white/10 bg-transparent p-3 text-sm outline-none focus:border-primary/50"
+              className="w-full resize-y rounded-lg border border-border bg-transparent p-3 text-sm outline-none focus:border-border-strong"
             />
 
             {/* Prediction block */}
-            <div className="mt-4 rounded-lg border border-white/10 bg-white/5">
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                <div className="font-medium">Create Price Prediction</div>
-                <button type="button" className="rounded-md p-1 hover:bg-white/5" aria-label="Remove prediction" onClick={() => { setShowCustom(false); setCustomPrice(''); setCustomDate('') }}>
+            <div className="mt-4 rounded-lg border border-border bg-surface-muted">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="font-semibold">Create Price Prediction</div>
+                <button type="button" className="rounded-md p-1 hover:bg-surface" aria-label="Remove prediction" onClick={() => { setShowCustom(false); setCustomPrice(''); setCustomDate('') }}>
                   ✕
                 </button>
               </div>
@@ -139,26 +139,26 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                 <div className="grid gap-3 sm:grid-cols-3">
                   {/* Symbol */}
                   <div>
-                    <div className="text-sm font-medium">Symbol</div>
+                    <div className="text-sm font-semibold">Symbol</div>
                     <input
                       type="text"
                       value={symbol}
                       onChange={(e) => setSymbol(e.target.value)}
                       placeholder="Symbol Name"
-                      className="mt-1 w-full rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-primary/50"
+                      className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border-strong"
                     />
                   </div>
 
                   {/* Direction */}
                   <div>
-                    <div className="text-sm font-medium">Direction</div>
-                    <div className="mt-1 inline-flex w-full overflow-hidden rounded-md border border-white/10">
+                    <div className="text-sm font-semibold">Direction</div>
+                    <div className="mt-1 inline-flex w-full overflow-hidden rounded-md border border-border bg-surface">
                       <button
                         type="button"
                         onClick={() => setSentiment('Bullish')}
                         className={clsx(
-                          'w-1/2 px-3 py-2 text-sm',
-                          sentiment === 'Bullish' ? 'bg-success/10 text-success' : 'bg-white/5 hover:bg-white/10'
+                          'w-1/2 px-3 py-2 text-sm transition-colors',
+                          sentiment === 'Bullish' ? 'bg-success text-white' : 'hover:bg-surface-muted'
                         )}
                         aria-pressed={sentiment === 'Bullish'}
                       >
@@ -168,8 +168,8 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                         type="button"
                         onClick={() => setSentiment('Bearish')}
                         className={clsx(
-                          'w-1/2 px-3 py-2 text-sm',
-                          sentiment === 'Bearish' ? 'bg-danger/10 text-danger' : 'bg-white/5 hover:bg-white/10'
+                          'w-1/2 px-3 py-2 text-sm transition-colors',
+                          sentiment === 'Bearish' ? 'bg-danger text-white' : 'hover:bg-surface-muted'
                         )}
                         aria-pressed={sentiment === 'Bearish'}
                       >
@@ -180,14 +180,14 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
 
                   {/* Target */}
                   <div>
-                    <div className="text-sm font-medium">Target</div>
-                    <div className="mt-1 inline-flex w-full overflow-hidden rounded-md border border-white/10">
+                    <div className="text-sm font-semibold">Target</div>
+                    <div className="mt-1 inline-flex w-full overflow-hidden rounded-md border border-border bg-surface">
                       <button
                         type="button"
                         onClick={() => { setHorizon('1D'); setShowCustom(false) }}
                         className={clsx(
-                          'w-1/2 px-3 py-2 text-sm',
-                          horizon === '1D' ? 'bg-primary/10 text-primary' : 'bg-white/5 hover:bg-white/10'
+                          'w-1/2 px-3 py-2 text-sm transition-colors',
+                          horizon === '1D' ? 'bg-text text-surface' : 'hover:bg-surface-muted'
                         )}
                         aria-pressed={horizon === '1D'}
                       >
@@ -197,8 +197,8 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                         type="button"
                         onClick={() => { setHorizon('1W'); setShowCustom(false) }}
                         className={clsx(
-                          'w-1/2 px-3 py-2 text-sm',
-                          horizon === '1W' ? 'bg-primary/10 text-primary' : 'bg-white/5 hover:bg-white/10'
+                          'w-1/2 px-3 py-2 text-sm transition-colors',
+                          horizon === '1W' ? 'bg-text text-surface' : 'hover:bg-surface-muted'
                         )}
                         aria-pressed={horizon === '1W'}
                       >
@@ -213,7 +213,7 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                     <div className="muted">Only 1D/1W predictions count towards streak.</div>
                     <button
                       type="button"
-                      className="underline underline-offset-4 hover:opacity-80"
+                      className="underline underline-offset-4 hover:opacity-80 font-semibold"
                       aria-expanded={showCustom}
                       onClick={() => setShowCustom(true)}
                     >
@@ -223,10 +223,10 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                 )}
 
                 {showCustom && (
-                  <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                  <div className="rounded-md border border-border bg-surface p-3">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <div className="text-sm font-medium">Target price</div>
+                        <div className="text-sm font-semibold">Target price</div>
                         <input
                           id="custom-price"
                           type="number"
@@ -236,17 +236,17 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                           placeholder="e.g. 48.50"
                           value={customPrice}
                           onChange={(e) => setCustomPrice(e.target.value)}
-                          className="mt-1 w-full rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-primary/50"
+                          className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border-strong"
                         />
                       </div>
                       <div>
-                        <div className="text-sm font-medium">Target date</div>
+                        <div className="text-sm font-semibold">Target date</div>
                         <input
                           id="custom-date"
                           type="date"
                           value={customDate}
                           onChange={(e) => setCustomDate(e.target.value)}
-                          className="mt-1 w-full rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-primary/50"
+                          className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-border-strong"
                         />
                       </div>
                     </div>
@@ -254,7 +254,7 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                       <div className="muted">Note: Custom targets do not count towards streak.</div>
                       <button
                         type="button"
-                        className="underline underline-offset-4 hover:opacity-80"
+                        className="underline underline-offset-4 hover:opacity-80 font-semibold"
                         onClick={() => { setShowCustom(false); setCustomPrice(''); setCustomDate('') }}
                       >
                         Use 1D/1W instead
@@ -269,13 +269,13 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               {/* Left: sentiment and add-ons */}
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 p-1">
+                <div className="flex items-center gap-2 rounded-md border border-border bg-surface-muted p-1">
                   <button
                     type="button"
                     onClick={() => setSentiment('Bullish')}
                     className={clsx(
-                      'rounded-sm px-2 py-1 text-xs font-medium',
-                      sentiment === 'Bullish' ? 'bg-success/20 text-success' : 'text-text'
+                      'rounded-sm px-2 py-1 text-xs font-semibold transition-colors',
+                      sentiment === 'Bullish' ? 'bg-success text-white' : 'text-text'
                     )}
                   >
                     Bullish
@@ -284,8 +284,8 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                     type="button"
                     onClick={() => setSentiment('Bearish')}
                     className={clsx(
-                      'rounded-sm px-2 py-1 text-xs font-medium',
-                      sentiment === 'Bearish' ? 'bg-danger/20 text-danger' : 'text-text'
+                      'rounded-sm px-2 py-1 text-xs font-semibold transition-colors',
+                      sentiment === 'Bearish' ? 'bg-danger text-white' : 'text-text'
                     )}
                   >
                     Bearish

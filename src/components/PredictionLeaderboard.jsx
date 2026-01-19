@@ -21,7 +21,7 @@ function Chevron({ open }) {
 
 function InitialsAvatar({ initials }) {
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 font-semibold">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-muted border border-border font-semibold">
       {initials}
     </div>
   )
@@ -93,8 +93,8 @@ export default function PredictionLeaderboard() {
                 key={m}
                 onClick={() => setMetric(m)}
                 className={clsx(
-                  'rounded-full px-3 py-1 text-sm',
-                  metric === m ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'
+                  'rounded-full px-3 py-1 text-sm transition-all duration-200',
+                  metric === m ? 'bg-text text-surface font-semibold' : 'bg-surface-muted text-text hover:bg-border'
                 )}
                 aria-pressed={metric === m}
               >
@@ -109,8 +109,8 @@ export default function PredictionLeaderboard() {
                 key={s}
                 onClick={() => setScope(s)}
                 className={clsx(
-                  'rounded-full px-3 py-1 text-sm',
-                  scope === s ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10'
+                  'rounded-full px-3 py-1 text-sm transition-all duration-200',
+                  scope === s ? 'bg-text text-surface font-semibold' : 'bg-surface-muted text-text hover:bg-border'
                 )}
                 aria-pressed={scope === s}
               >
@@ -120,10 +120,10 @@ export default function PredictionLeaderboard() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-lg border border-white/5">
+        <div className="mt-3 rounded-lg border border-border">
           <div className="px-3">
             {rows.map((r, idx) => (
-              <div key={r.rank} className={clsx('px-1', idx !== rows.length - 1 && 'border-b border-white/5')}>
+              <div key={r.rank} className={clsx('px-1', idx !== rows.length - 1 && 'border-b border-border')}>
                 <LeaderRow {...r} />
               </div>
             ))}

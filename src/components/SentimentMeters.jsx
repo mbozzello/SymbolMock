@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Gauge({ score = 0, size = 72, strokeWidth = 8, color = '#17c964' }) {
+function Gauge({ score = 0, size = 72, strokeWidth = 8, color = 'var(--color-success)' }) {
   const clamped = Math.max(0, Math.min(100, score))
   const radius = (size - strokeWidth) / 2
   const cx = size / 2
@@ -29,7 +29,7 @@ function Gauge({ score = 0, size = 72, strokeWidth = 8, color = '#17c964' }) {
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="h-16 w-16">
-      <path d={baseArc} stroke="currentColor" opacity="0.15" strokeWidth={strokeWidth} fill="none" strokeLinecap="round" />
+      <path d={baseArc} stroke="currentColor" opacity="0.1" strokeWidth={strokeWidth} fill="none" strokeLinecap="round" />
       <path d={valueArc} stroke={color} strokeWidth={strokeWidth} fill="none" strokeLinecap="round" />
       <text x={cx} y={cy + 4} textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor">
         {clamped}
@@ -40,12 +40,12 @@ function Gauge({ score = 0, size = 72, strokeWidth = 8, color = '#17c964' }) {
 
 function MeterCard({ label, headline, score, color }) {
   return (
-    <div className="card-surface flex items-center justify-between p-4">
+    <div className="card-surface flex items-center justify-between p-4 transition-all duration-200 hover:border-border-strong">
       <div>
-        <div className="text-sm muted">{label}</div>
-        <div className="mt-1 text-lg font-semibold flex items-center gap-1">
+        <div className="text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
+        <div className="mt-1 text-base font-bold flex items-center gap-1">
           <span>{headline}</span>
-          <span className="muted">›</span>
+          <span className="text-muted">›</span>
         </div>
       </div>
       <Gauge score={score} color={color} />
@@ -56,8 +56,8 @@ function MeterCard({ label, headline, score, color }) {
 export default function SentimentMeters() {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <MeterCard label="Sentiment" headline="Extremely Bullish" score={94} color="#17c964" />
-      <MeterCard label="Message Volume" headline="Extremely High" score={86} color="#17c964" />
+      <MeterCard label="Sentiment" headline="Extremely Bullish" score={94} color="var(--color-success)" />
+      <MeterCard label="Message Volume" headline="Extremely High" score={86} color="var(--color-success)" />
     </div>
   )
 }

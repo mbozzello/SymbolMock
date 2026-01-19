@@ -24,13 +24,13 @@ export default function EarningsRecap() {
   return (
     <div className="card-surface overflow-hidden">
       <div className="flex items-center justify-between p-4">
-        <h3 className="text-base font-semibold">Earnings Recap</h3>
+        <h3 className="text-base font-bold">Earnings Recap</h3>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Collapse earnings recap' : 'Expand earnings recap'}
           aria-expanded={open}
-          className="rounded-md p-1 hover:bg-white/5"
+          className="rounded-md p-1 hover:bg-surface-muted transition-colors"
         >
           <Chevron open={open} />
         </button>
@@ -44,29 +44,29 @@ export default function EarningsRecap() {
         style={{ overflow: 'hidden' }}
       >
         <div className="space-y-3">
-          <p className="leading-relaxed">
+          <p className="leading-relaxed text-sm font-medium">
             The company delivered solid top-line growth with improving margins as AI and defense demand
             continued to lift results. Management reiterated full-year guidance and highlighted a healthy
             order pipeline into the next quarter.
           </p>
-          <p className="leading-relaxed">
+          <p className="leading-relaxed text-sm font-medium">
             While near-term volatility remains, the business is executing against key initiatives and
             expanding capacity to meet demand. Liquidity remains strong, providing flexibility to invest in
             growth.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <div className="font-semibold">Bullish</div>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
+            <div className="rounded-md border border-success/20 bg-success/5 p-3">
+              <div className="font-bold text-success">Bullish</div>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
                 <li>Revenue beat on stronger-than-expected demand and backlog conversion</li>
                 <li>Gross margin expansion from mix and operational efficiencies</li>
                 <li>Raised FY outlook for bookings and free cash flow</li>
               </ul>
             </div>
-            <div>
-              <div className="font-semibold">Bearish</div>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
+            <div className="rounded-md border border-danger/20 bg-danger/5 p-3">
+              <div className="font-bold text-danger">Bearish</div>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
                 <li>Guided to higher near-term opex as investments ramp</li>
                 <li>Supply chain constraints may limit upside in the next quarter</li>
                 <li>Valuation remains rich relative to historical averages</li>

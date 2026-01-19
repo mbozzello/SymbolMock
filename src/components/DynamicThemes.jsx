@@ -71,16 +71,50 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
 
   const isVertical = layout === 'vertical'
 
+  // For horizontal layout above feed, use simplified styling without card wrapper
+  if (!isVertical) {
+    return (
+      <div className={clsx('pt-2 pb-1 -mb-2', className)}>
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="text-sm font-semibold text-muted whitespace-nowrap">Themes:</div>
+          <div className="flex gap-2">
+            {themes.map((theme) => (
+              <button
+                key={theme.id}
+                onClick={() => handleThemeClick(theme.id)}
+                className={`
+                  flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap
+                  transition-all duration-200 border
+                  ${selectedTheme === theme.id 
+                    ? 'bg-text text-surface border-text shadow-sm' 
+                    : 'bg-surface border-border text-text hover:bg-surface-muted hover:border-border-strong'
+                  }
+                `}
+              >
+                <span>{theme.label}</span>
+                <span className={`
+                  px-1.5 py-0.5 rounded-full text-xs
+                  ${selectedTheme === theme.id 
+                    ? 'bg-surface/20 text-surface' 
+                    : 'bg-surface-muted text-muted'
+                  }
+                `}>
+                  {theme.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Vertical layout (kept for backward compatibility if needed)
   return (
     <div className={clsx('card-surface p-4', className)}>
       <div className="mb-3 text-sm font-semibold">Dynamic Themes</div>
       
-      <div
-        className={clsx(
-          'flex gap-2',
-          isVertical ? 'flex-col' : 'overflow-x-auto pb-2 scrollbar-hide'
-        )}
-      >
+      <div className="flex flex-col gap-2">
         {themes.map((theme) => (
           <button
             key={theme.id}
@@ -89,8 +123,8 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
               flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap
               transition-all duration-200 border
               ${selectedTheme === theme.id 
-                ? 'bg-primary text-white border-primary shadow-lg' 
-                : 'bg-surface border-white/10 text-text hover:bg-white/5 hover:border-white/20'
+                ? 'bg-text text-surface border-text shadow-sm' 
+                : 'bg-surface border-border text-text hover:bg-surface-muted hover:border-border-strong'
               }
             `}
           >
@@ -98,8 +132,8 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
             <span className={`
               px-1.5 py-0.5 rounded-full text-xs
               ${selectedTheme === theme.id 
-                ? 'bg-white/20 text-white' 
-                : 'bg-white/10 text-muted'
+                ? 'bg-surface/20 text-surface' 
+                : 'bg-surface-muted text-muted'
               }
             `}>
               {theme.count}
@@ -109,8 +143,8 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
       </div>
       
       {selectedTheme && (
-        <div className="mt-3 p-3 bg-primary/10 border border-primary/20 rounded-md">
-          <div className="text-xs text-primary font-medium mb-1">
+        <div className="mt-3 p-3 bg-surface-muted border border-border rounded-md">
+          <div className="text-xs text-text font-semibold mb-1">
             Filtering by: {themes.find(t => t.id === selectedTheme)?.label}
           </div>
           <div className="text-xs text-muted">

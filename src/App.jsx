@@ -7,7 +7,6 @@ import NarrativeTimeline from './components/NarrativeTimeline.jsx'
 import DynamicThemes from './components/DynamicThemes.jsx'
 import CollapsibleStockHeader from './components/CollapsibleStockHeader.jsx'
 import CreatorSpotlight from './components/CreatorSpotlight.jsx'
-import FeaturedPosts from './components/FeaturedPosts.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -28,9 +27,9 @@ function MiniSparkline({ values = [] }) {
   const lastUp = values[values.length - 1] >= values[0]
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="w-20 h-7">
-      <polyline
+        <polyline
         fill="none"
-        stroke={lastUp ? '#17c964' : '#f31260'}
+        stroke={lastUp ? 'var(--color-success)' : 'var(--color-danger)'}
         strokeWidth="2"
         points={points.join(' ')}
         strokeLinejoin="round"
@@ -42,19 +41,19 @@ function MiniSparkline({ values = [] }) {
 
 function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   const content = (
-    <div className="flex h-full w-full flex-col gap-4 bg-surface p-4">
+    <div className="flex h-full w-full flex-col gap-4 bg-surface p-4 border-r border-border">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
             src="https://placehold.co/40x40"
-            className="h-10 w-10 rounded-full border border-white/10"
+            className="h-10 w-10 rounded-full border border-border"
             alt="avatar"
           />
           <div className="font-semibold">Profile</div>
         </div>
         <button 
           onClick={toggleDarkMode}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors opacity-50 hover:opacity-100"
+          className="p-2 rounded-full hover:bg-surface-muted transition-colors opacity-70 hover:opacity-100"
           aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {darkMode ? (
@@ -134,13 +133,13 @@ function Post({ post, isUnregistered }) {
   return (
     <div className="card-surface p-4">
       <div className="flex items-start gap-3">
-        <img src={post.avatar} alt="avatar" className="h-10 w-10 rounded-full border border-white/10" />
+        <img src={post.avatar} alt="avatar" className="h-10 w-10 rounded-full border border-border" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <div className="font-semibold">{post.user}</div>
             <div className="text-xs muted">{post.time}</div>
             {post.theme && (
-              <span className="badge badge-sm text-xs">
+              <span className="badge badge-sm text-xs font-semibold">
                 {themeLabels[post.theme]}
               </span>
             )}
@@ -148,13 +147,13 @@ function Post({ post, isUnregistered }) {
           <div className="mt-1 whitespace-pre-wrap">{post.body}</div>
           <div
             className={clsx(
-              'mt-3 flex gap-3 text-sm muted',
+              'mt-3 flex gap-4 text-sm muted',
               isUnregistered && 'pointer-events-none opacity-60'
             )}
           >
-            <button className="hover:text-text">{isUnregistered ? '🔒 Like' : '❤️ Like'}</button>
-            <button className="hover:text-text">{isUnregistered ? '🔒 Repost' : '🔁 Repost'}</button>
-            <button className="hover:text-text">{isUnregistered ? '🔒 Comment' : '💬 Comment'}</button>
+            <button className="hover:text-text transition-colors">{isUnregistered ? '🔒 Like' : '❤️ Like'}</button>
+            <button className="hover:text-text transition-colors">{isUnregistered ? '🔒 Repost' : '🔁 Repost'}</button>
+            <button className="hover:text-text transition-colors">{isUnregistered ? '🔒 Comment' : '💬 Comment'}</button>
           </div>
         </div>
       </div>
@@ -298,6 +297,21 @@ export function Dashboard({ isUnregistered = false }) {
       { label: 'Volume', value: '12.4M' },
       { label: '52W High', value: '$52.60' },
       { label: '52W Low', value: '$14.80' },
+      { label: 'P/E Ratio', value: '—' },
+      { label: 'EPS', value: '-$0.12' },
+      { label: 'Sentiment', value: '72% Bullish' },
+      { label: 'Msg Vol (24h)', value: '1.2K' },
+      { label: 'Beta', value: '2.14' },
+      { label: 'Avg Vol', value: '18.2M' },
+    ],
+    []
+  )
+
+  const chartValues = useMemo(
+    () => [
+      38.50, 39.10, 38.80, 39.40, 40.20, 39.90, 40.50, 41.10, 40.80, 41.40,
+      41.80, 42.20, 41.90, 42.50, 42.10, 42.80, 43.20, 42.90, 43.50, 43.10,
+      43.80, 44.20, 43.90, 44.50, 44.10, 44.80, 44.40, 43.90, 44.30, 44.21,
     ],
     []
   )
@@ -341,17 +355,19 @@ export function Dashboard({ isUnregistered = false }) {
     []
   )
 
+  const featuredPost = featuredPosts.find((post) => post.featured) ?? featuredPosts[0]
+
   const filteredPosts = posts.filter((post) => !selectedTheme || post.theme === selectedTheme)
   const visiblePosts = isUnregistered ? filteredPosts.slice(0, 3) : filteredPosts
 
   return (
     <div className="min-h-screen bg-background text-text">
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-white/5 bg-surface px-4 py-3 lg:hidden">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 lg:hidden">
         <button onClick={() => setMobileNavOpen(true)} className="btn" aria-label="Open menu">☰</button>
         <div className="flex items-baseline gap-2">
           <div className="font-semibold">Rocket Lab USA Inc.</div>
-          <div className="badge">$RKLB</div>
+          <div className="badge font-semibold">$RKLB</div>
         </div>
         <div className="font-semibold">$44.21</div>
       </div>
@@ -374,7 +390,7 @@ export function Dashboard({ isUnregistered = false }) {
             change={1.23}
             changePct={3.45}
             stats={headerStats}
-            chartSrc="https://placehold.co/1200x400/0f141a/9aa9b2?text=Stock+Chart"
+            chartValues={chartValues}
             sparkValues={headerSpark}
             isUnregistered={isUnregistered}
             headerAction={
@@ -382,19 +398,19 @@ export function Dashboard({ isUnregistered = false }) {
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <div className="text-xs uppercase tracking-wide muted">Quick start watchlist</div>
+                      <div className="text-xs uppercase tracking-wide muted font-semibold">Quick start watchlist</div>
                       <div className="text-base font-semibold">RKLB + 10 peers in one click</div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <button className="btn btn-success" onClick={() => setQuickStartActive(true)}>
+                      <button className="btn btn-success font-semibold" onClick={() => setQuickStartActive(true)}>
                         Activate bundle
                       </button>
-                      <button className="btn btn-primary">Register to unlock full data</button>
+                      <button className="btn btn-primary font-semibold">Register to unlock full data</button>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {quickStartBundle.map((symbol) => (
-                      <span key={symbol} className="badge">
+                      <span key={symbol} className="badge font-semibold">
                         {symbol}
                       </span>
                     ))}
@@ -415,26 +431,13 @@ export function Dashboard({ isUnregistered = false }) {
 
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[240px_minmax(0,1fr)_320px]">
             <aside className="hidden flex-col gap-4 xl:flex">
-              <DynamicThemes
-                onThemeSelect={setSelectedTheme}
-                selectedTheme={selectedTheme}
-                layout="vertical"
-              />
               <HardGate isLocked={isUnregistered} label="Timeline locked" ctaText="Register">
                 <NarrativeTimeline />
-              </HardGate>
-              <HardGate isLocked={isUnregistered} label="Sentiment locked" ctaText="Register">
-                <SentimentMeters />
               </HardGate>
             </aside>
 
             <section className="space-y-4">
               <div className="space-y-4 xl:hidden">
-                <DynamicThemes
-                  onThemeSelect={setSelectedTheme}
-                  selectedTheme={selectedTheme}
-                  layout="horizontal"
-                />
                 <HardGate isLocked={isUnregistered} label="Timeline locked" ctaText="Register">
                   <NarrativeTimeline variant="embedded" />
                 </HardGate>
@@ -450,24 +453,23 @@ export function Dashboard({ isUnregistered = false }) {
               >
                 <CommunityPerspectives />
               </SoftGate>
-              <SoftGate
-                isLocked={isUnregistered}
-                label="Featured posts"
-                ctaText="Join to view"
-              >
-                <FeaturedPosts posts={featuredPosts} />
-              </SoftGate>
+
+              <DynamicThemes
+                onThemeSelect={setSelectedTheme}
+                selectedTheme={selectedTheme}
+                layout="horizontal"
+              />
 
               <div>
-                <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1">
+                <div className="flex items-center justify-between gap-2 px-2 py-1">
                   <div className="flex items-center gap-1">
                     {['Latest', 'Popular'].map((label) => (
                       <button
                         key={label}
                         onClick={() => setStreamTab(label)}
                         className={clsx(
-                          'px-2 py-1 text-sm',
-                          streamTab === label ? 'border-b-2 border-primary text-primary' : 'muted hover:text-text'
+                          'px-2 py-1 text-sm font-semibold transition-all duration-200',
+                          streamTab === label ? 'border-b-2 border-text text-text' : 'muted hover:text-text'
                         )}
                         aria-pressed={streamTab === label}
                       >
@@ -476,8 +478,8 @@ export function Dashboard({ isUnregistered = false }) {
                     ))}
                   </div>
                   <div className="flex items-center gap-1">
-                    <button className="rounded-md p-1 hover:bg-white/5" aria-label="Settings">⚙️</button>
-                    <button className="rounded-md p-1 hover:bg-white/5" aria-label="Search">🔍</button>
+                    <button className="rounded-md p-1 hover:bg-surface-muted transition-colors" aria-label="Settings">⚙️</button>
+                    <button className="rounded-md p-1 hover:bg-surface-muted transition-colors" aria-label="Search">🔍</button>
                   </div>
                 </div>
 
@@ -498,18 +500,18 @@ export function Dashboard({ isUnregistered = false }) {
 
             <aside className="space-y-4">
               <SoftGate isLocked={isUnregistered} label="Creator spotlight" ctaText="Join to view">
-                <CreatorSpotlight />
+                <CreatorSpotlight featuredPost={featuredPost} />
               </SoftGate>
               <HardGate isLocked={isUnregistered} label="Leaderboard locked" ctaText="Register">
                 <PredictionLeaderboard />
               </HardGate>
               <SoftGate isLocked={isUnregistered} label="More news" ctaText="Register to view">
                 <div className="card-surface p-4">
-                  <div className="mb-2 text-sm uppercase tracking-wide muted">Latest $RKLB News</div>
+                  <div className="mb-2 text-sm uppercase tracking-wide muted font-semibold">Latest $RKLB News</div>
                   <div className="space-y-3">
                     {(isUnregistered ? news.slice(0, 2) : news).map((n, i) => (
-                      <div key={i} className="border-b border-white/5 pb-3 last:border-0 last:pb-0">
-                        <div className="font-medium leading-snug">{n.title}</div>
+                      <div key={i} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                        <div className="font-semibold leading-snug">{n.title}</div>
                         <div className="mt-1 text-xs muted">{n.source} • {n.time}</div>
                       </div>
                     ))}
