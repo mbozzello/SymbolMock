@@ -165,6 +165,8 @@ export default function CollapsibleStockHeader({
 }) {
   const [open, setOpen] = useState(false)
   const isUp = change >= 0
+  const sentimentStat = stats.find((stat) => stat.label === 'Sentiment')
+  const messageVolumeStat = stats.find((stat) => stat.label === 'Msg Vol (24h)')
 
   return (
     <div className="card-surface">
@@ -191,16 +193,32 @@ export default function CollapsibleStockHeader({
             <span className="badge font-semibold">${ticker}</span>
           </div>
           <div className="mt-2 flex flex-wrap items-baseline gap-3">
-            <div className="text-2xl font-bold md:text-3xl">${price.toFixed(2)}</div>
-            <div className={clsx('text-sm font-bold', isUp ? 'text-success' : 'text-danger')}>
+            <div className="text-xl font-bold sm:text-2xl md:text-3xl">${price.toFixed(2)}</div>
+            <div className={clsx('text-xs font-bold sm:text-sm', isUp ? 'text-success' : 'text-danger')}>
               {isUp ? '+' : ''}{change.toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
             </div>
           </div>
+          {(sentimentStat || messageVolumeStat) && (
+            <div className="mt-2 flex flex-wrap gap-3 text-xs sm:hidden">
+              {sentimentStat && (
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] uppercase tracking-wide muted font-semibold">Sentiment</span>
+                  <span className="font-semibold">{sentimentStat.value}</span>
+                </div>
+              )}
+              {messageVolumeStat && (
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] uppercase tracking-wide muted font-semibold">Msg vol</span>
+                  <span className="font-semibold">{messageVolumeStat.value}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 relative z-10">
           <MiniSparkline values={sparkValues} />
-          <div className="rounded-md border border-border px-3 py-1 text-xs font-bold uppercase tracking-wide hover:border-border-strong transition-colors bg-surface">
+          <div className="hidden sm:flex rounded-md border border-border px-3 py-1 text-xs font-bold uppercase tracking-wide hover:border-border-strong transition-colors bg-surface">
             {open ? 'Hide' : 'Show'} details
           </div>
         </div>
@@ -224,11 +242,11 @@ export default function CollapsibleStockHeader({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-md border border-border bg-surface-muted p-2">
-                <div className="text-[10px] uppercase tracking-wide muted font-semibold">{stat.label}</div>
-                <div className="mt-0.5 text-sm font-bold">{stat.value}</div>
+              <div key={stat.label} className="rounded-md border border-border bg-surface-muted p-1.5 sm:p-2">
+                <div className="text-[9px] uppercase tracking-wide muted font-semibold">{stat.label}</div>
+                <div className="mt-0.5 text-xs sm:text-sm font-bold">{stat.value}</div>
               </div>
             ))}
           </div>

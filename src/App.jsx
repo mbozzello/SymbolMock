@@ -7,6 +7,7 @@ import NarrativeTimeline from './components/NarrativeTimeline.jsx'
 import DynamicThemes from './components/DynamicThemes.jsx'
 import CollapsibleStockHeader from './components/CollapsibleStockHeader.jsx'
 import CreatorSpotlight from './components/CreatorSpotlight.jsx'
+import Home from './pages/Home.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -197,35 +198,32 @@ function SoftGate({ isLocked, label, ctaText = 'Register to unlock more', childr
   )
 }
 
-export function Dashboard({ isUnregistered = false }) {
+function useDashboardData({ isUnregistered = false }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [streamTab, setStreamTab] = useState('Latest')
   const [selectedTheme, setSelectedTheme] = useState(null)
   const [quickStartActive, setQuickStartActive] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
-    // Check localStorage for saved theme preference
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
-      return savedTheme === 'dark';
+      return savedTheme === 'dark'
     }
-    // Default to dark theme
-    return true;
-  });
-  
+    return true
+  })
+
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-  
-  // Apply theme to document on initial load and when theme changes
+    setDarkMode(!darkMode)
+  }
+
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'dark');
+      document.documentElement.removeAttribute('data-theme')
+      localStorage.setItem('theme', 'dark')
     } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
+      document.documentElement.setAttribute('data-theme', 'light')
+      localStorage.setItem('theme', 'light')
     }
-  }, [darkMode]);
+  }, [darkMode])
 
   const watchlist = useMemo(
     () => [
@@ -359,6 +357,45 @@ export function Dashboard({ isUnregistered = false }) {
 
   const filteredPosts = posts.filter((post) => !selectedTheme || post.theme === selectedTheme)
   const visiblePosts = isUnregistered ? filteredPosts.slice(0, 3) : filteredPosts
+
+  return {
+    mobileNavOpen,
+    setMobileNavOpen,
+    streamTab,
+    setStreamTab,
+    selectedTheme,
+    setSelectedTheme,
+    darkMode,
+    toggleDarkMode,
+    watchlist,
+    headerSpark,
+    news,
+    headerStats,
+    chartValues,
+    featuredPost,
+    filteredPosts,
+    visiblePosts,
+  }
+}
+
+export function Dashboard({ isUnregistered = false }) {
+  const {
+    mobileNavOpen,
+    setMobileNavOpen,
+    streamTab,
+    setStreamTab,
+    selectedTheme,
+    setSelectedTheme,
+    darkMode,
+    toggleDarkMode,
+    watchlist,
+    headerSpark,
+    news,
+    headerStats,
+    chartValues,
+    featuredPost,
+    visiblePosts,
+  } = useDashboardData({ isUnregistered })
 
   return (
     <div className="min-h-screen bg-background text-text">
@@ -526,6 +563,139 @@ export function Dashboard({ isUnregistered = false }) {
   )
 }
 
+function NewPage() {
+  const {
+    mobileNavOpen,
+    setMobileNavOpen,
+    streamTab,
+    setStreamTab,
+    selectedTheme,
+    setSelectedTheme,
+    quickStartActive,
+    setQuickStartActive,
+    darkMode,
+    toggleDarkMode,
+    watchlist,
+    quickStartBundle,
+    headerSpark,
+    news,
+    headerStats,
+    chartValues,
+    featuredPost,
+    filteredPosts,
+    visiblePosts,
+  } = useDashboardData({ isUnregistered: false })
+
+  return (
+    <div className="min-h-screen bg-background text-text">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 lg:hidden">
+        <button onClick={() => setMobileNavOpen(true)} className="btn" aria-label="Open menu">☰</button>
+        <div className="flex items-baseline gap-2">
+          <div className="font-semibold">Rocket Lab USA Inc.</div>
+          <div className="badge font-semibold">$RKLB</div>
+        </div>
+        <div className="font-semibold">$44.21</div>
+      </div>
+
+      <LeftSidebar
+        isOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        watchlist={watchlist}
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
+      />
+
+      <main className="lg:pl-[269px]">
+        <div className="mx-auto max-w-[1200px] space-y-4 p-4">
+          <CollapsibleStockHeader
+            title="Rocket Lab USA Inc."
+            ticker="RKLB"
+            price={44.21}
+            change={1.23}
+            changePct={3.45}
+            stats={headerStats}
+            chartValues={chartValues}
+            sparkValues={headerSpark}
+          />
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <section className="space-y-4">
+              <div className="card-surface space-y-4 p-4">
+                <div className="text-xs uppercase tracking-wide muted font-semibold">What's happening</div>
+                <DynamicThemes
+                  onThemeSelect={setSelectedTheme}
+                  selectedTheme={selectedTheme}
+                  layout="horizontal"
+                />
+                <CommunityPerspectives />
+              </div>
+            </section>
+
+            <aside className="space-y-4">
+              <div className="text-xs uppercase tracking-wide muted font-semibold px-1">Top creators and influencers</div>
+              <CreatorSpotlight featuredPost={featuredPost} />
+              <PredictionLeaderboard />
+            </aside>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <section className="space-y-4">
+              <div className="space-y-4">
+                <NarrativeTimeline />
+                <SentimentMeters />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 px-2 py-1">
+                  <div className="flex items-center gap-1">
+                    {['Latest', 'Popular'].map((label) => (
+                      <button
+                        key={label}
+                        onClick={() => setStreamTab(label)}
+                        className={clsx(
+                          'px-2 py-1 text-sm font-semibold transition-all duration-200',
+                          streamTab === label ? 'border-b-2 border-text text-text' : 'muted hover:text-text'
+                        )}
+                        aria-pressed={streamTab === label}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button className="rounded-md p-1 hover:bg-surface-muted transition-colors" aria-label="Settings">⚙️</button>
+                    <button className="rounded-md p-1 hover:bg-surface-muted transition-colors" aria-label="Search">🔍</button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {visiblePosts.map((p) => (
+                    <Post key={p.id} post={p} />
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <aside className="space-y-4">
+              <div className="card-surface p-4">
+                <div className="mb-2 text-sm uppercase tracking-wide muted font-semibold">Latest $RKLB News</div>
+                <div className="space-y-3">
+                  {news.map((n, i) => (
+                    <div key={i} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                      <div className="font-semibold leading-snug">{n.title}</div>
+                      <div className="mt-1 text-xs muted">{n.source} • {n.time}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
 function RegisteredPage() {
   return <Dashboard />
 }
@@ -538,8 +708,10 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/registered" replace />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/registered" element={<RegisteredPage />} />
       <Route path="/unreg" element={<UnregisteredPage />} />
+      <Route path="/newpage" element={<NewPage />} />
     </Routes>
   )
 }
