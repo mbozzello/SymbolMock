@@ -4,12 +4,10 @@ function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-function MiniSparkline({ values = [] }) {
-  const width = 72
-  const height = 28
+function MiniSparkline({ values = [], width = 144, height = 56 }) {
   const padding = 2
   if (values.length < 2) {
-    return <div className="h-7 w-20 rounded bg-surface-muted border border-border" />
+    return <div className="h-14 w-36 rounded bg-surface-muted border border-border" />
   }
   const min = Math.min(...values)
   const max = Math.max(...values)
@@ -21,11 +19,11 @@ function MiniSparkline({ values = [] }) {
   })
   const lastUp = values[values.length - 1] >= values[0]
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-7 w-20">
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-14 w-36">
       <polyline
         fill="none"
         stroke={lastUp ? 'var(--color-success)' : 'var(--color-danger)'}
-        strokeWidth="2"
+        strokeWidth="2.5"
         points={points.join(' ')}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -167,6 +165,9 @@ export default function CollapsibleStockHeader({
   const isUp = change >= 0
   const sentimentStat = stats.find((stat) => stat.label === 'Sentiment')
   const messageVolumeStat = stats.find((stat) => stat.label === 'Msg Vol (24h)')
+  const fundamentalStats = [
+    { label: 'Market Cap', value: '2.1T' },
+  ]
 
   return (
     <div className="card-surface">
@@ -187,39 +188,119 @@ export default function CollapsibleStockHeader({
         aria-controls="stock-header-panel"
       >
         <div className="absolute inset-0 bg-surface-muted opacity-0 hover:opacity-100 transition-opacity pointer-events-none rounded-inherit" />
-        <div className="min-w-0 relative z-10">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold md:text-xl">{title}</h1>
-            <span className="badge font-semibold">${ticker}</span>
-          </div>
-          <div className="mt-2 flex flex-wrap items-baseline gap-3">
-            <div className="text-xl font-bold sm:text-2xl md:text-3xl">${price.toFixed(2)}</div>
-            <div className={clsx('text-xs font-bold sm:text-sm', isUp ? 'text-success' : 'text-danger')}>
-              {isUp ? '+' : ''}{change.toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
-            </div>
-          </div>
-          {(sentimentStat || messageVolumeStat) && (
-            <div className="mt-2 flex flex-wrap gap-3 text-xs sm:hidden">
-              {sentimentStat && (
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[10px] uppercase tracking-wide muted font-semibold">Sentiment</span>
-                  <span className="font-semibold">{sentimentStat.value}</span>
-                </div>
-              )}
-              {messageVolumeStat && (
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[10px] uppercase tracking-wide muted font-semibold">Msg vol</span>
-                  <span className="font-semibold">{messageVolumeStat.value}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        
+        <div className="flex w-full flex-col gap-3 relative z-10">
+          <div className="flex w-full items-center justify-between gap-4">
+            <div className="flex flex-1 items-center gap-3 min-w-0">
+              {/* Symbol Logo */}
+              <div className="flex-shrink-0">
+                <img 
+                  src={`https://placehold.co/40x40?text=${ticker[0]}`} 
+                  alt={`${ticker} logo`} 
+                  className="w-10 h-10 rounded-full border border-border bg-surface shadow-sm" 
+                />
+              </div>
 
-        <div className="flex items-center gap-4 relative z-10">
-          <MiniSparkline values={sparkValues} />
-          <div className="hidden sm:flex rounded-md border border-border px-3 py-1 text-xs font-bold uppercase tracking-wide hover:border-border-strong transition-colors bg-surface">
-            {open ? 'Hide' : 'Show'} details
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-lg font-bold md:text-xl truncate">{ticker}</h1>
+                    <span className="badge font-semibold shrink-0">{title}</span>
+                  </div>
+                  
+                  {/* Stats Bar (Always visible) */}
+                  <div className="flex items-center gap-3 text-xs border-l border-border pl-3 hidden sm:flex">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-semibold text-text">1.2K</span>
+                        <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
+                      </div>
+                      <button 
+                        type="button"
+                        className="p-1 rounded-md border border-border hover:bg-surface-muted transition-colors flex items-center justify-center bg-surface"
+                        aria-label="Add to watchlist"
+                        onClick={(e) => { e.stopPropagation(); console.log('Add to watchlist'); }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <div className="text-xl font-bold md:text-2xl">${price.toFixed(2)}</div>
+                  <div className={clsx('text-xs font-bold sm:text-sm', isUp ? 'text-success' : 'text-danger')}>
+                    {isUp ? '+' : ''}{change.toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
+                  </div>
+                  
+                  {/* Mobile version of stats */}
+                  <div className="flex items-center gap-3 text-[10px] sm:hidden">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-text">1.2K</span>
+                      <span className="muted font-semibold uppercase">Watch</span>
+                      <button 
+                        type="button"
+                        className="ml-0.5 p-0.5 rounded border border-border bg-surface"
+                        onClick={(e) => { e.stopPropagation(); }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[10px] muted font-medium">
+                  Last updated: Jan 21, 10:45 AM ET
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 shrink-0">
+              <div>
+                <MiniSparkline values={sparkValues} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex w-full flex-wrap items-center gap-3 border-t border-border pt-2 text-[11px] sm:text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🔥</span>
+              <span className="font-bold text-text">Trending #2 Overall</span>
+              <button 
+                type="button"
+                className="flex items-center gap-1 text-[#FF8C42] hover:text-[#FF7629] font-semibold transition-colors"
+                onClick={(e) => { e.stopPropagation(); console.log('See Why clicked'); }}
+              >
+                See Why
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+            {fundamentalStats.map((stat, index) => (
+              <div key={stat.label} className="flex items-baseline gap-1 border-l border-border pl-3">
+                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{stat.label}</span>
+                <span className="font-semibold text-text">{stat.value}</span>
+              </div>
+            ))}
+            <div className="flex items-center gap-2 border-l border-border pl-3">
+              <span className="muted uppercase tracking-wide font-semibold text-[10px]">Sentiment</span>
+              <span className={clsx('px-2 py-0.5 rounded-full border text-[11px] font-semibold', sentimentStat ? 'border-border bg-surface' : 'border-border bg-surface-muted')}>
+                {sentimentStat?.value ?? 'Neutral'}
+              </span>
+            </div>
+            {messageVolumeStat && (
+              <div className="flex items-baseline gap-1 border-l border-border pl-3">
+                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{messageVolumeStat.label}</span>
+                <span className="font-semibold text-text">{messageVolumeStat.value}</span>
+              </div>
+            )}
           </div>
         </div>
       </button>

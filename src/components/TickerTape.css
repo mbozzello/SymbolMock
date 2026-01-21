@@ -1,0 +1,29 @@
+.ticker-tape-container {
+  display: flex;
+  width: 100%;
+}
+
+.ticker-tape-content {
+  display: flex;
+  animation: ticker-scroll 30s linear infinite;
+  will-change: transform;
+}
+
+.ticker-tape-item {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-tape-container:hover .ticker-tape-content {
+  animation-play-state: paused;
+}

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import SentimentMeters from './components/SentimentMeters.jsx'
-import CommunityPerspectives from './components/CommunityPerspectives.jsx'
+import WhatsHappening from './components/WhatsHappening.jsx'
+import Community from './components/Community.jsx'
 import PredictionLeaderboard from './components/PredictionLeaderboard.jsx'
 import NarrativeTimeline from './components/NarrativeTimeline.jsx'
 import DynamicThemes from './components/DynamicThemes.jsx'
 import CollapsibleStockHeader from './components/CollapsibleStockHeader.jsx'
-import CreatorSpotlight from './components/CreatorSpotlight.jsx'
+import TopNavigation from './components/TopNavigation.jsx'
+import TickerTape from './components/TickerTape.jsx'
 import Home from './pages/Home.jsx'
 
 function clsx(...values) {
@@ -203,6 +204,7 @@ function useDashboardData({ isUnregistered = false }) {
   const [streamTab, setStreamTab] = useState('Latest')
   const [selectedTheme, setSelectedTheme] = useState(null)
   const [quickStartActive, setQuickStartActive] = useState(false)
+  const [activeNavTab, setActiveNavTab] = useState('Feed')
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
@@ -375,6 +377,8 @@ function useDashboardData({ isUnregistered = false }) {
     featuredPost,
     filteredPosts,
     visiblePosts,
+    activeNavTab,
+    setActiveNavTab,
   }
 }
 
@@ -395,6 +399,8 @@ export function Dashboard({ isUnregistered = false }) {
     chartValues,
     featuredPost,
     visiblePosts,
+    activeNavTab,
+    setActiveNavTab,
   } = useDashboardData({ isUnregistered })
 
   return (
@@ -419,6 +425,8 @@ export function Dashboard({ isUnregistered = false }) {
 
       {/* Main content area shifted for fixed sidebar on lg+ */}
       <main className="lg:pl-[269px]">
+        <TopNavigation />
+        <TickerTape />
         <div className="mx-auto max-w-[1200px] p-4">
           <CollapsibleStockHeader
             title="Rocket Lab USA Inc."
@@ -466,30 +474,32 @@ export function Dashboard({ isUnregistered = false }) {
             }
           />
 
-          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[240px_minmax(0,1fr)_320px]">
-            <aside className="hidden flex-col gap-4 xl:flex">
-              <HardGate isLocked={isUnregistered} label="Timeline locked" ctaText="Register">
-                <NarrativeTimeline />
-              </HardGate>
-            </aside>
-
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_320px]">
             <section className="space-y-4">
-              <div className="space-y-4 xl:hidden">
-                <HardGate isLocked={isUnregistered} label="Timeline locked" ctaText="Register">
-                  <NarrativeTimeline variant="embedded" />
-                </HardGate>
-                <HardGate isLocked={isUnregistered} label="Sentiment locked" ctaText="Register">
-                  <SentimentMeters />
-                </HardGate>
+              <div className="flex items-center gap-1 border-b border-border">
+                {['Feed', 'Fundamentals', 'News', 'Sentiment', 'Earnings', 'Info'].map((label) => (
+                  <button
+                    key={label}
+                    onClick={() => setActiveNavTab(label)}
+                    className={clsx(
+                      'px-3 py-2 text-sm font-semibold transition-all duration-200 border-b-2 -mb-[1px]',
+                      activeNavTab === label ? 'border-text text-text' : 'border-transparent muted hover:text-text'
+                    )}
+                    aria-pressed={activeNavTab === label}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-
               <SoftGate
                 isLocked={isUnregistered}
                 label="Community perspectives"
                 ctaText="Register to unlock"
               >
-                <CommunityPerspectives />
+                <WhatsHappening />
               </SoftGate>
+
+              <Community />
 
               <DynamicThemes
                 onThemeSelect={setSelectedTheme}
@@ -536,9 +546,15 @@ export function Dashboard({ isUnregistered = false }) {
             </section>
 
             <aside className="space-y-4">
-              <SoftGate isLocked={isUnregistered} label="Creator spotlight" ctaText="Join to view">
-                <CreatorSpotlight featuredPost={featuredPost} />
-              </SoftGate>
+              {/* Ad Slot Placeholder */}
+              <div className="card-surface p-4">
+                <div className="flex h-64 items-center justify-center rounded-md border-2 border-dashed border-border bg-surface-muted/30">
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📢</div>
+                    <div className="text-sm uppercase tracking-wide muted font-semibold">Advertisement</div>
+                  </div>
+                </div>
+              </div>
               <HardGate isLocked={isUnregistered} label="Leaderboard locked" ctaText="Register">
                 <PredictionLeaderboard />
               </HardGate>
@@ -606,6 +622,8 @@ function NewPage() {
       />
 
       <main className="lg:pl-[269px]">
+        <TopNavigation />
+        <TickerTape />
         <div className="mx-auto max-w-[1200px] space-y-4 p-4">
           <CollapsibleStockHeader
             title="Rocket Lab USA Inc."
@@ -627,13 +645,20 @@ function NewPage() {
                   selectedTheme={selectedTheme}
                   layout="horizontal"
                 />
-                <CommunityPerspectives />
+                <WhatsHappening />
               </div>
             </section>
 
             <aside className="space-y-4">
-              <div className="text-xs uppercase tracking-wide muted font-semibold px-1">Top creators and influencers</div>
-              <CreatorSpotlight featuredPost={featuredPost} />
+              {/* Ad Slot Placeholder */}
+              <div className="card-surface p-4">
+                <div className="flex h-64 items-center justify-center rounded-md border-2 border-dashed border-border bg-surface-muted/30">
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📢</div>
+                    <div className="text-sm uppercase tracking-wide muted font-semibold">Advertisement</div>
+                  </div>
+                </div>
+              </div>
               <PredictionLeaderboard />
             </aside>
           </div>
@@ -642,7 +667,6 @@ function NewPage() {
             <section className="space-y-4">
               <div className="space-y-4">
                 <NarrativeTimeline />
-                <SentimentMeters />
               </div>
 
               <div>
