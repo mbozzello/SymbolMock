@@ -10,6 +10,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
     { 
       id: 'china-tariffs', 
       label: 'China Tariffs', 
+      emoji: '📦',
       count: 23, 
       active: true,
       summary: 'Analysis of trade policies and their impact on global supply chains. Key developments in US-China trade relations affecting manufacturing costs and market access.'
@@ -17,6 +18,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
     { 
       id: 'fed-decision', 
       label: 'Fed Decision', 
+      emoji: '🏦',
       count: 18, 
       active: true,
       summary: 'Monetary policy updates and interest rate forecasts. Impact analysis on market liquidity, borrowing costs, and economic growth indicators.'
@@ -24,6 +26,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
     { 
       id: 'product-launch', 
       label: 'Product Launch', 
+      emoji: '🚀',
       count: 15, 
       active: true,
       summary: 'New product announcements and market entry strategies. Competitive landscape analysis and consumer adoption trends.'
@@ -31,6 +34,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
     { 
       id: 'earnings-call', 
       label: 'Earnings Call', 
+      emoji: '💰',
       count: 12, 
       active: true,
       summary: 'Quarterly financial results and corporate performance metrics. Management outlook and strategic initiatives discussion.'
@@ -38,6 +42,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
     { 
       id: 'space-contracts', 
       label: 'Space Contracts', 
+      emoji: '🛰️',
       count: 9, 
       active: true,
       summary: 'Government and commercial space industry agreements. Analysis of contract values, technological developments, and market opportunities.'
@@ -45,6 +50,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
     { 
       id: 'market-sentiment', 
       label: 'Market Sentiment', 
+      emoji: '📊',
       count: 7, 
       active: true,
       summary: 'Investor confidence indicators and market psychology trends. Analysis of news sentiment and its correlation with price movements.'
@@ -91,6 +97,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
                   }
                 `}
               >
+                <span>{theme.emoji}</span>
                 <span>{theme.label}</span>
                 <span className={`
                   px-1.5 py-0.5 rounded-full text-xs
@@ -128,6 +135,7 @@ function DynamicThemes({ onThemeSelect, selectedTheme, layout = 'horizontal', cl
               }
             `}
           >
+            <span>{theme.emoji}</span>
             <span>{theme.label}</span>
             <span className={`
               px-1.5 py-0.5 rounded-full text-xs

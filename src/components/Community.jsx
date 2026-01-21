@@ -161,7 +161,7 @@ export default function Community() {
         style={{ overflow: 'hidden' }}
       >
         <div className="space-y-3">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1">
             <div className="rounded-md border border-success/20 bg-success/5 p-3">
               <div className="font-bold text-success mb-2">Bullish</div>
               <div className="space-y-1">

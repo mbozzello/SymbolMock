@@ -501,8 +501,6 @@ export function Dashboard({ isUnregistered = false }) {
                 <WhatsHappening />
               </SoftGate>
 
-              <Community />
-
               <MessagePostBox />
 
               <DynamicThemes
@@ -566,6 +564,7 @@ export function Dashboard({ isUnregistered = false }) {
                   </div>
                 </div>
               </div>
+              <Community />
               <SoftGate isLocked={isUnregistered} label="More news" ctaText="Register to view">
                 <div className="card-surface p-4">
                   <div className="mb-2 text-sm uppercase tracking-wide muted font-semibold">Latest $RKLB News</div>

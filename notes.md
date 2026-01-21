@@ -1,0 +1,16 @@
+- add sentiment meter to stock card
+- sparkline with dashed line
+- community voices / top contributors
+- Whats Happening more visual
+    - images/videos carousel
+- Bull/bear reactions to micro content
+    - news articles
+    - earnings summaries
+    - trending summaries
+
+- creator tools 
+    - price prediction
+    - chart reaction
+    - trending rank
+    - news article
+    - sentiment meter
