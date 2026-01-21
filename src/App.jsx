@@ -9,6 +9,7 @@ import CollapsibleStockHeader from './components/CollapsibleStockHeader.jsx'
 import TopNavigation from './components/TopNavigation.jsx'
 import TickerTape from './components/TickerTape.jsx'
 import Poll from './components/Poll.jsx'
+import MessagePostBox from './components/MessagePostBox.jsx'
 import Home from './pages/Home.jsx'
 
 function clsx(...values) {
@@ -501,6 +502,8 @@ export function Dashboard({ isUnregistered = false }) {
               </SoftGate>
 
               <Community />
+
+              <MessagePostBox />
 
               <DynamicThemes
                 onThemeSelect={setSelectedTheme}

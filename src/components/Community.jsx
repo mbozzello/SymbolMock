@@ -34,12 +34,32 @@ function InfoIcon() {
   )
 }
 
+function PersonIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        stroke="currentColor"
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  )
+}
+
 function UserMessage({ user, avatar, message, likes, replies, reposts = 0 }) {
   return (
     <div className="flex gap-2 py-2">
       <div className="flex-shrink-0">
-        <div className="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center text-xs font-semibold">
-          {avatar}
+        <div className="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center text-xs font-semibold muted">
+          <PersonIcon />
         </div>
       </div>
       <div className="flex-1 min-w-0">
