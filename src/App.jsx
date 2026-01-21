@@ -8,6 +8,7 @@ import DynamicThemes from './components/DynamicThemes.jsx'
 import CollapsibleStockHeader from './components/CollapsibleStockHeader.jsx'
 import TopNavigation from './components/TopNavigation.jsx'
 import TickerTape from './components/TickerTape.jsx'
+import Poll from './components/Poll.jsx'
 import Home from './pages/Home.jsx'
 
 function clsx(...values) {
@@ -531,8 +532,15 @@ export function Dashboard({ isUnregistered = false }) {
                 </div>
 
                 <div className="space-y-3">
-                  {visiblePosts.map((p) => (
-                    <Post key={p.id} post={p} isUnregistered={isUnregistered} />
+                  {visiblePosts.map((p, index) => (
+                    <div key={p.id}>
+                      <Post post={p} isUnregistered={isUnregistered} />
+                      {!isUnregistered && index === 1 && (
+                        <div className="mt-3">
+                          <Poll />
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
 
@@ -555,9 +563,6 @@ export function Dashboard({ isUnregistered = false }) {
                   </div>
                 </div>
               </div>
-              <HardGate isLocked={isUnregistered} label="Leaderboard locked" ctaText="Register">
-                <PredictionLeaderboard />
-              </HardGate>
               <SoftGate isLocked={isUnregistered} label="More news" ctaText="Register to view">
                 <div className="card-surface p-4">
                   <div className="mb-2 text-sm uppercase tracking-wide muted font-semibold">Latest $RKLB News</div>
@@ -571,6 +576,9 @@ export function Dashboard({ isUnregistered = false }) {
                   </div>
                 </div>
               </SoftGate>
+              <HardGate isLocked={isUnregistered} label="Leaderboard locked" ctaText="Register">
+                <PredictionLeaderboard />
+              </HardGate>
             </aside>
           </div>
         </div>

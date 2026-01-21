@@ -34,7 +34,7 @@ export default function TopNavigation({ onSearch }) {
                 <span className="text-sm font-medium text-text">{ticker.symbol}</span>
                 <span className={clsx(
                   'text-sm font-medium',
-                  ticker.change >= 0 ? 'text-green-500' : 'text-red-500'
+                  ticker.change >= 0 ? 'text-success' : 'text-danger'
                 )}>
                   {ticker.change >= 0 ? '+' : ''}{ticker.change.toFixed(2)}%
                 </span>

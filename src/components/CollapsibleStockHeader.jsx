@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import * as Tooltip from '@radix-ui/react-tooltip'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -149,6 +150,34 @@ function ChartSparkline({ values = [], isUp = true }) {
   )
 }
 
+function WatcherTooltipContent({ data }) {
+  const { change7d, change7dPct, change30d, change30dPct, sectorRank, sector } = data
+  const is7dUp = change7d >= 0
+  const is30dUp = change30d >= 0
+
+  return (
+    <div className="space-y-2 p-2">
+      <div className="space-y-1">
+        <div className="text-xs font-semibold text-text">7D Change</div>
+        <div className={clsx('text-xs font-bold', is7dUp ? 'text-success' : 'text-danger')}>
+          {is7dUp ? '+' : ''}{change7d.toLocaleString()} ({is7dUp ? '+' : ''}{change7dPct.toFixed(1)}%)
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div className="text-xs font-semibold text-text">30D Change</div>
+        <div className={clsx('text-xs font-bold', is30dUp ? 'text-success' : 'text-danger')}>
+          {is30dUp ? '+' : ''}{change30d.toLocaleString()} ({is30dUp ? '+' : ''}{change30dPct.toFixed(1)}%)
+        </div>
+      </div>
+      <div className="pt-1 border-t border-border">
+        <div className="text-xs font-semibold text-text">
+          #{sectorRank} in {sector}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CollapsibleStockHeader({
   title,
   ticker,
@@ -169,8 +198,20 @@ export default function CollapsibleStockHeader({
     { label: 'Market Cap', value: '2.1T' },
   ]
 
+  // Mock data for watcher tooltip
+  const watcherTooltipData = {
+    current: 1200,
+    change7d: 145,
+    change7dPct: 13.8,
+    change30d: 320,
+    change30dPct: 36.4,
+    sectorRank: 1,
+    sector: "Aerospace"
+  }
+
   return (
-    <div className="card-surface">
+    <Tooltip.Provider delayDuration={300}>
+      <div className="card-surface">
       {headerAction && (
         <div className="border-b border-border p-4">
           {headerAction}
@@ -180,7 +221,7 @@ export default function CollapsibleStockHeader({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={clsx(
-          "flex w-full items-center justify-between gap-4 p-4 text-left transition-colors relative",
+          "flex w-full items-center justify-between gap-4 p-4 text-left transition-colors relative pb-5",
           !headerAction && "rounded-t-xl",
           !open && "rounded-b-xl"
         )}
@@ -188,6 +229,26 @@ export default function CollapsibleStockHeader({
         aria-controls="stock-header-panel"
       >
         <div className="absolute inset-0 bg-surface-muted opacity-0 hover:opacity-100 transition-opacity pointer-events-none rounded-inherit" />
+        
+        {/* Expandable indicator arrow */}
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 pointer-events-none">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className={clsx(
+              "w-4 h-4 transition-transform duration-200",
+              "text-muted",
+              open && "rotate-180"
+            )}
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
         
         <div className="flex w-full flex-col gap-3 relative z-10">
           <div className="flex w-full items-center justify-between gap-4">
@@ -211,10 +272,24 @@ export default function CollapsibleStockHeader({
                   {/* Stats Bar (Always visible) */}
                   <div className="flex items-center gap-3 text-xs border-l border-border pl-3 hidden sm:flex">
                     <div className="flex items-center gap-2">
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-semibold text-text">1.2K</span>
-                        <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
-                      </div>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <div className="flex items-baseline gap-1 cursor-help">
+                            <span className="font-semibold text-text">1.2K</span>
+                            <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="rounded-md border border-border bg-surface shadow-lg z-50 max-w-xs"
+                            sideOffset={5}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <WatcherTooltipContent data={watcherTooltipData} />
+                            <Tooltip.Arrow className="fill-surface" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
                       <button 
                         type="button"
                         className="p-1 rounded-md border border-border hover:bg-surface-muted transition-colors flex items-center justify-center bg-surface"
@@ -239,8 +314,24 @@ export default function CollapsibleStockHeader({
                   {/* Mobile version of stats */}
                   <div className="flex items-center gap-3 text-[10px] sm:hidden">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-text">1.2K</span>
-                      <span className="muted font-semibold uppercase">Watch</span>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <div className="flex items-center gap-1.5 cursor-help">
+                            <span className="font-bold text-text">1.2K</span>
+                            <span className="muted font-semibold uppercase">Watch</span>
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="rounded-md border border-border bg-surface shadow-lg z-50 max-w-xs"
+                            sideOffset={5}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <WatcherTooltipContent data={watcherTooltipData} />
+                            <Tooltip.Arrow className="fill-surface" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
                       <button 
                         type="button"
                         className="ml-0.5 p-0.5 rounded border border-border bg-surface"
@@ -334,5 +425,6 @@ export default function CollapsibleStockHeader({
         </div>
       </div>
     </div>
+    </Tooltip.Provider>
   )
 }
