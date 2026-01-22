@@ -248,7 +248,7 @@ export default function Home() {
     const tomorrowStr = tomorrow.toDateString()
 
     const result = []
-    Object.entries(grouped).forEach(([dateKey, callsForDate], index) => {
+    Object.entries(grouped).forEach(([dateKey, callsForDate]) => {
       // Add date separator
       let dateLabel
       if (dateKey === todayStr) {
@@ -266,19 +266,6 @@ export default function Home() {
 
     return result
   }, [])
-
-  const formatDate = (date) => {
-    const today = new Date()
-    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
-    
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today'
-    } else if (date.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow'
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background text-text">

@@ -188,7 +188,6 @@ export default function CollapsibleStockHeader({
   chartValues = [],
   sparkValues = [],
   headerAction,
-  isUnregistered = false,
 }) {
   const [open, setOpen] = useState(false)
   const isUp = change >= 0
@@ -374,7 +373,7 @@ export default function CollapsibleStockHeader({
                 </svg>
               </button>
             </div>
-            {fundamentalStats.map((stat, index) => (
+            {fundamentalStats.map((stat) => (
               <div key={stat.label} className="flex items-baseline gap-1 border-l border-border pl-3">
                 <span className="muted uppercase tracking-wide font-semibold text-[10px]">{stat.label}</span>
                 <span className="font-semibold text-text">{stat.value}</span>

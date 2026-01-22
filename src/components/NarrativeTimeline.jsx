@@ -46,7 +46,6 @@ function TypeBadge({ type }) {
 
 function EventRow({ event, isLast }) {
   const { type, date, title, details, link } = event
-  const meta = TYPE_META[type] ?? { color: '#9aa9b2', icon: '•' }
   return (
     <div className="grid grid-cols-[1rem_1fr] gap-3">
       <div className="relative flex flex-col items-center">

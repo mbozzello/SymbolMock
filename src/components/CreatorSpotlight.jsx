@@ -1,9 +1,5 @@
 import React from 'react'
 
-function clsx(...values) {
-  return values.filter(Boolean).join(' ')
-}
-
 function FeaturedTake({ post }) {
   if (!post) {
     return (

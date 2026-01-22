@@ -22,7 +22,9 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
     try {
       const seen = localStorage.getItem('hasSeenPredictionExplainer') === 'true'
       if (!seen) setShowExplainer(true)
-    } catch {}
+    } catch {
+      // localStorage may not be available
+    }
   }, [open])
 
   const canPost = useMemo(() => {
@@ -106,7 +108,11 @@ export default function PredictionCreatorModal({ open, onClose, defaultTicker = 
                   className="rounded-md px-2 py-1 text-xs hover:bg-surface"
                   onClick={() => {
                     setShowExplainer(false)
-                    try { localStorage.setItem('hasSeenPredictionExplainer', 'true') } catch {}
+                    try { 
+                      localStorage.setItem('hasSeenPredictionExplainer', 'true')
+                    } catch {
+                      // localStorage may not be available
+                    }
                   }}
                 >
                   Got it

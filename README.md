@@ -14,6 +14,83 @@ A modern, high-fidelity mockup of a stock market social platform built with Reac
     npm run dev
     ```
 
+## 📐 Project Map
+
+The following diagram illustrates the application's route structure and component composition:
+
+```mermaid
+flowchart TD
+    Root["/"] -->|redirects| Registered["/registered"]
+    
+    Root --> Home["/home<br/>(Home Page)"]
+    Root --> Registered
+    Root --> Unreg["/unreg<br/>(Unregistered Dashboard)"]
+    Root --> NewPage["/newpage<br/>(Experimental Layout)"]
+    
+    Registered --> Dashboard["Dashboard Component<br/>(isUnregistered=false)"]
+    Unreg --> DashboardUnreg["Dashboard Component<br/>(isUnregistered=true)"]
+    
+    subgraph SharedComponents["Shared Components"]
+        LeftSidebar["LeftSidebar<br/>(Navigation & Watchlist)"]
+        TopNav["TopNavigation<br/>(Search & Tabs)"]
+        TickerTape["TickerTape<br/>(Scrolling Market Data)"]
+        StockHeader["CollapsibleStockHeader<br/>(Stock Details)"]
+        WhatsHappening["WhatsHappening<br/>(Live Events & News)"]
+        DynamicThemes["DynamicThemes<br/>(Content Filtering)"]
+        Community["Community<br/>(Community Spotlight)"]
+        PredictionLB["PredictionLeaderboard<br/>(Predictions Ranking)"]
+        MessageBox["MessagePostBox<br/>(Post Creation)"]
+        Poll["Poll<br/>(Interactive Polls)"]
+        NarrativeTL["NarrativeTimeline<br/>(Chronological View)"]
+    end
+    
+    Home --> LeftSidebar
+    
+    Dashboard --> LeftSidebar
+    Dashboard --> TopNav
+    Dashboard --> TickerTape
+    Dashboard --> StockHeader
+    Dashboard --> WhatsHappening
+    Dashboard --> DynamicThemes
+    Dashboard --> Community
+    Dashboard --> PredictionLB
+    Dashboard --> MessageBox
+    Dashboard --> Poll
+    
+    DashboardUnreg --> LeftSidebar
+    DashboardUnreg --> TopNav
+    DashboardUnreg --> TickerTape
+    DashboardUnreg --> StockHeader
+    DashboardUnreg --> WhatsHappening
+    DashboardUnreg --> DynamicThemes
+    DashboardUnreg --> Community
+    DashboardUnreg --> PredictionLB
+    DashboardUnreg --> MessageBox
+    
+    NewPage --> LeftSidebar
+    NewPage --> TopNav
+    NewPage --> TickerTape
+    NewPage --> StockHeader
+    NewPage --> DynamicThemes
+    NewPage --> WhatsHappening
+    NewPage --> PredictionLB
+    NewPage --> NarrativeTL
+    
+    style Root fill:#e1f5ff
+    style Home fill:#fff4e1
+    style Registered fill:#e8f5e9
+    style Unreg fill:#fff3e0
+    style NewPage fill:#f3e5f5
+    style Dashboard fill:#e8f5e9
+    style DashboardUnreg fill:#fff3e0
+```
+
+### Component Usage Summary
+
+- **`/home`**: Uses `LeftSidebar` for navigation. Features custom carousels for trending symbols, topics, and earnings calls.
+- **`/registered`** & **`/unreg`**: Both use the `Dashboard` component with different authentication states. Share: `LeftSidebar`, `TopNavigation`, `TickerTape`, `CollapsibleStockHeader`, `WhatsHappening`, `DynamicThemes`, `Community`, `PredictionLeaderboard`, `MessagePostBox`. The unregistered version gates some content with `SoftGate` and `HardGate` components.
+- **`/newpage`**: Experimental layout sharing most dashboard components plus `NarrativeTimeline` for chronological content display.
+
 ## 🗺️ Page Routes & Features
 
 The application is structured around several key routes, each demonstrating different states and layouts:

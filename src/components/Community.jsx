@@ -54,7 +54,7 @@ function PersonIcon() {
   )
 }
 
-function UserMessage({ user, avatar, message, likes, replies, reposts = 0 }) {
+function UserMessage({ user, message, likes, replies, reposts = 0 }) {
   return (
     <div className="flex gap-2 py-2">
       <div className="flex-shrink-0">
