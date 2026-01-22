@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import LeftSidebar from '../components/LeftSidebar.jsx'
+import TopNavigation from '../components/TopNavigation.jsx'
+import TickerTape from '../components/TickerTape.jsx'
+import FearAndGreed from '../components/FearAndGreed.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -267,6 +270,44 @@ export default function Home() {
     return result
   }, [])
 
+  const marketIndices = useMemo(
+    () => [
+      { ticker: 'SPY', change: 0.85 },
+      { ticker: 'QQQ', change: 1.23 },
+      { ticker: 'VIX', change: -2.45 },
+      { ticker: 'Bitcoin', change: 3.12 },
+      { ticker: 'Gold', change: -0.34 },
+    ],
+    []
+  )
+
+  const upNextVideos = useMemo(
+    () => [
+      {
+        id: 1,
+        title: 'NVDA Q4 Earnings Call',
+        thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop&q=80',
+        duration: '45:30',
+        time: '5:30 PM ET'
+      },
+      {
+        id: 2,
+        title: 'Fed Rate Decision Analysis',
+        thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=225&fit=crop&q=80',
+        duration: '32:15',
+        time: '6:00 PM ET'
+      },
+      {
+        id: 3,
+        title: 'Market Close Recap',
+        thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&h=225&fit=crop&q=80',
+        duration: '15:45',
+        time: '6:30 PM ET'
+      },
+    ],
+    []
+  )
+
   return (
     <div className="min-h-screen bg-background text-text">
       <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 lg:hidden">
@@ -284,65 +325,67 @@ export default function Home() {
       />
 
       <main className="lg:pl-[269px]">
+        <TopNavigation />
+        <TickerTape />
         <div className="mx-auto max-w-[1200px] p-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {/* Live Stream - spans 2 columns on desktop */}
-            <div className="lg:col-span-2">
-              <div className="card-surface h-64 flex items-center justify-center border-2 border-dashed border-border bg-surface-muted/30">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">🎬</div>
-                  <div className="font-semibold text-lg">Live Event / Stream</div>
-                  <div className="text-sm muted">Video player placeholder</div>
+          {/* Live Event and Fear & Greed Row */}
+          <div className="flex flex-col lg:flex-row gap-4 items-start">
+            {/* Live Event Hero Section */}
+            <div className="card-surface overflow-hidden flex-1 min-w-0">
+              <div className="flex flex-col lg:flex-row h-80">
+                {/* Hero Live Event Player - takes most space */}
+                <div className="flex-1 relative overflow-hidden bg-surface-muted/30">
+                  <img
+                    src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&h=450&fit=crop&q=80"
+                    alt="Live Event"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">🎬</div>
+                      <div className="font-semibold text-lg text-white drop-shadow-lg">Live Event / Stream</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Up Next Sidebar - inside the same component */}
+                <div className="hidden lg:block w-full lg:w-[240px] shrink-0 border-t lg:border-t-0 lg:border-l border-border p-4 overflow-y-auto">
+                  <h3 className="font-semibold text-sm mb-3">Up next</h3>
+                  <div className="flex flex-col gap-3">
+                    {upNextVideos.map((video) => (
+                      <button
+                        key={video.id}
+                        className="group text-left hover:opacity-80 transition-opacity"
+                      >
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-surface-muted border border-border mb-2">
+                          <img
+                            src={video.thumbnail}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
+                            {video.duration}
+                          </div>
+                        </div>
+                        <div className="font-semibold text-sm leading-tight mb-1 group-hover:text-primary transition-colors">
+                          {video.title}
+                        </div>
+                        <div className="text-xs muted">{video.time}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Fear & Greed Sentiment Meter */}
-            <div className="lg:col-span-1">
-              <div className="card-surface h-64 flex flex-col items-center justify-center p-6 border-2 border-dashed border-border bg-surface-muted/30">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">📊</div>
-                  <div className="font-semibold text-lg">Fear & Greed</div>
-                  <div className="text-sm muted">Sentiment meter placeholder</div>
-                </div>
-              </div>
+            <div className="w-full lg:w-[280px] shrink-0">
+              <FearAndGreed sentimentScore={89} marketIndices={marketIndices} />
             </div>
           </div>
 
-          {/* Trending Symbols and Topics Carousels */}
+          {/* Trending Topics and Earnings Calls Carousels */}
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Trending Symbols Carousel */}
-            <div>
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-semibold text-lg">Trending Symbols</h2>
-                <button className="text-sm text-primary hover:underline font-medium">View all</button>
-              </div>
-              <div className="card-surface p-4 border-2 border-dashed border-border bg-surface-muted/30">
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                  {trendingSymbols.map((symbol) => (
-                    <div key={symbol.ticker} className="w-[200px] h-[180px] rounded-xl bg-surface border border-border p-4 flex flex-col justify-between shrink-0">
-                      <div className="flex flex-col gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">{symbol.ticker}</span>
-                            <span className="badge badge-sm">{symbol.sector}</span>
-                          </div>
-                          <div className="truncate text-xs muted mt-0.5">{symbol.name}</div>
-                        </div>
-                        <MiniSparkline values={symbol.spark} />
-                      </div>
-                      <div className="flex items-baseline justify-between">
-                        <div className="font-semibold">${symbol.price.toFixed(2)}</div>
-                        <div className={clsx('text-sm font-medium', symbol.change >= 0 ? 'text-success' : 'text-danger')}>
-                          {symbol.change >= 0 ? '+' : ''}{symbol.change.toFixed(2)}%
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* Trending Topics Carousel */}
             <div>
               <div className="flex items-center justify-between mb-3 px-1">
@@ -381,37 +424,37 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Earnings Calls Carousel */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-3 px-1">
-              <h2 className="font-semibold text-lg">Earnings Calls</h2>
-              <button className="text-sm text-primary hover:underline font-medium">View calendar</button>
-            </div>
-            <div className="card-surface p-4 border-2 border-dashed border-border bg-surface-muted/30">
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                {earningsCallsGrouped.map((item, index) => {
-                  if (item.type === 'separator') {
-                    return (
-                      <div key={`separator-${item.dateKey}`} className="flex items-center gap-4 shrink-0">
-                        <div className="h-16 w-px bg-border" />
-                        <div className="text-xs uppercase tracking-wide muted font-semibold whitespace-nowrap py-2">
-                          {item.label}
+            {/* Earnings Calls Carousel */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="font-semibold text-lg">Earnings Calls</h2>
+                <button className="text-sm text-primary hover:underline font-medium">View calendar</button>
+              </div>
+              <div className="card-surface p-4 border-2 border-dashed border-border bg-surface-muted/30">
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                  {earningsCallsGrouped.map((item, index) => {
+                    if (item.type === 'separator') {
+                      return (
+                        <div key={`separator-${item.dateKey}`} className="flex items-center gap-4 shrink-0">
+                          <div className="h-16 w-px bg-border" />
+                          <div className="text-xs uppercase tracking-wide muted font-semibold whitespace-nowrap py-2">
+                            {item.label}
+                          </div>
                         </div>
+                      )
+                    }
+                    return (
+                      <div key={`${item.ticker}-${index}`} className="min-w-[200px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-2 shrink-0">
+                        <div className="flex items-center justify-end">
+                          <span className="badge badge-sm">{item.ticker}</span>
+                        </div>
+                        <div className="font-semibold text-sm leading-tight">{item.name}</div>
+                        <div className="text-xs muted">{item.time}</div>
                       </div>
                     )
-                  }
-                  return (
-                    <div key={`${item.ticker}-${index}`} className="min-w-[200px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-2 shrink-0">
-                      <div className="flex items-center justify-end">
-                        <span className="badge badge-sm">{item.ticker}</span>
-                      </div>
-                      <div className="font-semibold text-sm leading-tight">{item.name}</div>
-                      <div className="text-xs muted">{item.time}</div>
-                    </div>
-                  )
-                })}
+                  })}
+                </div>
               </div>
             </div>
           </div>

@@ -64,7 +64,7 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
       <div className="flex flex-col gap-2">
         <button className="btn"><span>🔔</span> Notifications</button>
         <button className="btn"><span>✉️</span> Messages</button>
-        <button className="btn"><span>⚙️</span> Settings</button>
+        <button className="btn"><span>👥</span> Community</button>
       </div>
       <button className="btn btn-primary w-full text-base">Post</button>
 
