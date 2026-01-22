@@ -58,45 +58,49 @@ function getSentimentColor(score) {
   return 'var(--color-danger)'
 }
 
-export default function FearAndGreed({ sentimentScore = 89, marketIndices = [] }) {
+export default function FearAndGreed({ sentimentScore = 89, marketIndices = [], showMarketIndices = false }) {
   const sentimentLabel = getSentimentLabel(sentimentScore)
   const sentimentColor = getSentimentColor(sentimentScore)
 
   return (
-    <div className="card-surface h-80 flex flex-col p-4 border-2 border-dashed border-border bg-surface-muted/30">
+    <div className={showMarketIndices ? "h-80 flex flex-col px-4 bg-surface-muted/30" : "flex flex-col px-4 bg-surface-muted/30"}>
       {/* Sentiment Meter Section */}
       <div className="flex items-center justify-between mb-4">
-        <div className="text-base font-bold">
-          Sentiment: <span className="font-semibold">{sentimentLabel}</span>
+        <div className="text-base">
+          <span className="font-normal">Sentiment:</span>
+          <br />
+          <span className="font-semibold">{sentimentLabel}</span>
         </div>
         <div>
           <LargeGauge score={sentimentScore} color={sentimentColor} />
         </div>
       </div>
 
-      {/* Market Indices Table */}
-      <div className="flex-1 overflow-hidden">
-        <div className="text-xs font-semibold uppercase tracking-wide muted mb-2">Market Indices</div>
-        <div className="space-y-1.5">
-          {marketIndices.map((index) => (
-            <div
-              key={index.ticker}
-              className="flex items-center justify-between py-1 border-b border-border last:border-b-0"
-            >
-              <div className="font-semibold text-sm">{index.ticker}</div>
+      {/* Market Indices Table - only shown if showMarketIndices is true */}
+      {showMarketIndices && (
+        <div className="flex-1 overflow-hidden">
+          <div className="text-xs font-semibold uppercase tracking-wide muted mb-2">Market Indices</div>
+          <div className="space-y-1.5">
+            {marketIndices.map((index) => (
               <div
-                className={clsx(
-                  'text-sm font-semibold',
-                  index.change >= 0 ? 'text-success' : 'text-danger'
-                )}
+                key={index.ticker}
+                className="flex items-center justify-between py-1 border-b border-border last:border-b-0"
               >
-                {index.change >= 0 ? '+' : ''}
-                {index.change.toFixed(2)}%
+                <div className="font-semibold text-sm">{index.ticker}</div>
+                <div
+                  className={clsx(
+                    'text-sm font-semibold',
+                    index.change >= 0 ? 'text-success' : 'text-danger'
+                  )}
+                >
+                  {index.change >= 0 ? '+' : ''}
+                  {index.change.toFixed(2)}%
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

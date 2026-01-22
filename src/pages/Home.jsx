@@ -3,6 +3,7 @@ import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import FearAndGreed from '../components/FearAndGreed.jsx'
+import MarketIndices from '../components/MarketIndices.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -272,11 +273,11 @@ export default function Home() {
 
   const marketIndices = useMemo(
     () => [
-      { ticker: 'SPY', change: 0.85 },
-      { ticker: 'QQQ', change: 1.23 },
-      { ticker: 'VIX', change: -2.45 },
-      { ticker: 'Bitcoin', change: 3.12 },
-      { ticker: 'Gold', change: -0.34 },
+      { ticker: 'SPY', change: 0.85, spark: [100, 100.2, 100.5, 100.3, 100.8, 100.6, 100.9, 100.85] },
+      { ticker: 'QQQ', change: 1.23, spark: [95, 95.5, 96, 95.8, 96.2, 96.5, 96.8, 96.23] },
+      { ticker: 'VIX', change: -2.45, spark: [15, 14.8, 14.5, 14.7, 14.3, 14.6, 14.2, 14.55] },
+      { ticker: 'Bitcoin', change: 3.12, spark: [45000, 45200, 45500, 45300, 45800, 45600, 46000, 46312] },
+      { ticker: 'Gold', change: -0.34, spark: [2050, 2048, 2045, 2047, 2043, 2046, 2042, 2043.34] },
     ],
     []
   )
@@ -327,11 +328,67 @@ export default function Home() {
       <main className="lg:pl-[269px]">
         <TopNavigation />
         <TickerTape />
-        <div className="mx-auto max-w-[1200px] p-4">
-          {/* Live Event and Fear & Greed Row */}
-          <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex p-4">
+          {/* Main Content Column */}
+          <div className="flex-1 min-w-0 border-r border-border pr-4">
+            {/* Earnings Calls Carousel - Thin horizontal carousel */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="font-semibold text-lg">Earnings Calls</h2>
+                <button className="text-sm text-primary hover:underline font-medium">View calendar</button>
+              </div>
+              <div className="p-2 bg-surface-muted/30">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide items-center">
+                  {earningsCallsGrouped.map((item, index) => {
+                    if (item.type === 'separator') {
+                      return (
+                        <div key={`separator-${item.dateKey}`} className="flex items-center gap-3 shrink-0">
+                          <div className="h-8 w-px bg-border" />
+                          <div className="text-[10px] uppercase tracking-wide muted font-semibold whitespace-nowrap">
+                            {item.label}
+                          </div>
+                        </div>
+                      )
+                    }
+                    const isLive = item.ticker === 'AAPL'
+                    const purpleColor = '#8b5cf6'
+                    
+                    return (
+                      <div 
+                        key={`${item.ticker}-${index}`} 
+                        className={`${isLive ? 'min-w-[200px] border-t-2 bg-surface' : 'min-w-[160px] bg-surface'} rounded-lg p-2.5 flex flex-row items-center gap-3 shrink-0 h-14`}
+                        style={isLive ? { borderTopColor: purpleColor } : {}}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                            <span className="badge badge-sm">{item.ticker}</span>
+                            <div className="font-semibold text-xs leading-tight truncate">{item.name}</div>
+                            {isLive && (
+                              <span className="flex items-center gap-1 text-[10px] font-semibold whitespace-nowrap" style={{ color: purpleColor }}>
+                                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: purpleColor }} />
+                                Live
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] muted">{item.time}</div>
+                        </div>
+                        {isLive && (
+                          <button
+                            className="rounded-full px-2.5 py-1 text-[10px] font-semibold shrink-0"
+                            style={{ backgroundColor: purpleColor, borderColor: purpleColor, color: 'white' }}
+                          >
+                            Join
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* Live Event Hero Section */}
-            <div className="card-surface overflow-hidden flex-1 min-w-0">
+            <div className="mt-6 card-surface overflow-hidden">
               <div className="flex flex-col lg:flex-row h-80">
                 {/* Hero Live Event Player - takes most space */}
                 <div className="flex-1 relative overflow-hidden bg-surface-muted/30">
@@ -378,24 +435,16 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Fear & Greed Sentiment Meter */}
-            <div className="w-full lg:w-[280px] shrink-0">
-              <FearAndGreed sentimentScore={89} marketIndices={marketIndices} />
-            </div>
-          </div>
-
-          {/* Trending Topics and Earnings Calls Carousels */}
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Trending Topics Carousel */}
-            <div>
+            <div className="mt-6">
               <div className="flex items-center justify-between mb-3 px-1">
                 <h2 className="font-semibold text-lg">Trending Topics</h2>
                 <button className="text-sm text-primary hover:underline font-medium">View all</button>
               </div>
-              <div className="card-surface p-4 border-2 border-dashed border-border bg-surface-muted/30">
+              <div className="p-4 bg-surface-muted/30">
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                   {trendingTopics.map((topic, idx) => (
-                    <div key={idx} className="w-[200px] h-[180px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-2 shrink-0">
+                    <div key={idx} className="w-[200px] h-[180px] rounded-xl bg-surface p-4 flex flex-col gap-2 shrink-0">
                       <h3 className="font-semibold text-sm leading-tight">{topic.title}</h3>
                       <p className="text-[10px] muted leading-relaxed">{topic.summary}</p>
                       <div className="flex items-center justify-between gap-2 pt-2 border-t border-border mt-auto">
@@ -424,37 +473,19 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Earnings Calls Carousel */}
-            <div>
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-semibold text-lg">Earnings Calls</h2>
-                <button className="text-sm text-primary hover:underline font-medium">View calendar</button>
-              </div>
-              <div className="card-surface p-4 border-2 border-dashed border-border bg-surface-muted/30">
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                  {earningsCallsGrouped.map((item, index) => {
-                    if (item.type === 'separator') {
-                      return (
-                        <div key={`separator-${item.dateKey}`} className="flex items-center gap-4 shrink-0">
-                          <div className="h-16 w-px bg-border" />
-                          <div className="text-xs uppercase tracking-wide muted font-semibold whitespace-nowrap py-2">
-                            {item.label}
-                          </div>
-                        </div>
-                      )
-                    }
-                    return (
-                      <div key={`${item.ticker}-${index}`} className="min-w-[200px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-2 shrink-0">
-                        <div className="flex items-center justify-end">
-                          <span className="badge badge-sm">{item.ticker}</span>
-                        </div>
-                        <div className="font-semibold text-sm leading-tight">{item.name}</div>
-                        <div className="text-xs muted">{item.time}</div>
-                      </div>
-                    )
-                  })}
-                </div>
+          {/* Right Rail - Persistent */}
+          <div className="hidden lg:block w-[320px] shrink-0 pl-4">
+            <div className="sticky top-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-1 px-1">US Equities</div>
+              <FearAndGreed sentimentScore={89} />
+              
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-1 px-1">Cryptocurrency</div>
+              <FearAndGreed sentimentScore={89} />
+              
+              <div className="mt-4">
+                <MarketIndices marketIndices={marketIndices} />
               </div>
             </div>
           </div>
