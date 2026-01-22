@@ -989,10 +989,53 @@ export default function Home() {
           {/* Main Content Column */}
           <div className="flex-1 min-w-0">
             {/* Live Event Player and Top Discussions Row */}
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-4 h-[480px]">
               {/* Live Event Player - takes most space */}
-              <div className="flex-1 min-w-0">
-                <LiveEventPlayer />
+              <div className="flex-1 min-w-0 flex flex-col gap-4">
+                <div className="flex-1 min-h-0">
+                  <LiveEventPlayer />
+                </div>
+                {/* Thin row of 3 cards below live event */}
+                <div className="grid grid-cols-3 gap-4 h-20">
+                  <div className="card-surface p-3 flex gap-2 cursor-pointer hover:border-border-strong transition-colors">
+                    <div className="w-16 h-12 rounded overflow-hidden bg-surface-muted shrink-0">
+                      <img
+                        src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=64&h=48&fit=crop&q=80"
+                        alt="Video thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <h4 className="text-[10px] font-semibold leading-tight line-clamp-2 mb-1">
+                        Greenland Drama Sparks Tariff Chaos
+                      </h4>
+                      <span className="badge badge-sm text-[9px] px-1.5 py-0.5 w-fit">
+                        SPY <span className="text-success">+0.85%</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="card-surface p-3 flex flex-col justify-center cursor-pointer hover:border-border-strong transition-colors">
+                    <h4 className="text-[10px] font-semibold leading-tight line-clamp-2 mb-1">
+                      PLTR Announces New AI Contract with Defense Department
+                    </h4>
+                    <span className="badge badge-sm text-[9px] px-1.5 py-0.5 w-fit">
+                      PLTR <span className="text-danger">-0.11%</span>
+                    </span>
+                  </div>
+                  <div className="card-surface p-3 flex gap-2 cursor-pointer hover:border-border-strong transition-colors">
+                    <img
+                      src="https://placehold.co/32x32?text=U"
+                      alt="User avatar"
+                      className="w-8 h-8 rounded-full border border-border shrink-0"
+                    />
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="text-[10px] font-semibold mb-1">quantqueen</div>
+                      <p className="text-[10px] text-muted leading-tight line-clamp-2">
+                        Data center demand is insane. $NVDA breaking out on volume. The technical setup looks very promising.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               {/* Top Discussions - on the right */}
@@ -1012,7 +1055,7 @@ export default function Home() {
                   {trendingSymbols.map((symbol, idx) => {
                     const isPositive = symbol.changePercent >= 0
                     return (
-                      <div key={idx} className="w-[300px] h-[280px] rounded-xl bg-surface p-4 flex flex-col gap-3 shrink-0">
+                      <div key={idx} className="w-[300px] h-[280px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-3 shrink-0">
                         {/* Header: Logo, Symbol, Rank */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
@@ -1171,7 +1214,7 @@ export default function Home() {
               <div className="p-4 bg-surface-muted/30">
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                   {myCommunityPosts.map((post, idx) => (
-                    <div key={post.id} className="w-[300px] h-[280px] rounded-xl bg-surface p-4 flex flex-col gap-3 shrink-0">
+                    <div key={post.id} className="w-[300px] h-[280px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-3 shrink-0">
                       {/* Header: User Avatar and Name */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">

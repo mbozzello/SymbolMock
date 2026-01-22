@@ -1,7 +1,7 @@
 export default function LiveEventPlayer() {
   return (
-    <div className="card-surface overflow-hidden">
-      <div className="relative overflow-hidden bg-surface-muted/30 h-80">
+    <div className="card-surface overflow-hidden h-full">
+      <div className="relative overflow-hidden bg-surface-muted/30 h-full">
         <img
           src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&h=450&fit=crop&q=80"
           alt="Live Event"
