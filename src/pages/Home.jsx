@@ -123,7 +123,7 @@ function SentimentGauge({ score = 0, size = 44, strokeWidth = 5, color = 'var(--
 
 function SentimentMeterCard({ label, headline, score, color }) {
   return (
-    <div className="card-surface flex items-center justify-between p-2 transition-all duration-200 hover:border-border-strong">
+    <div className="card-surface flex items-center justify-between p-2 transition-all duration-200 hover:border-border-strong" style={{ height: '80px' }}>
       <div>
         <div className="text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
         <div className="mt-0.5 text-sm font-bold flex items-center gap-1">
@@ -184,7 +184,7 @@ function CNNStyleMeter({ score = 0 }) {
 function MarketIndicesChart({ marketIndices = [] }) {
   const width = 400
   const height = 150
-  const padding = { top: 20, right: 20, bottom: 30, left: 40 }
+  const padding = { top: 20, right: 20, bottom: 10, left: 40 }
   const chartWidth = width - padding.left - padding.right
   const chartHeight = height - padding.top - padding.bottom
   
@@ -217,7 +217,7 @@ function MarketIndicesChart({ marketIndices = [] }) {
   }
   
   // Colors for each index
-  const colors = [
+  const _colors = [
     'var(--color-primary)',
     'var(--color-success)',
     'var(--color-danger)',
@@ -227,29 +227,10 @@ function MarketIndicesChart({ marketIndices = [] }) {
   
   return (
     <div className="w-full">
-      <div className="px-1" style={{ paddingBottom: '7px' }}>
-        {/* Legend above chart as horizontal row */}
-        <div className="flex gap-4 items-center flex-wrap" style={{ marginBottom: '7px' }}>
-          {normalizedData.map((data, idx) => {
-            const color = colors[idx % colors.length]
-            const isPositive = data.change >= 0
-            return (
-              <div key={data.ticker} className="flex items-center gap-1.5">
-                <span className="text-xs font-medium">{data.ticker}</span>
-                <span className={clsx(
-                  'text-xs font-semibold',
-                  isPositive ? 'text-success' : 'text-danger'
-                )}>
-                  {isPositive ? '+' : ''}{data.change.toFixed(2)}%
-                </span>
-              </div>
-            )
-          })}
-        </div>
-        
+      <div className="px-1" style={{ paddingBottom: '2px' }}>
         {/* Chart */}
         <div className="w-full">
-          <svg viewBox={`0 0 ${width} ${height}`} className="h-auto" style={{ maxHeight: '200px', width: '100%' }}>
+          <svg viewBox={`0 0 ${width} ${height}`} className="h-auto" style={{ maxHeight: '200px', width: '100%', display: 'flex', flexWrap: 'wrap' }}>
               {/* Grid lines */}
               <g opacity="0.2">
                 {/* Zero line (baseline) */}
@@ -314,7 +295,7 @@ function MarketIndicesChart({ marketIndices = [] }) {
               </g>
               
               {/* Plot lines for each index */}
-              {normalizedData.map((data, idx) => {
+              {normalizedData.map((data) => {
                 if (!data.values || data.values.length === 0) return null
                 
                 const points = data.values.map((v, i) => {
@@ -323,7 +304,6 @@ function MarketIndicesChart({ marketIndices = [] }) {
                   return `${x},${y}`
                 }).join(' ')
                 
-                const color = colors[idx % colors.length]
                 const isPositive = data.change >= 0
                 
                 return (
@@ -341,6 +321,24 @@ function MarketIndicesChart({ marketIndices = [] }) {
               })}
             </svg>
           </div>
+        
+        {/* Legend below chart as horizontal row */}
+        <div className="flex gap-4 items-center flex-wrap" style={{ marginTop: '2px' }}>
+          {normalizedData.map((data) => {
+            const isPositive = data.change >= 0
+            return (
+              <div key={data.ticker} className="flex items-center gap-1.5">
+                <span className="text-xs font-medium">{data.ticker}</span>
+                <span className={clsx(
+                  'text-xs font-semibold',
+                  isPositive ? 'text-success' : 'text-danger'
+                )}>
+                  {isPositive ? '+' : ''}{data.change.toFixed(2)}%
+                </span>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -385,7 +383,7 @@ export default function Home() {
     setDarkMode((prev) => !prev)
   }
 
-  const trendingTopics = useMemo(
+  const _trendingTopics = useMemo(
     () => [
       {
         title: 'Fed Rate Decision',
@@ -710,7 +708,7 @@ export default function Home() {
     []
   )
 
-  const topWatchers = useMemo(
+  const _topWatchers = useMemo(
     () => [
       { ticker: 'PLTR', change: 2.45, spark: [18, 18.2, 18.5, 18.3, 18.8, 18.6, 18.9, 18.45] },
       { ticker: 'SOFI', change: -1.23, spark: [8.5, 8.4, 8.3, 8.6, 8.2, 8.4, 8.1, 8.23] },
@@ -721,7 +719,7 @@ export default function Home() {
     []
   )
 
-  const upNextVideos = useMemo(
+  const _upNextVideos = useMemo(
     () => [
       {
         id: 1,
@@ -940,8 +938,7 @@ export default function Home() {
           <div className="grid items-start" style={{ gridTemplateColumns: '0.8fr 1fr 0.8fr', gap: '14px' }}>
             {/* First Section: Sentiment Meter */}
             <div className="flex flex-col min-w-0">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted px-1" style={{ marginBottom: '7px' }}>Community Sentiment</div>
-              <div className="flex flex-col" style={{ gap: '7px' }}>
+              <div className="flex flex-col" style={{ gap: '7px', height: '180px' }}>
                 {/* US Equities Meter */}
                 <SentimentMeterCard 
                   label="US Equities"
@@ -961,23 +958,24 @@ export default function Home() {
             
             {/* Second Section: Market Indices Chart */}
             <div className="flex flex-col min-w-0">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted px-1" style={{ marginBottom: '7px' }}>Market Performance</div>
               <MarketIndicesChart marketIndices={marketIndices} />
             </div>
 
             {/* Third Section: Latest News */}
             <div className="flex flex-col min-w-0">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted px-1" style={{ marginBottom: '7px' }}>Latest News</div>
-              <div className="flex flex-col" style={{ gap: '7px' }}>
+              <div className="flex flex-col" style={{ gap: '10px' }}>
                 {latestNews.slice(0, 3).map((article, index) => (
                   <a
                     key={index}
                     href={article.url || '#'}
-                    className={`text-sm font-semibold leading-tight hover:text-primary transition-colors line-clamp-2 ${
-                      index < 2 ? 'pb-2 border-b border-border' : ''
+                    className={`flex items-start gap-3 text-sm font-semibold leading-normal hover:text-primary transition-colors line-clamp-2 py-1 ${
+                      index < 2 ? 'pb-3 border-b border-border' : ''
                     }`}
                   >
-                    {article.headline}
+                    <span className="text-2xl font-bold shrink-0" style={{ lineHeight: '1.2', color: '#ADADAD' }}>
+                      {index + 1}
+                    </span>
+                    <span className="flex-1">{article.headline}</span>
                   </a>
                 ))}
               </div>
@@ -1213,7 +1211,7 @@ export default function Home() {
               </div>
               <div className="p-4 bg-surface-muted/30">
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                  {myCommunityPosts.map((post, idx) => (
+                  {myCommunityPosts.map((post) => (
                     <div key={post.id} className="w-[300px] h-[280px] rounded-xl bg-surface border border-border p-4 flex flex-col gap-3 shrink-0">
                       {/* Header: User Avatar and Name */}
                       <div className="flex items-center justify-between gap-2">
