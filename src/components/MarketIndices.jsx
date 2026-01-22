@@ -35,8 +35,7 @@ function SmallSparkline({ values = [] }) {
 
 export default function MarketIndices({ marketIndices = [] }) {
   return (
-    <div className="pt-2 px-4 pb-4 bg-surface-muted/30">
-      <div className="text-xs font-semibold uppercase tracking-wide muted mb-2">Market Indices</div>
+    <div className="pt-2 px-4 pb-4">
       <div className="space-y-1.5">
         {marketIndices.map((index) => (
           <div
