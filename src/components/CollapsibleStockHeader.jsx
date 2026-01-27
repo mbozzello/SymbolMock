@@ -1,14 +1,34 @@
-import React, { useState } from 'react'
-import * as Tooltip from '@radix-ui/react-tooltip'
+import React, { useState, useEffect } from 'react'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-function MiniSparkline({ values = [], width = 144, height = 56 }) {
+function formatNum(n) {
+  return Number(n).toLocaleString()
+}
+
+function parseWatchers(w) {
+  if (typeof w === 'number' && !isNaN(w)) return w
+  const s = String(w || '0').replace(/,/g, '')
+  const m = s.match(/^([\d.]+)\s*[Kk]$/i)
+  if (m) return Math.round(parseFloat(m[1]) * 1000)
+  return parseInt(s, 10) || 0
+}
+
+function parseMsgVol(v) {
+  if (typeof v === 'number' && !isNaN(v)) return v
+  const s = String(v || '0').replace(/,/g, '')
+  const m = s.match(/^([\d.]+)\s*[Kk]$/i)
+  if (m) return Math.round(parseFloat(m[1]) * 1000)
+  return parseInt(s, 10) || 0
+}
+
+function MiniSparkline({ values = [], width = 144, height = 56, large = false }) {
   const padding = 2
+  const sizeClass = large ? 'h-[84px] w-[216px]' : 'h-14 w-36'
   if (values.length < 2) {
-    return <div className="h-14 w-36 rounded bg-surface-muted border border-border" />
+    return <div className={clsx('rounded bg-surface-muted border border-border', sizeClass)} />
   }
   const min = Math.min(...values)
   const max = Math.max(...values)
@@ -19,8 +39,25 @@ function MiniSparkline({ values = [], width = 144, height = 56 }) {
     return `${x.toFixed(1)},${y.toFixed(1)}`
   })
   const lastUp = values[values.length - 1] >= values[0]
+  const priorClose = values[0]
+  const chartHeight = height - padding * 2
+  const priorCloseY = padding + (1 - (priorClose - min) / range) * chartHeight
+  const lineY = priorCloseY - 0.25 * chartHeight // shift up ~25%
+  const [lastX, lastY] = points[points.length - 1].split(',').map(Number)
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-14 w-36">
+    <svg viewBox={`0 0 ${width} ${height}`} className={sizeClass}>
+      {/* Yesterday's close: light grey dashed line */}
+      <line
+        x1={padding}
+        y1={lineY}
+        x2={width - padding}
+        y2={lineY}
+        stroke="#94a3b8"
+        strokeWidth="1"
+        strokeDasharray="4 2"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
       <polyline
         fill="none"
         stroke={lastUp ? 'var(--color-success)' : 'var(--color-danger)'}
@@ -29,6 +66,67 @@ function MiniSparkline({ values = [], width = 144, height = 56 }) {
         strokeLinejoin="round"
         strokeLinecap="round"
       />
+      <circle
+        cx={lastX}
+        cy={lastY}
+        r="5"
+        fill="#86efac"
+        className="animate-pulse"
+      />
+    </svg>
+  )
+}
+
+function VolumeGauge({ score = 0, size = 80, strokeWidth = 6, color = 'var(--color-success)', className = 'h-20 w-20' }) {
+  const clamped = Math.max(0, Math.min(100, score))
+  const radius = (size - strokeWidth) / 2
+  const cx = size / 2
+  const cy = size / 2
+
+  function polarToCartesian(centerX, centerY, r, angleInDegrees) {
+    const angleInRadians = (angleInDegrees - 90) * (Math.PI / 180)
+    return {
+      x: centerX + r * Math.cos(angleInRadians),
+      y: centerY + r * Math.sin(angleInRadians),
+    }
+  }
+
+  function describeArcCW(centerX, centerY, r, startDeg, endDeg) {
+    const startPoint = polarToCartesian(centerX, centerY, r, startDeg)
+    const endPoint = polarToCartesian(centerX, centerY, r, endDeg)
+    const span = endDeg - startDeg
+    const largeArcFlag = span >= 180 ? 1 : 0
+    const sweepFlag = 1
+    return `M ${startPoint.x} ${startPoint.y} A ${r} ${r} 0 ${largeArcFlag} ${sweepFlag} ${endPoint.x} ${endPoint.y}`
+  }
+
+  const valueSpan = (360 * clamped) / 100
+  const valueArc = clamped > 0 ? describeArcCW(cx, cy, radius, 0, valueSpan) : null
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} className={className}>
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        opacity={0.25}
+        strokeLinecap="round"
+      />
+      {valueArc && (
+        <path
+          d={valueArc}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+        />
+      )}
+      <text x={cx} y={cy + 4} textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor">
+        {clamped}
+      </text>
     </svg>
   )
 }
@@ -43,7 +141,7 @@ function ChartSparkline({ values = [], isUp = true }) {
 
   if (values.length < 2) {
     return (
-      <div className="h-52 w-full md:h-64 rounded-md bg-surface-muted border border-border flex items-center justify-center">
+      <div className="h-52 w-full md:h-64 rounded-md border border-border flex items-center justify-center">
         <span className="muted text-sm">No chart data</span>
       </div>
     )
@@ -79,7 +177,7 @@ function ChartSparkline({ values = [], isUp = true }) {
   const gradientId = isUp ? 'chartGradientUp' : 'chartGradientDown'
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-52 w-full md:h-64 rounded-md border border-border bg-surface-muted" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-52 w-full md:h-64 rounded-md border border-border" preserveAspectRatio="none">
       <defs>
         <linearGradient id="chartGradientUp" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="var(--color-success)" stopOpacity="0.3" />
@@ -150,34 +248,6 @@ function ChartSparkline({ values = [], isUp = true }) {
   )
 }
 
-function WatcherTooltipContent({ data }) {
-  const { change7d, change7dPct, change30d, change30dPct, sectorRank, sector } = data
-  const is7dUp = change7d >= 0
-  const is30dUp = change30d >= 0
-
-  return (
-    <div className="space-y-2 p-2">
-      <div className="space-y-1">
-        <div className="text-xs font-semibold text-text">7D Change</div>
-        <div className={clsx('text-xs font-bold', is7dUp ? 'text-success' : 'text-danger')}>
-          {is7dUp ? '+' : ''}{change7d.toLocaleString()} ({is7dUp ? '+' : ''}{change7dPct.toFixed(1)}%)
-        </div>
-      </div>
-      <div className="space-y-1">
-        <div className="text-xs font-semibold text-text">30D Change</div>
-        <div className={clsx('text-xs font-bold', is30dUp ? 'text-success' : 'text-danger')}>
-          {is30dUp ? '+' : ''}{change30d.toLocaleString()} ({is30dUp ? '+' : ''}{change30dPct.toFixed(1)}%)
-        </div>
-      </div>
-      <div className="pt-1 border-t border-border">
-        <div className="text-xs font-semibold text-text">
-          #{sectorRank} in {sector}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function CollapsibleStockHeader({
   title,
   ticker,
@@ -188,29 +258,33 @@ export default function CollapsibleStockHeader({
   chartValues = [],
   sparkValues = [],
   headerAction,
+  watchers = '1.2K',
 }) {
   const [open, setOpen] = useState(false)
+  const messageVolumeStat = stats.find((s) => s.label === 'Msg Vol (24h)')
+  const [watchersCount, setWatchersCount] = useState(() => parseWatchers(watchers))
+  const [msgVol, setMsgVol] = useState(() => parseMsgVol(messageVolumeStat?.value ?? 1234))
+  const [floatingWatchers, setFloatingWatchers] = useState(null)
+
+  useEffect(() => {
+    const tMsg = setInterval(() => setMsgVol((prev) => prev + 5), 2500)
+    const tWatchers = setInterval(() => {
+      const d = [1, 2, 3, 4][Math.floor(Math.random() * 4)]
+      setWatchersCount((prev) => prev + d)
+      setFloatingWatchers({ value: d, key: Date.now() })
+    }, 1500)
+    return () => {
+      clearInterval(tMsg)
+      clearInterval(tWatchers)
+    }
+  }, [])
+
   const isUp = change >= 0
-  const sentimentStat = stats.find((stat) => stat.label === 'Sentiment')
-  const messageVolumeStat = stats.find((stat) => stat.label === 'Msg Vol (24h)')
-  const fundamentalStats = [
-    { label: 'Market Cap', value: '2.1T' },
-  ]
-
-  // Mock data for watcher tooltip
-  const watcherTooltipData = {
-    current: 1200,
-    change7d: 145,
-    change7dPct: 13.8,
-    change30d: 320,
-    change30dPct: 36.4,
-    sectorRank: 1,
-    sector: "Aerospace"
-  }
-
+  const marketCapStat = stats.find((s) => s.label === 'Mkt Cap' || s.label === 'Market Cap')
+  const high52Stat = stats.find((stat) => stat.label === '52W High')
+  const low52Stat = stats.find((stat) => stat.label === '52W Low')
   return (
-    <Tooltip.Provider delayDuration={300}>
-      <div className="card-surface">
+    <div className="border-b border-border">
       {headerAction && (
         <div className="border-b border-border p-4">
           {headerAction}
@@ -219,11 +293,7 @@ export default function CollapsibleStockHeader({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={clsx(
-          "flex w-full items-center justify-between gap-4 p-4 text-left transition-colors relative pb-5",
-          !headerAction && "rounded-t-xl",
-          !open && "rounded-b-xl"
-        )}
+        className="flex w-full items-center justify-between gap-4 pt-2 px-4 pb-5 text-left transition-colors relative"
         aria-expanded={open}
         aria-controls="stock-header-panel"
       >
@@ -255,9 +325,9 @@ export default function CollapsibleStockHeader({
               {/* Symbol Logo */}
               <div className="flex-shrink-0">
                 <img 
-                  src={`https://placehold.co/40x40?text=${ticker[0]}`} 
-                  alt={`${ticker} logo`} 
-                  className="w-10 h-10 rounded-full border border-border bg-surface shadow-sm" 
+                  src={ticker === 'GME' ? '/images/logos/gme.png' : `https://placehold.co/40x40?text=${ticker[0]}`}
+                  alt={`${ticker} logo`}
+                  className="w-10 h-10 rounded-full border border-border bg-surface shadow-sm object-cover"
                 />
               </div>
 
@@ -271,24 +341,21 @@ export default function CollapsibleStockHeader({
                   {/* Stats Bar (Always visible) */}
                   <div className="flex items-center gap-3 text-xs border-l border-border pl-3 hidden sm:flex">
                     <div className="flex items-center gap-2">
-                      <Tooltip.Root>
-                        <Tooltip.Trigger asChild>
-                          <div className="flex items-baseline gap-1 cursor-help">
-                            <span className="font-semibold text-text">1.2K</span>
-                            <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
-                          </div>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Content
-                            className="rounded-md border border-border bg-surface shadow-lg z-50 max-w-xs"
-                            sideOffset={5}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <WatcherTooltipContent data={watcherTooltipData} />
-                            <Tooltip.Arrow className="fill-surface" />
-                          </Tooltip.Content>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
+                      <div className="flex items-baseline gap-1">
+                        <span className="relative inline-flex items-baseline">
+                          <span className="font-semibold text-text">{formatNum(watchersCount)}</span>
+                          {floatingWatchers && (
+                            <span
+                              key={floatingWatchers.key}
+                              className="absolute left-full ml-0.5 bottom-0 text-success text-[10px] font-bold animate-float-watchers whitespace-nowrap"
+                              onAnimationEnd={() => setFloatingWatchers(null)}
+                            >
+                              +{floatingWatchers.value}
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
+                      </div>
                       <button 
                         type="button"
                         className="p-1 rounded-md border border-border hover:bg-surface-muted transition-colors flex items-center justify-center bg-surface"
@@ -306,31 +373,31 @@ export default function CollapsibleStockHeader({
 
                 <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <div className="text-xl font-bold md:text-2xl">${price.toFixed(2)}</div>
-                  <div className={clsx('text-xs font-bold sm:text-sm', isUp ? 'text-success' : 'text-danger')}>
-                    {isUp ? '+' : ''}{change.toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
+                  <div className={clsx('text-xs font-bold sm:text-sm flex items-center gap-0', isUp ? 'text-success' : 'text-danger')}>
+                    {isUp ? (
+                      <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                    ) : (
+                      <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                    )}
+                    {Math.abs(change).toFixed(2)} ({Math.abs(changePct).toFixed(2)}%)
                   </div>
                   
                   {/* Mobile version of stats */}
                   <div className="flex items-center gap-3 text-[10px] sm:hidden">
                     <div className="flex items-center gap-1.5">
-                      <Tooltip.Root>
-                        <Tooltip.Trigger asChild>
-                          <div className="flex items-center gap-1.5 cursor-help">
-                            <span className="font-bold text-text">1.2K</span>
-                            <span className="muted font-semibold uppercase">Watch</span>
-                          </div>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Content
-                            className="rounded-md border border-border bg-surface shadow-lg z-50 max-w-xs"
-                            sideOffset={5}
-                            onClick={(e) => e.stopPropagation()}
+                      <span className="relative inline-flex items-baseline">
+                        <span className="font-bold text-text">{formatNum(watchersCount)}</span>
+                        {floatingWatchers && (
+                          <span
+                            key={floatingWatchers.key}
+                            className="absolute left-full ml-0.5 bottom-0 text-success text-[10px] font-bold animate-float-watchers whitespace-nowrap"
+                            onAnimationEnd={() => setFloatingWatchers(null)}
                           >
-                            <WatcherTooltipContent data={watcherTooltipData} />
-                            <Tooltip.Arrow className="fill-surface" />
-                          </Tooltip.Content>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
+                            +{floatingWatchers.value}
+                          </span>
+                        )}
+                      </span>
+                      <span className="muted font-semibold uppercase">Watch</span>
                       <button 
                         type="button"
                         className="ml-0.5 p-0.5 rounded border border-border bg-surface"
@@ -352,45 +419,87 @@ export default function CollapsibleStockHeader({
             </div>
 
             <div className="flex items-center gap-4 shrink-0">
-              <div>
-                <MiniSparkline values={sparkValues} />
+              <MiniSparkline values={sparkValues} large />
+              <div className="h-[116px] w-[116px] shrink-0 rounded-full bg-white overflow-hidden flex items-center justify-center">
+                <img src="/images/sentiment-meter.png?v=2" alt="72% Bullish" className="h-full w-full object-contain" />
+              </div>
+              {/* Message Volume Meter */}
+              <div className="h-[116px] w-[116px] shrink-0 rounded-full bg-white overflow-hidden flex flex-col items-center justify-center border border-border">
+                <VolumeGauge score={99} size={80} strokeWidth={6} color="var(--color-success)" className="h-20 w-20" />
+                <div className="text-[10px] font-bold text-text mt-1 text-center leading-tight">
+                  <div>Extremely</div>
+                  <div>High</div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex w-full flex-wrap items-center gap-3 border-t border-border pt-2 text-[11px] sm:text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🔥</span>
-              <span className="font-bold text-text">Trending #2 Overall</span>
-              <button 
-                type="button"
-                className="flex items-center gap-1 text-[#FF8C42] hover:text-[#FF7629] font-semibold transition-colors"
-                onClick={(e) => { e.stopPropagation(); console.log('See Why clicked'); }}
-              >
-                See Why
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
-            </div>
-            {fundamentalStats.map((stat) => (
-              <div key={stat.label} className="flex items-baseline gap-1 border-l border-border pl-3">
-                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{stat.label}</span>
-                <span className="font-semibold text-text">{stat.value}</span>
+          <div className="flex w-full flex-col gap-2 border-t border-border pt-2 text-[11px] sm:text-xs">
+            {/* Row 1: Trending, Market Cap, 52W High, 52W Low */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🔥</span>
+                <span className="font-bold text-text">Trending #2 Overall</span>
+                <button 
+                  type="button"
+                  className="flex items-center gap-1 text-[#FF8C42] hover:text-[#FF7629] font-semibold transition-colors"
+                  onClick={(e) => { e.stopPropagation(); console.log('See Why clicked'); }}
+                >
+                  See Why
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
               </div>
-            ))}
-            <div className="flex items-center gap-2 border-l border-border pl-3">
-              <span className="muted uppercase tracking-wide font-semibold text-[10px]">Sentiment</span>
-              <span className={clsx('px-2 py-0.5 rounded-full border text-[11px] font-semibold', sentimentStat ? 'border-border bg-surface' : 'border-border bg-surface-muted')}>
-                {sentimentStat?.value ?? 'Neutral'}
-              </span>
-            </div>
-            {messageVolumeStat && (
               <div className="flex items-baseline gap-1 border-l border-border pl-3">
-                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{messageVolumeStat.label}</span>
-                <span className="font-semibold text-text">{messageVolumeStat.value}</span>
+                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{marketCapStat?.label ?? 'Mkt Cap'}</span>
+                <span className="font-semibold text-text">{marketCapStat?.value ?? '—'}</span>
               </div>
-            )}
+              <div className="flex items-baseline gap-1 border-l border-border pl-3">
+                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{high52Stat?.label ?? '52W High'}</span>
+                <span className="font-semibold text-text">{high52Stat?.value ?? '—'}</span>
+              </div>
+              <div className="flex items-baseline gap-1 border-l border-border pl-3">
+                <span className="muted uppercase tracking-wide font-semibold text-[10px]">{low52Stat?.label ?? '52W Low'}</span>
+                <span className="font-semibold text-text">{low52Stat?.value ?? '—'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 border-l border-border pl-3">
+                <span className="muted uppercase tracking-wide font-semibold text-[10px]">Earnings</span>
+                <span className="font-semibold text-text">March 14</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0 text-muted" fill="currentColor" aria-label="After market close">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              </div>
+            </div>
+            {/* Row 2: Top Bullish and Bearish Voices */}
+            <div className="flex flex-col gap-2">
+              {/* Top Bullish Voice */}
+              <a href="#" className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
+                <img
+                  src="/avatars/top-voice-1.png"
+                  alt="Top bullish voice"
+                  className="w-6 h-6 rounded-full border border-border object-cover shrink-0"
+                />
+                <span className="text-sm text-text flex-1 min-w-0">
+                  <span className="font-semibold text-success">Top bullish voice:</span>{' '}
+                  <span className="text-text">Bullish on GME's long term value with Michael Burry buying in</span>
+                  <span className="text-blue-500 group-hover:translate-x-0.5 transition-transform ml-1">&gt;</span>
+                </span>
+              </a>
+              {/* Top Bearish Voice */}
+              <a href="#" className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
+                <img
+                  src="/avatars/top-voice-2.png"
+                  alt="Top bearish voice"
+                  className="w-6 h-6 rounded-full border border-border object-cover shrink-0"
+                />
+                <span className="text-sm text-text flex-1 min-w-0">
+                  <span className="font-semibold text-danger">Top bearish voice:</span>{' '}
+                  <span className="text-text">Concerned this is a Bull Trap from Michael Burry</span>
+                  <span className="text-blue-500 group-hover:translate-x-0.5 transition-transform ml-1">&gt;</span>
+                </span>
+              </a>
+            </div>
           </div>
         </div>
       </button>
@@ -415,15 +524,16 @@ export default function CollapsibleStockHeader({
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-md border border-border bg-surface-muted p-1.5 sm:p-2">
+              <div key={stat.label} className="rounded-md border border-border p-1.5 sm:p-2">
                 <div className="text-[9px] uppercase tracking-wide muted font-semibold">{stat.label}</div>
-                <div className="mt-0.5 text-xs sm:text-sm font-bold">{stat.value}</div>
+                <div className="mt-0.5 text-xs sm:text-sm font-bold">
+                  {stat.label === 'Msg Vol (24h)' ? formatNum(msgVol) : stat.value}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
     </div>
-    </Tooltip.Provider>
   )
 }

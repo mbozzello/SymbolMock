@@ -50,12 +50,16 @@ export default function MarketIndices({ marketIndices = [] }) {
             )}
             <div
               className={clsx(
-                'text-sm font-semibold shrink-0',
+                'text-sm font-semibold shrink-0 flex items-center gap-0',
                 index.change >= 0 ? 'text-success' : 'text-danger'
               )}
             >
-              {index.change >= 0 ? '+' : ''}
-              {index.change.toFixed(2)}%
+              {index.change >= 0 ? (
+                <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+              ) : (
+                <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+              )}
+              {Math.abs(index.change).toFixed(2)}%
             </div>
           </div>
         ))}

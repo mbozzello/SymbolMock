@@ -16,32 +16,11 @@ export default function TopNavigation({ onSearch }) {
   }
 
   const navItems = ['Trending', 'News', 'Earnings']
-  
-  // Mock data for SPY and BTC
-  const tickers = [
-    { symbol: 'SPY', change: 0.45 },
-    { symbol: 'BTC', change: -1.23 }
-  ]
 
   return (
-    <div className="sticky top-0 z-20 border-b border-border bg-surface">
-      <div className="mx-auto max-w-[1200px] px-4 py-2">
+    <div className="sticky top-0 z-20 border-b border-border bg-background">
+      <div className="mx-auto max-w-[1200px] px-4 py-1.5">
         <div className="flex items-center gap-4">
-          {/* Ticker Display */}
-          <div className="flex items-center gap-4">
-            {tickers.map((ticker) => (
-              <div key={ticker.symbol} className="flex items-center gap-2">
-                <span className="text-sm font-medium text-text">{ticker.symbol}</span>
-                <span className={clsx(
-                  'text-sm font-medium',
-                  ticker.change >= 0 ? 'text-success' : 'text-danger'
-                )}>
-                  {ticker.change >= 0 ? '+' : ''}{ticker.change.toFixed(2)}%
-                </span>
-              </div>
-            ))}
-          </div>
-
           {/* Search Bar - Centered */}
           <div className="flex-1 flex justify-center">
             <form 

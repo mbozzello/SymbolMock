@@ -65,7 +65,7 @@ export default function PredictionLeaderboard() {
   )
 
   return (
-    <div className="card-surface overflow-hidden">
+    <div className="overflow-hidden border-b border-border">
       <div className="flex items-center justify-between p-4">
         <h3 className="text-base font-semibold">Leaderboard</h3>
         <button

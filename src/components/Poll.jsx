@@ -15,7 +15,7 @@ function Poll({
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
-    <div className="card-surface p-4">
+    <div className="p-4 border-b border-border">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

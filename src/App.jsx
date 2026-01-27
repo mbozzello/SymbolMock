@@ -45,13 +45,16 @@ function MiniSparkline({ values = [] }) {
 
 function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   const content = (
-    <div className="flex h-full w-full flex-col gap-4 bg-surface p-4 border-r border-border">
+    <div className="flex h-full w-full flex-col gap-4 bg-background p-4 border-r border-border">
+      <a href="/" className="block shrink-0" aria-label="Stocktwits">
+        <img src="/images/stocktwits-logo.png" alt="Stocktwits" className="h-[39px] w-auto object-contain" />
+      </a>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
-            src="https://placehold.co/40x40"
-            className="h-10 w-10 rounded-full border border-border"
-            alt="avatar"
+            src="/avatars/user-avatar.png"
+            className="h-10 w-10 rounded-full border border-border object-cover"
+            alt="Profile"
           />
           <div className="font-semibold">Profile</div>
         </div>
@@ -81,12 +84,11 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
       <div className="mt-2 text-sm uppercase tracking-wide muted">Watchlist</div>
       <div className="space-y-2 overflow-y-auto pr-1">
         {watchlist.map((s) => (
-          <div key={s.ticker} className="card-surface p-3">
+          <div key={s.ticker} className="p-3 border-b border-border last:border-b-0">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
+                <div>
                   <span className="font-semibold">{s.ticker}</span>
-                  <span className="badge">{s.sector}</span>
                 </div>
                 <div className="truncate text-sm muted">{s.name}</div>
               </div>
@@ -94,8 +96,13 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
             </div>
             <div className="mt-2 flex items-baseline justify-between">
               <div className="font-semibold">${s.price.toFixed(2)}</div>
-              <div className={clsx('text-sm', s.change >= 0 ? 'text-success' : 'text-danger')}>
-                {s.change >= 0 ? '+' : ''}{s.change.toFixed(2)}%
+              <div className={clsx('text-sm flex items-center gap-0', s.change >= 0 ? 'text-success' : 'text-danger')}>
+                {s.change >= 0 ? (
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                ) : (
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                )}
+                {Math.abs(s.change).toFixed(2)}%
               </div>
             </div>
           </div>
@@ -115,7 +122,7 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-[269px] bg-surface shadow-xl">
+          <div className="absolute inset-y-0 left-0 w-[269px] bg-background shadow-xl border-r border-border">
             {content}
           </div>
         </div>
@@ -125,28 +132,14 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
 }
 
 function Post({ post, isUnregistered }) {
-  const themeLabels = {
-    'china-tariffs': 'China Tariffs',
-    'fed-decision': 'Fed Decision',
-    'product-launch': 'Product Launch',
-    'earnings-call': 'Earnings Call',
-    'space-contracts': 'Space Contracts',
-    'market-sentiment': 'Market Sentiment'
-  }
-
   return (
-    <div className="card-surface p-4">
+    <div className="p-4 border-b border-border">
       <div className="flex items-start gap-3">
         <img src={post.avatar} alt="avatar" className="h-10 w-10 rounded-full border border-border" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <div className="font-semibold">{post.user}</div>
             <div className="text-xs muted">{post.time}</div>
-            {post.theme && (
-              <span className="badge badge-sm text-xs font-semibold">
-                {themeLabels[post.theme]}
-              </span>
-            )}
           </div>
           <div className="mt-1 whitespace-pre-wrap">{post.body}</div>
           <div
@@ -176,7 +169,7 @@ function HardGate({ isLocked, label, ctaText = 'Register to unlock', children })
         {children}
       </div>
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="card-surface flex flex-wrap items-center justify-center gap-3 px-4 py-2 text-sm">
+        <div className="flex flex-wrap items-center justify-center gap-3 px-4 py-2 text-sm bg-background border border-border">
           <span className="uppercase tracking-wide muted">{label}</span>
           <button className="btn btn-primary">{ctaText}</button>
         </div>
@@ -193,7 +186,7 @@ function SoftGate({ isLocked, label, ctaText = 'Register to unlock more', childr
   return (
     <div className="space-y-2">
       {children}
-      <div className="card-surface flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm border-t border-border">
         <span className="uppercase tracking-wide muted">{label}</span>
         <button className="btn btn-primary">{ctaText}</button>
       </div>
@@ -212,7 +205,7 @@ function useDashboardData({ isUnregistered = false }) {
     if (savedTheme) {
       return savedTheme === 'dark'
     }
-    return true
+    return false
   })
 
   const toggleDarkMode = () => {
@@ -231,6 +224,7 @@ function useDashboardData({ isUnregistered = false }) {
 
   const watchlist = useMemo(
     () => [
+      { ticker: 'GME', name: 'GameStop Corp.', sector: 'Gaming', price: 29.96, change: 0.62, spark: [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14] },
       { ticker: 'CELH', name: 'Celsius Holdings', sector: 'Beverages', price: 92.31, change: 2.18, spark: [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14] },
       { ticker: 'NVDA', name: 'NVIDIA Corp.', sector: 'Semis', price: 889.42, change: -1.12, spark: [30, 32, 31, 33, 35, 34, 33, 32] },
       { ticker: 'AAPL', name: 'Apple Inc.', sector: 'Hardware', price: 182.51, change: 0.84, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
@@ -249,7 +243,7 @@ function useDashboardData({ isUnregistered = false }) {
   )
 
   const headerSpark = useMemo(
-    () => watchlist.find((s) => s.ticker === 'RKLB')?.spark ?? [],
+    () => watchlist.find((s) => s.ticker === 'CELH')?.spark ?? [],
     [watchlist]
   )
 
@@ -259,7 +253,7 @@ function useDashboardData({ isUnregistered = false }) {
         id: i + 1,
         user: ['astrotrader', 'quantqueen', 'valueviking', 'optionsowl', 'spacebull', 'rocketman'][i % 6],
         time: `${1 + i}h`,
-        avatar: `https://placehold.co/40x40?text=${i + 1}`,
+        avatar: `/avatars/top-voice-${(i % 3) + 1}.png`,
         body: [
           'Accumulating on dips. Watching volume into the close. $RKLB looks strong.',
           'Breakout setting up if it clears the recent high. Risk defined. 🚀',
@@ -275,9 +269,9 @@ function useDashboardData({ isUnregistered = false }) {
           'Supply chain issues resolving. Production ramping up nicely.'
         ][i % 12],
         theme: [
-          'market-sentiment', 'market-sentiment', 'china-tariffs', 'fed-decision', 
-          'product-launch', 'earnings-call', 'space-contracts', 'market-sentiment',
-          'market-sentiment', 'market-sentiment', 'product-launch', 'earnings-call'
+          'rival-platforms', 'sub-30-swings', 'exec-scrutiny', 'super-bowl-hype',
+          'rival-platforms', 'sub-30-swings', 'exec-scrutiny', 'super-bowl-hype',
+          'rival-platforms', 'sub-30-swings', 'exec-scrutiny', 'super-bowl-hype'
         ][i % 12]
       })),
     []
@@ -295,28 +289,28 @@ function useDashboardData({ isUnregistered = false }) {
 
   const headerStats = useMemo(
     () => [
-      { label: 'Mkt Cap', value: '$2.3B' },
+      { label: 'Mkt Cap', value: '$14.2B' },
       { label: 'Volume', value: '12.4M' },
       { label: '52W High', value: '$52.60' },
       { label: '52W Low', value: '$14.80' },
       { label: 'P/E Ratio', value: '—' },
       { label: 'EPS', value: '-$0.12' },
       { label: 'Sentiment', value: '72% Bullish' },
-      { label: 'Msg Vol (24h)', value: '1.2K' },
+      { label: 'Msg Vol (24h)', value: 1234 },
       { label: 'Beta', value: '2.14' },
       { label: 'Avg Vol', value: '18.2M' },
     ],
     []
   )
 
-  const chartValues = useMemo(
-    () => [
-      38.50, 39.10, 38.80, 39.40, 40.20, 39.90, 40.50, 41.10, 40.80, 41.40,
-      41.80, 42.20, 41.90, 42.50, 42.10, 42.80, 43.20, 42.90, 43.50, 43.10,
-      43.80, 44.20, 43.90, 44.50, 44.10, 44.80, 44.40, 43.90, 44.30, 44.21,
-    ],
-    []
-  )
+  // CELH spark pattern from watchlist, scaled to GME price range (~27.5–29.96)
+  const chartValues = useMemo(() => {
+    const celh = watchlist.find((s) => s.ticker === 'CELH')?.spark ?? [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14]
+    const lo = Math.min(...celh)
+    const hi = Math.max(...celh)
+    const range = Math.max(1, hi - lo)
+    return celh.map((v) => 27.5 + ((v - lo) / range) * (29.96 - 27.5))
+  }, [watchlist])
 
   const featuredPosts = useMemo(
     () => [
@@ -414,13 +408,13 @@ export function Dashboard({ isUnregistered = false }) {
   return (
     <div className="min-h-screen bg-background text-text">
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 lg:hidden">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-background px-4 py-3 lg:hidden">
         <button onClick={() => setMobileNavOpen(true)} className="btn" aria-label="Open menu">☰</button>
         <div className="flex items-baseline gap-2">
-          <div className="font-semibold">Rocket Lab USA Inc.</div>
-          <div className="badge font-semibold">$RKLB</div>
+          <div className="font-semibold">GameStop Corp.</div>
+          <div className="badge font-semibold">$GME</div>
         </div>
-        <div className="font-semibold">$44.21</div>
+        <div className="font-semibold">$29.96</div>
       </div>
 
       <LeftSidebar
@@ -432,16 +426,17 @@ export function Dashboard({ isUnregistered = false }) {
       />
 
       {/* Main content area shifted for fixed sidebar on lg+ */}
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[269px] bg-background">
         <TopNavigation />
         <TickerTape />
-        <div className="mx-auto max-w-[1200px] p-4">
+        <div className="mx-auto max-w-[1200px] pt-2 px-4 pb-4">
           <CollapsibleStockHeader
-            title="Rocket Lab USA Inc."
-            ticker="RKLB"
-            price={44.21}
-            change={1.23}
-            changePct={3.45}
+            title="GameStop Corp."
+            ticker="GME"
+            price={29.96}
+            change={0.62}
+            changePct={2.11}
+            watchers={120456}
             stats={headerStats}
             chartValues={chartValues}
             sparkValues={headerSpark}
@@ -452,7 +447,7 @@ export function Dashboard({ isUnregistered = false }) {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="text-xs uppercase tracking-wide muted font-semibold">Quick start watchlist</div>
-                      <div className="text-base font-semibold">RKLB + 10 peers in one click</div>
+                      <div className="text-base font-semibold">GME + 10 peers in one click</div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button className="btn btn-success font-semibold" onClick={() => setQuickStartActive(true)}>
@@ -469,10 +464,10 @@ export function Dashboard({ isUnregistered = false }) {
                     ))}
                   </div>
                   {quickStartActive && (
-                    <div className="card-surface flex items-center justify-between gap-3 p-3 text-sm">
+                    <div className="flex items-center justify-between gap-3 p-3 text-sm border border-border">
                       <div>
                         <div className="font-semibold">Watchlist created</div>
-                        <div className="muted">We added RKLB and 10 related symbols to your watchlist.</div>
+                        <div className="muted">We added GME and 10 related symbols to your watchlist.</div>
                       </div>
                       <button className="btn btn-primary">View watchlist</button>
                     </div>
@@ -482,7 +477,7 @@ export function Dashboard({ isUnregistered = false }) {
             }
           />
 
-          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="mt-4 grid grid-cols-1 gap-x-0 gap-y-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_320px]">
             <section className="space-y-4">
               <div className="flex items-center gap-1 border-b border-border">
                 {['Feed', 'Fundamentals', 'News', 'Sentiment', 'Earnings', 'Info'].map((label) => (
@@ -552,7 +547,7 @@ export function Dashboard({ isUnregistered = false }) {
                 </div>
 
                 {isUnregistered && filteredPosts.length > visiblePosts.length && (
-                  <div className="mt-3 card-surface flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm border-t border-border">
                     <span className="uppercase tracking-wide muted">More posts locked</span>
                     <button className="btn btn-primary">Register to view full feed</button>
                   </div>
@@ -560,19 +555,20 @@ export function Dashboard({ isUnregistered = false }) {
               </div>
             </section>
 
-            <aside className="space-y-4">
-              {/* Ad Slot Placeholder */}
-              <div className="card-surface p-4">
-                <div className="flex h-64 items-center justify-center rounded-md border-2 border-dashed border-border bg-surface-muted/30">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">📢</div>
-                    <div className="text-sm uppercase tracking-wide muted font-semibold">Advertisement</div>
-                  </div>
+            <aside className="relative space-y-4 before:content-[''] before:absolute before:left-0 before:top-9 before:bottom-0 before:w-0 before:bg-[var(--color-border)] lg:before:w-px">
+              <div className="space-y-0.5">
+                {/* Ad */}
+                <div className="pt-0 px-4 pb-1">
+                  <img
+                    src="/images/ad-foxwoods-draftkings.png"
+                    alt="Foxwoods and DraftKings - Your game plan for game day"
+                    className="w-full h-64 object-cover rounded-md"
+                  />
                 </div>
+                <Community />
               </div>
-              <Community />
               <SoftGate isLocked={isUnregistered} label="More news" ctaText="Register to view">
-                <div className="card-surface p-4">
+                <div className="p-4">
                   <div className="mb-2 text-sm uppercase tracking-wide muted font-semibold">Latest $RKLB News</div>
                   <div className="space-y-3">
                     {(isUnregistered ? news.slice(0, 2) : news).map((n, i) => (
@@ -615,13 +611,13 @@ function NewPage() {
 
   return (
     <div className="min-h-screen bg-background text-text">
-      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 lg:hidden">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-background px-4 py-3 lg:hidden">
         <button onClick={() => setMobileNavOpen(true)} className="btn" aria-label="Open menu">☰</button>
         <div className="flex items-baseline gap-2">
-          <div className="font-semibold">Rocket Lab USA Inc.</div>
-          <div className="badge font-semibold">$RKLB</div>
+          <div className="font-semibold">GameStop Corp.</div>
+          <div className="badge font-semibold">$GME</div>
         </div>
-        <div className="font-semibold">$44.21</div>
+        <div className="font-semibold">$29.96</div>
       </div>
 
       <LeftSidebar
@@ -632,16 +628,17 @@ function NewPage() {
         toggleDarkMode={toggleDarkMode}
       />
 
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[269px] bg-background">
         <TopNavigation />
         <TickerTape />
-        <div className="mx-auto max-w-[1200px] space-y-4 p-4">
+        <div className="mx-auto max-w-[1200px] space-y-4 pt-2 px-4 pb-4">
           <CollapsibleStockHeader
-            title="Rocket Lab USA Inc."
-            ticker="RKLB"
-            price={44.21}
-            change={1.23}
-            changePct={3.45}
+            title="GameStop Corp."
+            ticker="GME"
+            price={29.96}
+            change={0.62}
+            changePct={2.11}
+            watchers={120456}
             stats={headerStats}
             chartValues={chartValues}
             sparkValues={headerSpark}
@@ -649,7 +646,7 @@ function NewPage() {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section className="space-y-4">
-              <div className="card-surface space-y-4 p-4">
+              <div className="space-y-4 p-4">
                 <div className="text-xs uppercase tracking-wide muted font-semibold">What's happening</div>
                 <DynamicThemes
                   onThemeSelect={setSelectedTheme}
@@ -661,14 +658,13 @@ function NewPage() {
             </section>
 
             <aside className="space-y-4">
-              {/* Ad Slot Placeholder */}
-              <div className="card-surface p-4">
-                <div className="flex h-64 items-center justify-center rounded-md border-2 border-dashed border-border bg-surface-muted/30">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">📢</div>
-                    <div className="text-sm uppercase tracking-wide muted font-semibold">Advertisement</div>
-                  </div>
-                </div>
+              {/* Ad */}
+              <div className="p-4">
+                <img
+                  src="/images/ad-foxwoods-draftkings.png"
+                  alt="Foxwoods and DraftKings - Your game plan for game day"
+                  className="w-full h-64 object-cover rounded-md"
+                />
               </div>
               <PredictionLeaderboard />
             </aside>
@@ -712,7 +708,7 @@ function NewPage() {
             </section>
 
             <aside className="space-y-4">
-              <div className="card-surface p-4">
+              <div className="p-4">
                 <div className="mb-2 text-sm uppercase tracking-wide muted font-semibold">Latest $RKLB News</div>
                 <div className="space-y-3">
                   {news.map((n, i) => (

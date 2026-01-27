@@ -1,3 +1,5 @@
+import { getTickerLogo } from '../constants/tickerLogos'
+
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
@@ -31,13 +33,16 @@ function MiniSparkline({ values = [] }) {
 
 export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   const content = (
-    <div className="flex h-full w-full flex-col gap-4 bg-surface p-4 border-r border-border">
+    <div className="flex h-full w-full flex-col gap-4 bg-background p-4 border-r border-border">
+      <a href="/" className="block shrink-0" aria-label="Stocktwits">
+        <img src="/images/stocktwits-logo.png" alt="Stocktwits" className="h-[39px] w-auto object-contain" />
+      </a>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
-            src="https://placehold.co/40x40"
-            className="h-10 w-10 rounded-full border border-border"
-            alt="avatar"
+            src="/avatars/user-avatar.png"
+            className="h-10 w-10 rounded-full border border-border object-cover"
+            alt="Profile"
           />
           <div className="font-semibold">Profile</div>
         </div>
@@ -68,24 +73,37 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
       </div>
       <button className="btn btn-primary w-full text-base">Post</button>
 
-      <div className="mt-2 text-sm uppercase tracking-wide muted">Watchlist</div>
-      <div className="space-y-2 overflow-y-auto pr-1">
+      <div className="mt-2 text-sm uppercase tracking-wide muted shrink-0">Watchlist</div>
+      <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
         {watchlist.map((s) => (
-          <div key={s.ticker} className="card-surface p-3">
+          <div key={s.ticker} className="p-3 border-b border-border last:border-b-0">
             <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{s.ticker}</span>
-                  <span className="badge">{s.sector}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted">
+                  {getTickerLogo(s.ticker) ? (
+                    <img src={getTickerLogo(s.ticker)} alt="" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-xs font-bold text-muted">{s.ticker[0]}</span>
+                  )}
                 </div>
-                <div className="truncate text-sm muted">{s.name}</div>
+                <div className="min-w-0">
+                  <div>
+                    <span className="font-semibold">{s.ticker}</span>
+                  </div>
+                  <div className="truncate text-sm muted">{s.name}</div>
+                </div>
               </div>
               <MiniSparkline values={s.spark} />
             </div>
             <div className="mt-2 flex items-baseline justify-between">
               <div className="font-semibold">${s.price.toFixed(2)}</div>
-              <div className={clsx('text-sm', s.change >= 0 ? 'text-success' : 'text-danger')}>
-                {s.change >= 0 ? '+' : ''}{s.change.toFixed(2)}%
+              <div className={clsx('text-sm flex items-center gap-0', s.change >= 0 ? 'text-success' : 'text-danger')}>
+                {s.change >= 0 ? (
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                ) : (
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                )}
+                {Math.abs(s.change).toFixed(2)}%
               </div>
             </div>
           </div>
@@ -96,14 +114,14 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[269px] lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[269px] lg:flex overflow-hidden">
         {content}
       </aside>
 
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-[269px] bg-surface shadow-xl">
+          <div className="absolute inset-y-0 left-0 w-[269px] bg-background shadow-xl border-r border-border">
             {content}
           </div>
         </div>

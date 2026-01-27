@@ -129,12 +129,29 @@ function NewsIcon() {
   )
 }
 
+function AudioWave({ barCount = 13, color = '#8b5cf6' }) {
+  return (
+    <div className="flex items-end justify-center gap-1 h-6" aria-hidden>
+      {Array.from({ length: barCount }, (_, i) => (
+        <div
+          key={i}
+          className="w-1 rounded-full animate-audio-wave-bar shrink-0"
+          style={{
+            backgroundColor: color,
+            animationDelay: `${i * 0.04}s`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function WhatsHappening() {
   const [open, setOpen] = useState(true)
   const [showTooltip, setShowTooltip] = useState(false)
 
   return (
-    <div className="card-surface overflow-hidden">
+    <div className="overflow-hidden border-b border-border">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-2">
           <h3 className="text-base font-bold">What's Happening</h3>
@@ -191,9 +208,9 @@ export default function WhatsHappening() {
           {/* Earnings Call Card - First Card */}
           <div className="flex-shrink-0 w-[85%] snap-start">
             <div className="overflow-hidden border-t-4 rounded-md h-32 flex flex-col" style={{ borderTopColor: '#8b5cf6' }}>
-              <div className="flex items-start justify-between p-4 flex-1">
+              <div className="flex items-start justify-between p-4 shrink-0">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold mb-2">UAL Q4 '25 Earnings Call</h3>
+                  <h3 className="text-base font-bold mb-2">GME Q4 '25 Earnings Call</h3>
                   <div className="flex items-center gap-4 text-sm">
                     <span className="flex items-center gap-1.5" style={{ color: '#8b5cf6' }}>
                       <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: '#8b5cf6' }} />
@@ -201,7 +218,7 @@ export default function WhatsHappening() {
                     </span>
                     <span className="flex items-center gap-1.5 muted">
                       <HeadphoneIcon />
-                      8
+                      369
                     </span>
                     <button className="flex items-center gap-1.5 hover:text-text transition-colors muted">
                       <LinkIcon />
@@ -216,7 +233,10 @@ export default function WhatsHappening() {
                   Join
                 </button>
               </div>
-              <div className="px-4 py-2 text-center text-sm" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
+              <div className="flex-1 flex items-center justify-center min-h-0 px-4">
+                <AudioWave color="#8b5cf6" />
+              </div>
+              <div className="px-4 py-2 text-center text-sm shrink-0" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
                 Live event started: 10m ago
               </div>
             </div>
@@ -228,11 +248,11 @@ export default function WhatsHappening() {
               <div className="p-4 flex-1 flex flex-col justify-between min-w-0">
                 <div>
                   <h3 className="text-base font-bold line-clamp-2">
-                    United Airlines Reports Record Revenue Despite Rising Fuel Costs
+                    GameStop Reports Strong Q4 Results on E-commerce Growth
                   </h3>
                 </div>
                 <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="muted">Reuters • 2h ago</span>
+                  <span className="muted">Stocktwits • 2h ago</span>
                   <button className="flex items-center gap-1.5 hover:text-text transition-colors muted">
                     <LinkIcon />
                     Read

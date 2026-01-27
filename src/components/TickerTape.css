@@ -1,11 +1,12 @@
-.ticker-tape-container {
+.ticker-tape-scroll-wrap {
   display: flex;
-  width: 100%;
+  align-items: center;
 }
 
 .ticker-tape-content {
   display: flex;
-  animation: ticker-scroll 30s linear infinite;
+  align-items: center;
+  animation: ticker-scroll 40s linear infinite;
   will-change: transform;
 }
 
@@ -15,6 +16,10 @@
   white-space: nowrap;
 }
 
+.ticker-tape-scroll-wrap:hover .ticker-tape-content {
+  animation-play-state: paused;
+}
+
 @keyframes ticker-scroll {
   0% {
     transform: translateX(0);
@@ -22,8 +27,4 @@
   100% {
     transform: translateX(-50%);
   }
-}
-
-.ticker-tape-container:hover .ticker-tape-content {
-  animation-play-state: paused;
 }

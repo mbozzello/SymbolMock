@@ -6,15 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
     <script>
-      // Set initial theme before app loads to avoid flash
+      // Set initial theme before app loads to avoid flash (default: light)
       try {
         const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = stored ? stored === 'dark' : prefersDark;
+        const isDark = stored ? stored === 'dark' : false;
         if (isDark) {
-          document.documentElement.classList.add('dark');
+          document.documentElement.removeAttribute('data-theme');
         } else {
-          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
         }
       } catch (_) {}
     </script>

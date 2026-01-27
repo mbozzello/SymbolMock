@@ -1,13 +1,184 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
+import { getTickerLogo } from '../constants/tickerLogos'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import MarketIndices from '../components/MarketIndices.jsx'
 import LiveEventPlayer from '../components/LiveEventPlayer.jsx'
-import TopDiscussions from '../components/TopDiscussions.jsx'
+import CommunityPredictions from '../components/CommunityPredictions.jsx'
+import TopPredictors from '../components/TopPredictors.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
+}
+
+// Animated message count component that increments to show live activity
+function AnimatedMessageCount({ initialCount }) {
+  const [count, setCount] = useState(initialCount)
+  const increments = [2, 3, 5, 10]
+  const incrementIndexRef = useRef(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount(prev => {
+        const increment = increments[incrementIndexRef.current]
+        incrementIndexRef.current = (incrementIndexRef.current + 1) % increments.length
+        return prev + increment
+      })
+    }, 1500 + Math.random() * 1000) // Random interval between 1.5-2.5 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(27, 102, 231, 0.15)', border: '1px solid rgba(27, 102, 231, 0.3)', boxShadow: '0 0 12px rgba(27, 102, 231, 0.4)' }}>
+      <svg 
+        className="w-3.5 h-3.5" 
+        fill="none" 
+        stroke="#1B66E7" 
+        viewBox="0 0 24 24"
+        style={{ filter: 'drop-shadow(0 0 3px rgba(27, 102, 231, 0.6))' }}
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={2.5} 
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
+        />
+      </svg>
+      <span className="text-xs font-extrabold tabular-nums leading-none" style={{ color: '#1B66E7' }}>
+        {count.toLocaleString()}
+      </span>
+    </div>
+  )
+}
+
+// Animated sentiment meter with bull/bear split
+function SentimentMeter({ initialBullish = 62.5 }) {
+  const [bullish, setBullish] = useState(initialBullish)
+  const bearish = 100 - bullish
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Animate between 55% and 70% bullish to show live movement
+      const minBullish = 55
+      const maxBullish = 70
+      const target = minBullish + Math.random() * (maxBullish - minBullish)
+      
+      setBullish(prev => {
+        // Smooth transition towards target
+        const diff = target - prev
+        return prev + diff * 0.15 // Gradual movement
+      })
+    }, 2000) // Update every 2 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const bullishPercent = Math.round(bullish * 10) / 10
+  const bearishPercent = Math.round(bearish * 10) / 10
+  const bullPosition = bullishPercent // Position of bull icon as percentage
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="relative h-7 rounded-full overflow-hidden bg-surface-muted border border-border">
+        {/* Bullish segment (green) */}
+        <div 
+          className="absolute left-0 top-0 h-full bg-[#17c964] transition-all duration-1000 ease-out"
+          style={{ width: `${bullishPercent}%` }}
+        />
+        {/* Bearish segment (red) */}
+        <div 
+          className="absolute right-0 top-0 h-full bg-[#f31260] transition-all duration-1000 ease-out"
+          style={{ width: `${bearishPercent}%` }}
+        />
+        {/* Bull icon - moves along the bar */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out z-10"
+          style={{ left: `calc(${bullPosition}% - 12px)` }}
+        >
+          <div className="w-6 h-6 rounded-full border-2 border-[#17c964] bg-surface flex items-center justify-center shadow-md">
+            {/* Bull head icon */}
+            <svg className="w-4 h-4 text-[#17c964]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+              {/* Bull head facing right */}
+              <path d="M14 8c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-4 4c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm6 0c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1z"/>
+              {/* Horns */}
+              <path d="M10 6c-.28 0-.53.11-.71.29L8 7.59l-1.29-1.3c-.18-.18-.43-.29-.71-.29s-.53.11-.71.29c-.39.39-.39 1.02 0 1.41L6.59 9l-1.3 1.29c-.39.39-.39 1.02 0 1.41.19.18.43.29.71.29s.53-.11.71-.29L8 10.41l1.29 1.3c.18.18.43.29.71.29s.53-.11.71-.29c.39-.39.39-1.02 0-1.41L9.41 9l1.3-1.29c.39-.39.39-1.02 0-1.41-.19-.18-.43-.29-.71-.29z" opacity="0.6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      {/* Percentage labels */}
+      <div className="flex items-center justify-between text-[11px] font-bold">
+        <span className="text-[#17c964]">{bullishPercent.toFixed(1)}%</span>
+        <span className="text-[#f31260]">{bearishPercent.toFixed(1)}%</span>
+      </div>
+    </div>
+  )
+}
+
+// Compact sentiment meter for inline use
+function CompactSentimentMeter({ initialBullish = 62.5 }) {
+  const [bullish, setBullish] = useState(initialBullish)
+  const bearish = 100 - bullish
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Animate between 55% and 70% bullish to show live movement
+      const minBullish = 55
+      const maxBullish = 70
+      const target = minBullish + Math.random() * (maxBullish - minBullish)
+      
+      setBullish(prev => {
+        // Smooth transition towards target
+        const diff = target - prev
+        return prev + diff * 0.15 // Gradual movement
+      })
+    }, 2000) // Update every 2 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const bullishPercent = Math.round(bullish * 10) / 10
+  const bearishPercent = Math.round(bearish * 10) / 10
+  const bullPosition = bullishPercent
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="relative h-5 rounded-full overflow-hidden bg-surface-muted border border-border flex-1" style={{ minWidth: '120px' }}>
+        {/* Bullish segment (green) */}
+        <div 
+          className="absolute left-0 top-0 h-full bg-[#17c964] transition-all duration-1000 ease-out"
+          style={{ width: `${bullishPercent}%` }}
+        />
+        {/* Bearish segment (red) */}
+        <div 
+          className="absolute right-0 top-0 h-full bg-[#f31260] transition-all duration-1000 ease-out"
+          style={{ width: `${bearishPercent}%` }}
+        />
+        {/* Bull icon - moves along the bar */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out z-10"
+          style={{ left: `calc(${bullPosition}% - 8px)` }}
+        >
+          <div className="w-4 h-4 rounded-full border-2 border-[#17c964] bg-surface flex items-center justify-center shadow-sm">
+            {/* Bull head icon - simplified */}
+            <svg className="w-2.5 h-2.5 text-[#17c964]" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/>
+              <path d="M14 8c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-4 4c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1zm6 0c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1 1 .45 1 1z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      {/* Percentage labels - inline */}
+      <div className="flex items-center gap-1.5 text-[9px] font-bold shrink-0">
+        <span className="text-[#17c964]">{bullishPercent.toFixed(1)}%</span>
+        <span className="text-muted">/</span>
+        <span className="text-[#f31260]">{bearishPercent.toFixed(1)}%</span>
+      </div>
+    </div>
+  )
 }
 
 function MiniSparkline({ values = [] }) {
@@ -29,6 +200,34 @@ function MiniSparkline({ values = [] }) {
         fill="none"
         stroke={lastUp ? 'var(--color-success)' : 'var(--color-danger)'}
         strokeWidth="2"
+        points={points.join(' ')}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function MicroSparkline({ values = [], isUp }) {
+  if (!values || values.length < 2) return null
+  const width = 40
+  const height = 14
+  const padding = 1
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = Math.max(1, max - min)
+  const points = values.map((v, i) => {
+    const x = padding + (i / (values.length - 1)) * (width - padding * 2)
+    const y = padding + (1 - (v - min) / range) * (height - padding * 2)
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  })
+  const up = isUp ?? values[values.length - 1] >= values[0]
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-10 h-3.5 shrink-0">
+      <polyline
+        fill="none"
+        stroke={up ? 'var(--color-success)' : 'var(--color-danger)'}
+        strokeWidth="1.5"
         points={points.join(' ')}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -83,13 +282,11 @@ function MiniGauge({ score = 0, size = 48, strokeWidth = 6, color = 'var(--color
   )
 }
 
-function SentimentGauge({ score = 0, size = 44, strokeWidth = 5, color = 'var(--color-success)' }) {
+function SentimentGauge({ score = 0, size = 44, strokeWidth = 5, color = 'var(--color-success)', className = 'h-10 w-10' }) {
   const clamped = Math.max(0, Math.min(100, score))
   const radius = (size - strokeWidth) / 2
   const cx = size / 2
   const cy = size / 2
-  const startAngle = 180
-  const endAngle = 180 - (180 * clamped) / 100
 
   function polarToCartesian(centerX, centerY, r, angleInDegrees) {
     const angleInRadians = (angleInDegrees - 90) * (Math.PI / 180)
@@ -99,21 +296,43 @@ function SentimentGauge({ score = 0, size = 44, strokeWidth = 5, color = 'var(--
     }
   }
 
-  function describeArc(x, y, r, start, end) {
-    const startPoint = polarToCartesian(x, y, r, end)
-    const endPoint = polarToCartesian(x, y, r, start)
-    const largeArcFlag = Math.abs(end - start) <= 180 ? 0 : 1
-    const sweepFlag = 1
+  // Arc from start to end going clockwise; 0° = top (12 o'clock). SVG sweep-flag: 1 = clockwise.
+  function describeArcCW(centerX, centerY, r, startDeg, endDeg) {
+    const startPoint = polarToCartesian(centerX, centerY, r, startDeg)
+    const endPoint = polarToCartesian(centerX, centerY, r, endDeg)
+    const span = endDeg - startDeg
+    const largeArcFlag = span >= 180 ? 1 : 0
+    const sweepFlag = 1 // clockwise
     return `M ${startPoint.x} ${startPoint.y} A ${r} ${r} 0 ${largeArcFlag} ${sweepFlag} ${endPoint.x} ${endPoint.y}`
   }
 
-  const baseArc = describeArc(cx, cy, radius, 180, 0)
-  const valueArc = describeArc(cx, cy, radius, startAngle, endAngle)
+  // valueSpan = score as a fraction of 360°: 89 → 320.4°, 72 → 259.2°
+  const valueSpan = (360 * clamped) / 100
+  const valueArc = clamped > 0 ? describeArcCW(cx, cy, radius, 0, valueSpan) : null
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="h-10 w-10">
-      <path d={baseArc} stroke="currentColor" opacity="0.1" strokeWidth={strokeWidth} fill="none" strokeLinecap="round" />
-      <path d={valueArc} stroke={color} strokeWidth={strokeWidth} fill="none" strokeLinecap="round" />
+    <svg viewBox={`0 0 ${size} ${size}`} className={className}>
+      {/* Full grey track circle */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        opacity={0.25}
+        strokeLinecap="round"
+      />
+      {/* Green arc: score % of the circle, from top going clockwise */}
+      {valueArc && (
+        <path
+          d={valueArc}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+        />
+      )}
       <text x={cx} y={cy + 3} textAnchor="middle" fontSize="11" fontWeight="700" fill="currentColor">
         {clamped}
       </text>
@@ -123,15 +342,12 @@ function SentimentGauge({ score = 0, size = 44, strokeWidth = 5, color = 'var(--
 
 function SentimentMeterCard({ label, headline, score, color }) {
   return (
-    <div className="card-surface flex items-center justify-between p-2 transition-all duration-200 hover:border-border-strong" style={{ height: '80px' }}>
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-muted">{label}</div>
-        <div className="mt-0.5 text-sm font-bold flex items-center gap-1">
-          <span>{headline}</span>
-          <span className="text-muted">›</span>
-        </div>
+    <div className="card-surface flex flex-col items-center justify-start pt-1 px-3 pb-2 transition-all duration-200 hover:border-border-strong flex-1 min-h-0">
+      <div className="text-[1.05rem] font-bold uppercase tracking-wider text-muted">{label}</div>
+      <div className="mt-2">
+        <SentimentGauge score={score} color={color} className="h-[6.72rem] w-[6.72rem]" />
       </div>
-      <SentimentGauge score={score} color={color} />
+      <div className="text-sm font-bold text-text mt-2">{headline}</div>
     </div>
   )
 }
@@ -227,7 +443,7 @@ function MarketIndicesChart({ marketIndices = [] }) {
   
   return (
     <div className="w-full">
-      <div className="px-1" style={{ paddingBottom: '2px' }}>
+      <div className="px-1 pt-1 pb-2">
         {/* Chart */}
         <div className="w-full">
           <svg viewBox={`0 0 ${width} ${height}`} className="h-auto" style={{ maxHeight: '200px', width: '100%', display: 'flex', flexWrap: 'wrap' }}>
@@ -323,17 +539,22 @@ function MarketIndicesChart({ marketIndices = [] }) {
           </div>
         
         {/* Legend below chart as horizontal row */}
-        <div className="flex gap-4 items-center flex-wrap" style={{ marginTop: '2px' }}>
+        <div className="flex gap-2 items-center flex-nowrap" style={{ marginTop: '2px' }}>
           {normalizedData.map((data) => {
             const isPositive = data.change >= 0
             return (
-              <div key={data.ticker} className="flex items-center gap-1.5">
+              <div key={data.ticker} className="flex items-center gap-1 shrink-0 whitespace-nowrap">
                 <span className="text-xs font-medium">{data.ticker}</span>
                 <span className={clsx(
-                  'text-xs font-semibold',
+                  'text-xs font-semibold flex items-center gap-0',
                   isPositive ? 'text-success' : 'text-danger'
                 )}>
-                  {isPositive ? '+' : ''}{data.change.toFixed(2)}%
+                  {isPositive ? (
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                  ) : (
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                  )}
+                  {Math.abs(data.change).toFixed(2)}%
                 </span>
               </div>
             )
@@ -346,14 +567,24 @@ function MarketIndicesChart({ marketIndices = [] }) {
 
 export default function Home() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [showStreamingBanner, setShowStreamingBanner] = useState(true)
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
       return savedTheme === 'dark'
     }
-    return true
+    return false
   })
+  const [streamingWatchers, setStreamingWatchers] = useState(1384)
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setStreamingWatchers((n) => {
+        const d = Math.random() < 0.55 ? (Math.random() < 0.6 ? 1 : 2) : -1
+        return Math.max(1380, n + d)
+      })
+    }, 1800)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
     if (darkMode) {
@@ -443,17 +674,18 @@ export default function Home() {
       { 
         ticker: 'NVDA', 
         name: 'NVIDIA Corp.', 
-        logo: 'https://placehold.co/32x32?text=NVDA',
+        logo: getTickerLogo('NVDA'),
         price: 889.42, 
         change: 21.79,
         changePercent: 2.45,
         rank: 1,
         topics: ['🤖 AI Chip Demand', '💻 Data Center Growth'],
         timestamp: '1h ago',
+        messageCount24h: 1247,
         spark: [30, 32, 31, 33, 35, 34, 33, 32],
         userPost: {
           user: 'quantqueen',
-          avatar: 'https://placehold.co/24x24?text=QQ',
+          avatar: '/avatars/top-voice-2.png',
           message: 'Data center demand is insane. $NVDA breaking out on volume.',
           time: '25m ago',
           likes: 42,
@@ -463,17 +695,18 @@ export default function Home() {
       { 
         ticker: 'AAPL', 
         name: 'Apple Inc.', 
-        logo: 'https://placehold.co/32x32?text=AAPL',
+        logo: getTickerLogo('AAPL'),
         price: 182.51, 
         change: -1.50,
         changePercent: -0.82,
         rank: 2,
         topics: ['📱 iPhone Sales', '🇨🇳 China Headwinds'],
         timestamp: '2h ago',
+        messageCount24h: 892,
         spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23],
         userPost: {
           user: 'valueviking',
-          avatar: 'https://placehold.co/24x24?text=VV',
+          avatar: '/avatars/top-voice-3.png',
           message: 'China headwinds are real but iPhone demand holding strong.',
           time: '1h ago',
           likes: 28,
@@ -483,17 +716,18 @@ export default function Home() {
       { 
         ticker: 'TSLA', 
         name: 'Tesla, Inc.', 
-        logo: 'https://placehold.co/32x32?text=TSLA',
+        logo: getTickerLogo('TSLA'),
         price: 201.12, 
         change: 6.46,
         changePercent: 3.21,
         rank: 3,
         topics: ['🚗 Cybertruck Ramp', '⚡ Energy Storage'],
         timestamp: '45m ago',
+        messageCount24h: 2156,
         spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9],
         userPost: {
           user: 'spacebull',
-          avatar: 'https://placehold.co/24x24?text=SB',
+          avatar: '/avatars/top-voice-1.png',
           message: 'Cybertruck deliveries ramping up faster than expected. $TSLA',
           time: '30m ago',
           likes: 67,
@@ -503,17 +737,18 @@ export default function Home() {
       { 
         ticker: 'MSFT', 
         name: 'Microsoft Corp.', 
-        logo: 'https://placehold.co/32x32?text=MSFT',
+        logo: getTickerLogo('MSFT'),
         price: 414.63, 
         change: 4.77,
         changePercent: 1.15,
         rank: 4,
         topics: ['☁️ Azure Growth', '🤖 Copilot AI'],
         timestamp: '1h ago',
+        messageCount24h: 743,
         spark: [25, 24, 24.5, 25.2, 25.1, 25.6, 26, 26.2],
         userPost: {
           user: 'astrotrader',
-          avatar: 'https://placehold.co/24x24?text=AT',
+          avatar: '/avatars/top-voice-1.png',
           message: 'Azure growth accelerating. Enterprise AI adoption is real.',
           time: '45m ago',
           likes: 35,
@@ -530,10 +765,11 @@ export default function Home() {
         rank: 5,
         topics: ['🛒 Prime Day Sales', '☁️ AWS Optimization'],
         timestamp: '3h ago',
+        messageCount24h: 534,
         spark: [18, 18.4, 18.2, 18.9, 19.4, 19.1, 19.9, 20.2],
         userPost: {
           user: 'optionsowl',
-          avatar: 'https://placehold.co/24x24?text=OO',
+          avatar: '/avatars/top-voice-2.png',
           message: 'AWS optimization cycle continues but retail segment strong.',
           time: '2h ago',
           likes: 19,
@@ -550,10 +786,11 @@ export default function Home() {
         rank: 6,
         topics: ['📱 Reels Monetization', '🥽 Quest 3 Sales'],
         timestamp: '2h ago',
+        messageCount24h: 621,
         spark: [40, 39.5, 39.8, 40.6, 40.1, 41, 41.2, 40.7],
         userPost: {
           user: 'rocketman',
-          avatar: 'https://placehold.co/24x24?text=RM',
+          avatar: '/avatars/top-voice-3.png',
           message: 'Quest 3 sales momentum building. VR adoption accelerating.',
           time: '1h ago',
           likes: 51,
@@ -570,10 +807,11 @@ export default function Home() {
         rank: 7,
         topics: ['🔍 Search Dominance', '☁️ Cloud Market Share'],
         timestamp: '1h ago',
+        messageCount24h: 458,
         spark: [22, 22.5, 22.2, 22.8, 23, 22.9, 23.2, 23.1],
         userPost: {
           user: 'quantqueen',
-          avatar: 'https://placehold.co/24x24?text=QQ',
+          avatar: '/avatars/top-voice-2.png',
           message: 'Google Cloud gaining share. AI services attracting enterprises.',
           time: '50m ago',
           likes: 33,
@@ -590,10 +828,11 @@ export default function Home() {
         rank: 8,
         topics: ['💻 Data Center Pressure', '🎮 Console Weakness'],
         timestamp: '4h ago',
+        messageCount24h: 389,
         spark: [15, 14.8, 14.5, 14.7, 14.3, 14.6, 14.2, 14.7],
         userPost: {
           user: 'valueviking',
-          avatar: 'https://placehold.co/24x24?text=VV',
+          avatar: '/avatars/top-voice-3.png',
           message: 'Competitive pressure mounting but data center pipeline strong.',
           time: '3h ago',
           likes: 15,
@@ -610,10 +849,11 @@ export default function Home() {
         rank: 9,
         topics: ['📺 Subscriber Growth', '🎬 Hit Content'],
         timestamp: '30m ago',
+        messageCount24h: 312,
         spark: [45, 46, 45.5, 47, 47.5, 47.2, 48, 48.3],
         userPost: {
           user: 'spacebull',
-          avatar: 'https://placehold.co/24x24?text=SB',
+          avatar: '/avatars/top-voice-1.png',
           message: 'Subscriber growth exceeding expectations. Password crackdown working.',
           time: '20m ago',
           likes: 58,
@@ -630,10 +870,11 @@ export default function Home() {
         rank: 10,
         topics: ['📺 Streaming Recovery', '🎢 Park Attendance'],
         timestamp: '5h ago',
+        messageCount24h: 267,
         spark: [10, 10.2, 10.1, 10.3, 10.2, 10.4, 10.3, 10.0],
         userPost: {
           user: 'astrotrader',
-          avatar: 'https://placehold.co/24x24?text=AT',
+          avatar: '/avatars/top-voice-1.png',
           message: 'Streaming losses narrowing. Theme parks remain strong.',
           time: '4h ago',
           likes: 22,
@@ -647,14 +888,86 @@ export default function Home() {
   const earningsCallsGrouped = useMemo(() => {
     const today = new Date()
     const calls = [
-      { ticker: 'AAPL', name: 'Apple Inc.', time: '4:30 PM ET', date: new Date(today) },
-      { ticker: 'MSFT', name: 'Microsoft Corp.', time: '5:00 PM ET', date: new Date(today) },
-      { ticker: 'NVDA', name: 'NVIDIA Corp.', time: '5:30 PM ET', date: new Date(today) },
-      { ticker: 'TSLA', name: 'Tesla, Inc.', time: '4:00 PM ET', date: new Date(today.getTime() + 24 * 60 * 60 * 1000) },
-      { ticker: 'AMZN', name: 'Amazon.com', time: '4:30 PM ET', date: new Date(today.getTime() + 24 * 60 * 60 * 1000) },
-      { ticker: 'META', name: 'Meta Platforms', time: '5:00 PM ET', date: new Date(today.getTime() + 24 * 60 * 60 * 1000) },
-      { ticker: 'GOOGL', name: 'Alphabet Inc.', time: '4:00 PM ET', date: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000) },
-      { ticker: 'RKLB', name: 'Rocket Lab USA', time: '8:00 AM ET', date: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000) },
+      { 
+        ticker: 'AAPL', 
+        name: 'Apple Inc.', 
+        time: '4:30 PM ET', 
+        date: new Date(today),
+        listeners: 1832,
+        epsResult: 2.18,
+        revenueResult: 119.58,
+        isLive: true
+      },
+      { 
+        ticker: 'MSFT', 
+        name: 'Microsoft Corp.', 
+        time: '5:00 PM ET', 
+        date: new Date(today),
+        listeners: 2145,
+        epsResult: 2.82,
+        revenueResult: 61.14,
+        isLive: true
+      },
+      { 
+        ticker: 'NVDA', 
+        name: 'NVIDIA Corp.', 
+        time: '5:30 PM ET', 
+        date: new Date(today),
+        listeners: 3421,
+        epsResult: 5.58,
+        revenueResult: 20.37,
+        isLive: true
+      },
+      { 
+        ticker: 'TSLA', 
+        name: 'Tesla, Inc.', 
+        time: '4:00 PM ET', 
+        date: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        listeners: 1876,
+        epsResult: 0.73,
+        revenueResult: 25.17,
+        isLive: true
+      },
+      { 
+        ticker: 'AMZN', 
+        name: 'Amazon.com', 
+        time: '4:30 PM ET', 
+        date: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        listeners: 2654,
+        epsResult: 0.78,
+        revenueResult: 165.96,
+        isLive: true
+      },
+      { 
+        ticker: 'META', 
+        name: 'Meta Platforms', 
+        time: '5:00 PM ET', 
+        date: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        listeners: 1923,
+        epsResult: 4.94,
+        revenueResult: 40.11,
+        isLive: true
+      },
+      { 
+        ticker: 'GOOGL', 
+        name: 'Alphabet Inc.', 
+        time: '4:00 PM ET', 
+        date: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000),
+        listeners: 1456,
+        epsResult: 1.59,
+        revenueResult: 85.33,
+        isLive: true
+      },
+      { 
+        ticker: 'RKLB', 
+        name: 'Rocket Lab USA', 
+        time: '8:00 AM ET', 
+        date: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000),
+        listeners: 892,
+        epsResult: -0.05,
+        revenueResult: 65.8,
+        isLive: true
+      },
     ]
     
     const sorted = calls.sort((a, b) => {
@@ -705,6 +1018,30 @@ export default function Home() {
       { ticker: 'Bitcoin', change: 3.12, spark: [45000, 45200, 45500, 45300, 45800, 45600, 46000, 46312] },
       { ticker: 'Gold', change: -0.34, spark: [2050, 2048, 2045, 2047, 2043, 2046, 2042, 2043.34] },
     ].sort((a, b) => b.change - a.change),
+    []
+  )
+
+  const topWatchlistActivity = useMemo(
+    () => {
+      const data = [
+        { ticker: 'BNAI', name: 'Brand Engageme...', price: 58.54, changePercent: 345.52, spark: [12, 14, 18, 22, 28, 35, 45, 58.54], watchers: 8923, watchersChange24h: 234.8 },
+        { ticker: 'QCLS', name: 'Q/C Technologies...', price: 5.96, changePercent: -3.2, spark: [6.2, 6.1, 6.0, 5.9, 5.95, 5.97, 5.98, 5.96], watchers: 2134, watchersChange24h: 67.2 },
+        { ticker: 'ARAI', name: 'Arrive AI Inc', price: 3.34, changePercent: -1.5, spark: [3.4, 3.35, 3.33, 3.32, 3.34, 3.33, 3.35, 3.34], watchers: 1876, watchersChange24h: 45.3 },
+        { ticker: 'VSA', name: 'VisionSys AI', price: 2.95, changePercent: 26.45, spark: [2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.85, 2.95], watchers: 2341, watchersChange24h: 38.9 },
+        { ticker: 'GME', name: 'GameStop', price: 29.96, changePercent: -2.8, spark: [30.8, 30.5, 30.2, 30.0, 29.9, 29.95, 29.97, 29.96], watchers: 45678, watchersChange24h: 23.6 },
+        { ticker: 'COPX', name: 'Global X Copper', price: 87.5, changePercent: 6.33, spark: [81, 82, 83, 84, 85, 86, 86.5, 87.5], watchers: 3456, watchersChange24h: 15.7 },
+        { ticker: 'PLTR', name: 'Palantir', price: 18.45, changePercent: -1.2, spark: [18.7, 18.6, 18.5, 18.4, 18.45, 18.44, 18.46, 18.45], watchers: 34567, watchersChange24h: 14.2 },
+        { ticker: 'DFTX', name: 'Definium Therap...', price: 17.22, changePercent: 1.5, spark: [16.8, 17, 16.9, 17.1, 17.05, 17.2, 17.15, 17.22], watchers: 1247, watchersChange24h: 12.5 },
+        { ticker: 'RDW', name: 'Redwire Corp', price: 12.28, changePercent: -0.8, spark: [12.4, 12.35, 12.3, 12.25, 12.28, 12.27, 12.29, 12.28], watchers: 987, watchersChange24h: 9.4 },
+        { ticker: 'SLV', name: 'iShares Silver Trust', price: 94.44, changePercent: 8.28, spark: [86, 87, 88, 89, 90, 91, 93, 94.44], watchers: 4567, watchersChange24h: 8.3 },
+        { ticker: 'NVDA', name: 'NVIDIA Corp', price: 889.42, changePercent: -1.5, spark: [903, 900, 895, 890, 888, 889, 889.5, 889.42], watchers: 67890, watchersChange24h: 7.8 },
+      ]
+      
+      // Filter out negative watcher changes and sort by watchersChange24h descending
+      return data
+        .filter(item => item.watchersChange24h > 0)
+        .sort((a, b) => b.watchersChange24h - a.watchersChange24h)
+    },
     []
   )
 
@@ -782,7 +1119,7 @@ export default function Home() {
       {
         id: 1,
         user: 'quantqueen',
-        avatar: 'https://placehold.co/40x40?text=QQ',
+        avatar: '/avatars/top-voice-1.png',
         time: '15m ago',
         message: 'Data center demand is insane. $NVDA breaking out on volume. The technical setup looks very promising for continued upside momentum.',
         likes: 142,
@@ -794,7 +1131,7 @@ export default function Home() {
       {
         id: 2,
         user: 'spacebull',
-        avatar: 'https://placehold.co/40x40?text=SB',
+        avatar: '/avatars/top-voice-2.png',
         time: '32m ago',
         message: 'Cybertruck deliveries ramping up faster than expected. $TSLA production numbers are impressive. Energy storage segment also showing strong growth.',
         likes: 89,
@@ -806,7 +1143,7 @@ export default function Home() {
       {
         id: 3,
         user: 'valueviking',
-        avatar: 'https://placehold.co/40x40?text=VV',
+        avatar: '/avatars/top-voice-3.png',
         time: '1h ago',
         message: 'China headwinds are real but iPhone demand holding strong. $AAPL valuation looks attractive at these levels. Services revenue continues to grow.',
         likes: 67,
@@ -818,7 +1155,7 @@ export default function Home() {
       {
         id: 4,
         user: 'astrotrader',
-        avatar: 'https://placehold.co/40x40?text=AT',
+        avatar: '/avatars/user-avatar.png',
         time: '1h ago',
         message: 'Azure growth accelerating. Enterprise AI adoption is real. $MSFT positioning well for the next wave of cloud infrastructure demand.',
         likes: 95,
@@ -830,7 +1167,7 @@ export default function Home() {
       {
         id: 5,
         user: 'optionsowl',
-        avatar: 'https://placehold.co/40x40?text=OO',
+        avatar: '/avatars/top-voice-1.png',
         time: '2h ago',
         message: 'AWS optimization cycle continues but retail segment strong. $AMZN Prime Day sales exceeded expectations. Logistics efficiency improving.',
         likes: 54,
@@ -842,7 +1179,7 @@ export default function Home() {
       {
         id: 6,
         user: 'rocketman',
-        avatar: 'https://placehold.co/40x40?text=RM',
+        avatar: '/avatars/top-voice-2.png',
         time: '2h ago',
         message: 'Quest 3 sales momentum building. VR adoption accelerating. $META Reels monetization also showing strong results. Bullish on the metaverse play.',
         likes: 112,
@@ -854,7 +1191,7 @@ export default function Home() {
       {
         id: 7,
         user: 'quantqueen',
-        avatar: 'https://placehold.co/40x40?text=QQ',
+        avatar: '/avatars/top-voice-1.png',
         time: '3h ago',
         message: 'Google Cloud gaining share. AI services attracting enterprises. $GOOGL Search dominance remains strong. YouTube ad recovery continues.',
         likes: 78,
@@ -866,7 +1203,7 @@ export default function Home() {
       {
         id: 8,
         user: 'spacebull',
-        avatar: 'https://placehold.co/40x40?text=SB',
+        avatar: '/avatars/top-voice-2.png',
         time: '4h ago',
         message: 'Subscriber growth exceeding expectations. Password crackdown working. $NFLX content pipeline looks strong for Q2. International expansion on track.',
         likes: 91,
@@ -899,54 +1236,53 @@ export default function Home() {
         <TopNavigation />
         <TickerTape />
         
-        {/* STREAMING NOW Banner */}
-        {showStreamingBanner && (
-          <div className="px-4 pt-4">
-            <div className="card-surface p-2.5 border-2 relative" style={{ borderColor: '#8b5cf6' }}>
-              <div className="flex items-center">
-                {/* Title and description */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm mb-0.5">STREAMING NOW</h3>
-                  <p className="text-xs muted leading-relaxed">
-                    Join us for live market analysis and real-time earnings call coverage as we break down today's key financial updates.
-                  </p>
-                </div>
-                {/* Close button */}
-                <button
-                  onClick={() => setShowStreamingBanner(false)}
-                  className="ml-3 flex-shrink-0 p-1 hover:bg-surface-muted rounded transition-colors"
-                  aria-label="Close banner"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-muted hover:text-text"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+        {/* Streaming Live Banner */}
+        <div className="px-4 pt-4">
+          <div className="card-surface p-2.5 border-2 flex items-center gap-3" style={{ borderColor: '#8b5cf6' }}>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h3 className="font-semibold text-sm truncate">Streaming Live: Powell Delivers Fed Interest Rate</h3>
+              <div className="w-16 h-12 shrink-0 rounded overflow-hidden bg-surface-muted">
+                <img
+                  src="/images/powell-streaming.png"
+                  alt="Jerome Powell"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Compact Sentiment Meter */}
+              <div className="shrink-0" style={{ width: '180px' }}>
+                <CompactSentimentMeter initialBullish={62.5} />
               </div>
             </div>
+            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg shrink-0" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+              <svg className="w-4 h-4" style={{ color: '#8b5cf6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span className="text-sm font-extrabold tabular-nums" style={{ color: '#8b5cf6' }}>
+                {streamingWatchers.toLocaleString()}
+              </span>
+              <span className="text-xs font-semibold" style={{ color: '#8b5cf6' }}>watchers</span>
+            </div>
+            <button
+              className="shrink-0 px-3 py-1.5 rounded font-bold text-xs text-white hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: '#8b5cf6' }}
+            >
+              JOIN LIVE
+            </button>
           </div>
-        )}
+        </div>
         
         {/* Top Banner Row */}
         <div className="px-4 border-b border-border" style={{ paddingTop: '13.5px', paddingBottom: '0' }}>
           <div className="grid items-start" style={{ gridTemplateColumns: '0.8fr 1fr 0.8fr', gap: '14px' }}>
-            {/* First Section: Sentiment Meter */}
+            {/* First Section: Sentiment Meters - US Equities left, Crypto right; top-aligns with news */}
             <div className="flex flex-col min-w-0">
-              <div className="flex flex-col" style={{ gap: '7px', height: '180px' }}>
-                {/* US Equities Meter */}
+              <div className="flex flex-row gap-2">
                 <SentimentMeterCard 
                   label="US Equities"
                   headline={getSentimentLabel(89)} 
                   score={89} 
                   color="var(--color-success)" 
                 />
-                {/* Crypto Meter */}
                 <SentimentMeterCard 
                   label="Crypto"
                   headline={getSentimentLabel(72)} 
@@ -963,7 +1299,7 @@ export default function Home() {
 
             {/* Third Section: Latest News */}
             <div className="flex flex-col min-w-0">
-              <div className="flex flex-col" style={{ gap: '10px' }}>
+              <div className="flex flex-col pb-2" style={{ gap: '10px' }}>
                 {latestNews.slice(0, 3).map((article, index) => (
                   <a
                     key={index}
@@ -986,67 +1322,10 @@ export default function Home() {
         <div className="flex p-4">
           {/* Main Content Column */}
           <div className="flex-1 min-w-0">
-            {/* Live Event Player and Top Discussions Row */}
-            <div className="flex flex-col lg:flex-row gap-4 h-[480px]">
-              {/* Live Event Player - takes most space */}
-              <div className="flex-1 min-w-0 flex flex-col gap-4">
-                <div className="flex-1 min-h-0">
-                  <LiveEventPlayer />
-                </div>
-                {/* Thin row of 3 cards below live event */}
-                <div className="grid grid-cols-3 gap-4 h-20">
-                  <div className="card-surface p-3 flex gap-2 cursor-pointer hover:border-border-strong transition-colors">
-                    <div className="w-16 h-12 rounded overflow-hidden bg-surface-muted shrink-0">
-                      <img
-                        src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=64&h=48&fit=crop&q=80"
-                        alt="Video thumbnail"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <h4 className="text-[10px] font-semibold leading-tight line-clamp-2 mb-1">
-                        Greenland Drama Sparks Tariff Chaos
-                      </h4>
-                      <span className="badge badge-sm text-[9px] px-1.5 py-0.5 w-fit">
-                        SPY <span className="text-success">+0.85%</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="card-surface p-3 flex flex-col justify-center cursor-pointer hover:border-border-strong transition-colors">
-                    <h4 className="text-[10px] font-semibold leading-tight line-clamp-2 mb-1">
-                      PLTR Announces New AI Contract with Defense Department
-                    </h4>
-                    <span className="badge badge-sm text-[9px] px-1.5 py-0.5 w-fit">
-                      PLTR <span className="text-danger">-0.11%</span>
-                    </span>
-                  </div>
-                  <div className="card-surface p-3 flex gap-2 cursor-pointer hover:border-border-strong transition-colors">
-                    <img
-                      src="https://placehold.co/32x32?text=U"
-                      alt="User avatar"
-                      className="w-8 h-8 rounded-full border border-border shrink-0"
-                    />
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <div className="text-[10px] font-semibold mb-1">quantqueen</div>
-                      <p className="text-[10px] text-muted leading-tight line-clamp-2">
-                        Data center demand is insane. $NVDA breaking out on volume. The technical setup looks very promising.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Top Discussions - on the right */}
-              <div className="w-full lg:w-[360px] shrink-0">
-                <TopDiscussions />
-              </div>
-            </div>
-
             {/* Trending Symbols Carousel */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-semibold text-lg">Trending Symbols</h2>
-                <button className="text-sm text-primary hover:underline font-medium">View all</button>
+            <div className="mb-4">
+              <div className="mb-3 px-1">
+                <h2 className="font-semibold text-lg">Trending Symbols &gt;</h2>
               </div>
               <div className="p-4 bg-surface-muted/30">
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
@@ -1071,16 +1350,15 @@ export default function Home() {
                         <div className="flex items-baseline gap-2">
                           <span className="font-semibold text-lg">${symbol.price.toFixed(2)}</span>
                           <span className={clsx(
-                            'text-sm font-medium',
+                            'text-sm font-medium flex items-center gap-0',
                             isPositive ? 'text-success' : 'text-danger'
                           )}>
-                            {isPositive ? '+' : ''}${symbol.change.toFixed(2)}
-                          </span>
-                          <span className={clsx(
-                            'text-sm font-medium',
-                            isPositive ? 'text-success' : 'text-danger'
-                          )}>
-                            ({isPositive ? '+' : ''}{symbol.changePercent.toFixed(2)}%)
+                            {isPositive ? (
+                              <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                            ) : (
+                              <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                            )}
+                            ${Math.abs(symbol.change).toFixed(2)} ({Math.abs(symbol.changePercent).toFixed(2)}%)
                           </span>
                         </div>
 
@@ -1099,7 +1377,7 @@ export default function Home() {
                             <img
                               src={symbol.userPost.avatar}
                               alt={symbol.userPost.user}
-                              className="h-6 w-6 rounded-full border border-border flex-shrink-0"
+                              className="h-10 w-10 rounded-full border-2 border-primary/30 ring-2 ring-primary/10 shadow-md flex-shrink-0 object-cover"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-1">
@@ -1127,9 +1405,11 @@ export default function Home() {
                           </div>
                         )}
 
-                        {/* Footer: Timestamp and Watchlist Button */}
+                        {/* Footer: Message Count and Watchlist Button */}
                         <div className="flex items-center justify-between pt-1">
-                          <span className="text-[10px] muted">{symbol.timestamp}</span>
+                          {symbol.messageCount24h && (
+                            <AnimatedMessageCount initialCount={symbol.messageCount24h} />
+                          )}
                           <button 
                             className="w-6 h-6 rounded-full border border-border bg-surface-muted hover:bg-surface flex items-center justify-center transition-colors"
                             aria-label={`Add ${symbol.ticker} to watchlist`}
@@ -1147,11 +1427,140 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Live Event Player and Community Predictions Row */}
+            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+              {/* Left: Hero + 2 news cards under (fills to match Community bottom) */}
+              <div className="flex-1 min-w-0 flex flex-col gap-2">
+                <div className="h-[280px] min-h-0 shrink-0">
+                  <LiveEventPlayer />
+                </div>
+                <div className="flex-1 min-h-0 flex flex-row gap-2 items-start">
+                  <a href="#" className="card-surface flex flex-1 min-w-0 overflow-hidden rounded-lg border-b border-border cursor-pointer hover:border-border-strong transition-colors">
+                    <div className="flex min-h-0 w-full">
+                      <div className="relative w-[32%] shrink-0 aspect-[16/9] bg-surface-muted">
+                        <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=200&h=150&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-1 left-1 px-1 py-0.5 rounded bg-black/60 flex items-center gap-0.5">
+                          <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                          <span className="text-[9px] text-white font-medium">01:25</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center p-2">
+                        <h4 className="font-bold text-xs text-text leading-tight line-clamp-2 mb-0.5">
+                          Greenland Drama Sparks Tariff Chaos
+                        </h4>
+                        <p className="text-[10px] text-muted mb-1">45 mins ago</p>
+                        <span className="inline-flex items-center gap-0.5 w-fit rounded-full border border-border bg-surface px-1.5 py-0.5 text-[10px]">
+                          <span className="font-semibold text-primary">SPY</span>
+                          <span className="text-success font-medium">+0.85%</span>
+                          <button type="button" className="ml-0.5 p-0.5 rounded hover:bg-surface-muted" aria-label="Add to watchlist" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                            <svg className="w-3 h-3 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                  <a href="#" className="card-surface flex flex-1 min-w-0 overflow-hidden rounded-lg border-b border-border cursor-pointer hover:border-border-strong transition-colors">
+                    <div className="flex min-h-0 w-full">
+                      <div className="relative w-[32%] shrink-0 aspect-[16/9] bg-surface-muted">
+                        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=200&h=150&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-1 left-1 px-1 py-0.5 rounded bg-black/60 flex items-center gap-0.5">
+                          <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                          <span className="text-[9px] text-white font-medium">02:41</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center p-2">
+                        <h4 className="font-bold text-xs text-text leading-tight line-clamp-2 mb-0.5">
+                          PLTR Announces New AI Contract with Defense Department
+                        </h4>
+                        <p className="text-[10px] text-muted mb-1">3 hrs ago</p>
+                        <span className="inline-flex items-center gap-0.5 w-fit rounded-full border border-border bg-surface px-1.5 py-0.5 text-[10px]">
+                          <span className="font-semibold text-primary">PLTR</span>
+                          <span className="text-danger font-medium">-0.11%</span>
+                          <button type="button" className="ml-0.5 p-0.5 rounded hover:bg-surface-muted" aria-label="Add to watchlist" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                            <svg className="w-3 h-3 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+              
+              {/* Community predictions + Top Predictors - side by side on the right */}
+              <div className="w-full lg:w-[532px] shrink-0 flex flex-col lg:flex-row gap-3">
+                <div className="min-w-0 lg:w-[320px] shrink-0">
+                  <CommunityPredictions />
+                </div>
+                <div className="w-full lg:w-[200px] shrink-0 self-stretch">
+                  <TopPredictors />
+                </div>
+              </div>
+            </div>
+
+            {/* Top Watchlist Activity - small pills carousel */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="font-semibold text-lg">Top Watchlist Activity &gt;</h2>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {topWatchlistActivity.map((s, idx) => {
+                  const isUp = s.changePercent >= 0
+                  const watchersUp = true // Always positive since we filter out negatives
+                  return (
+                    <div
+                      key={`${s.ticker}-${idx}`}
+                      className="flex flex-col gap-1.5 px-3 py-2.5 rounded-lg border border-border bg-surface hover:bg-surface-muted transition-colors shrink-0 min-w-[200px]"
+                    >
+                      {/* Top row: Logo, Ticker, Sparkline */}
+                      <div className="flex items-center gap-2">
+                        {getTickerLogo(s.ticker) && (
+                          <img src={getTickerLogo(s.ticker)} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
+                        )}
+                        <span className="font-bold text-sm text-text shrink-0">{s.ticker}</span>
+                        <MicroSparkline values={s.spark} isUp={isUp} />
+                      </div>
+                      {/* Bottom row: Price change and Watcher info */}
+                      <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/50">
+                        {/* Price change */}
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[9px] text-muted uppercase tracking-wide">Price</span>
+                          <span className={clsx('text-xs font-bold shrink-0 flex items-center gap-0.5', isUp ? 'text-success' : 'text-danger')}>
+                            {isUp ? (
+                              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                            ) : (
+                              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                            )}
+                            {Math.abs(s.changePercent).toFixed(2)}%
+                          </span>
+                        </div>
+                        {/* Watcher count and change */}
+                        <div className="flex flex-col gap-0.5 items-end">
+                          <span className="text-[9px] text-muted uppercase tracking-wide">Watchers</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-text tabular-nums">
+                              {s.watchers.toLocaleString()}
+                            </span>
+                            <span className={clsx('text-[10px] font-bold shrink-0 flex items-center gap-0.5', watchersUp ? 'text-success' : 'text-danger')}>
+                              {watchersUp ? (
+                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                              ) : (
+                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                              )}
+                              {Math.abs(s.watchersChange24h).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Top Earnings Carousel */}
             <div className="mt-4">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <h2 className="font-semibold text-base">Top Earnings</h2>
-                <button className="text-sm text-primary hover:underline font-medium">View all</button>
+              <div className="mb-2 px-1">
+                <h2 className="font-semibold text-lg">Top Earnings &gt;</h2>
               </div>
               <div className="px-4">
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -1163,38 +1572,67 @@ export default function Home() {
                     const topEarnings = aaplCall ? [aaplCall, ...otherCalls].slice(0, 5) : allCalls.slice(0, 5)
                     
                     return topEarnings.map((item, index) => {
-                      const isLive = item.ticker === 'AAPL'
                       const purpleColor = '#8b5cf6'
+                      // Different initial sentiment values for each call to show independent animation
+                      const initialSentimentValues = [62.5, 58.3, 65.7, 54.2, 71.4]
+                      const initialBullish = initialSentimentValues[index % initialSentimentValues.length]
                       
                       return (
                         <div
                           key={`${item.ticker}-${index}`}
-                          className={`shrink-0 rounded-lg border px-3 py-2 flex items-center gap-2.5 ${
-                            isLive ? 'bg-surface border-2' : 'bg-surface border border-border'
-                          }`}
-                          style={isLive ? { borderColor: purpleColor } : {}}
+                          className="shrink-0 rounded-lg border-2 px-3 py-2.5 flex flex-col gap-2 bg-surface"
+                          style={{ borderColor: purpleColor }}
                         >
-                          <span className="badge badge-sm font-semibold">{item.ticker}</span>
-                          <div className="flex flex-col min-w-0">
-                            <div className="text-xs font-semibold leading-tight truncate max-w-[120px]">
-                              {item.name}
+                          {/* Top row: Logo, Ticker, Time, Live badge */}
+                          <div className="flex items-center gap-2.5">
+                            {getTickerLogo(item.ticker) && (
+                              <img src={getTickerLogo(item.ticker)} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+                            )}
+                            <span className="badge badge-sm font-semibold">{item.ticker}</span>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <div className="text-xs font-semibold leading-tight truncate">
+                                {item.name}
+                              </div>
+                              <div className="text-[10px] muted">{item.time}</div>
                             </div>
-                            <div className="text-[10px] muted">{item.time}</div>
+                            <span className="flex items-center gap-1 text-[10px] font-semibold whitespace-nowrap shrink-0" style={{ color: purpleColor }}>
+                              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: purpleColor }} />
+                              Live
+                            </span>
+                            <button
+                              className="rounded-full px-2.5 py-1 text-[10px] font-semibold shrink-0"
+                              style={{ backgroundColor: purpleColor, borderColor: purpleColor, color: 'white' }}
+                            >
+                              Join
+                            </button>
                           </div>
-                          {isLive && (
-                            <>
-                              <span className="flex items-center gap-1 text-[10px] font-semibold whitespace-nowrap shrink-0" style={{ color: purpleColor }}>
-                                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: purpleColor }} />
-                                Live
+                          
+                          {/* Bottom row: Listener count, Sentiment Meter, EPS and Revenue */}
+                          <div className="flex flex-col gap-2 pt-1 border-t border-border/50">
+                            {/* Listener count - enhanced */}
+                            <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                              <svg className="w-4 h-4" style={{ color: '#8b5cf6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              <span className="text-sm font-extrabold tabular-nums" style={{ color: '#8b5cf6' }}>
+                                {item.listeners?.toLocaleString()}
                               </span>
-                              <button
-                                className="rounded-full px-2.5 py-1 text-[10px] font-semibold shrink-0"
-                                style={{ backgroundColor: purpleColor, borderColor: purpleColor, color: 'white' }}
-                              >
-                                Join
-                              </button>
-                            </>
-                          )}
+                              <span className="text-xs font-semibold" style={{ color: '#8b5cf6' }}>listening</span>
+                            </div>
+                            {/* Sentiment Meter - each with different initial value */}
+                            <SentimentMeter initialBullish={initialBullish} />
+                            {/* EPS and Revenue Results */}
+                            <div className="flex items-center gap-3 text-[10px]">
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted">EPS:</span>
+                                <span className="font-bold text-text">${item.epsResult?.toFixed(2)}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted">Revenue:</span>
+                                <span className="font-bold text-text">${item.revenueResult?.toFixed(2)}B</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )
                     })
@@ -1204,10 +1642,9 @@ export default function Home() {
             </div>
 
             {/* My Community Carousel */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-semibold text-lg">My Community</h2>
-                <button className="text-sm text-primary hover:underline font-medium">View all</button>
+            <div className="mt-4">
+              <div className="mb-3 px-1">
+                <h2 className="font-semibold text-lg">My Community &gt;</h2>
               </div>
               <div className="p-4 bg-surface-muted/30">
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
