@@ -38,13 +38,16 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
         <img src="/images/stocktwits-logo.png" alt="Stocktwits" className="h-[39px] w-auto object-contain" />
       </a>
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 min-w-0">
           <img
             src="/avatars/user-avatar.png"
-            className="h-10 w-10 rounded-full border border-border object-cover"
+            className="h-10 w-10 rounded-full border border-border object-cover shrink-0"
             alt="Profile"
           />
-          <div className="font-semibold">Profile</div>
+          <span className="font-semibold truncate">Profile</span>
+          <svg className="w-4 h-4 shrink-0 muted" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
         </div>
         <button
           onClick={toggleDarkMode}
@@ -66,48 +69,70 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
           )}
         </button>
       </div>
-      <div className="flex flex-col gap-2">
-        <button className="btn"><span>🔔</span> Notifications</button>
-        <button className="btn"><span>✉️</span> Messages</button>
-        <button className="btn"><span>👥</span> Community</button>
+      <div className="flex flex-col gap-1">
+        <button className="btn justify-start gap-2">
+          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+          Notifications
+        </button>
+        <button className="btn justify-start gap-2">
+          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+          Messages
+        </button>
+        <button className="btn justify-start gap-2">
+          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          Settings
+        </button>
       </div>
-      <button className="btn btn-primary w-full text-base">Post</button>
+      <button className="btn w-full text-base font-semibold rounded-lg bg-black text-white border-black hover:bg-gray-800 hover:border-gray-800 flex items-center justify-center gap-2">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+        Post
+      </button>
 
-      <div className="mt-2 text-sm uppercase tracking-wide muted shrink-0">Watchlist</div>
-      <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
-        {watchlist.map((s) => (
-          <div key={s.ticker} className="p-3 border-b border-border last:border-b-0">
-            <div className="flex items-center justify-between gap-3">
+      <div className="mt-4 flex items-center justify-between gap-2 shrink-0">
+        <span className="text-sm font-semibold text-text">Watchlist</span>
+        <div className="flex items-center gap-1">
+          <select className="text-xs font-medium rounded border border-border bg-surface-muted text-text px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option>All</option>
+          </select>
+          <select className="text-xs font-medium rounded border border-border bg-surface-muted text-text px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option>A-Z</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex-1 min-h-0 space-y-0 overflow-y-auto pr-1 mt-2">
+        {watchlist.map((s) => {
+          const pct = s.price !== 0 ? ((s.change / s.price) * 100) : 0
+          return (
+            <div key={s.ticker} className="py-2.5 border-b border-border last:border-b-0">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted">
+                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted border border-border">
                   {getTickerLogo(s.ticker) ? (
                     <img src={getTickerLogo(s.ticker)} alt="" className="w-full h-full object-contain" />
                   ) : (
                     <span className="text-xs font-bold text-muted">{s.ticker[0]}</span>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <div>
-                    <span className="font-semibold">{s.ticker}</span>
-                  </div>
-                  <div className="truncate text-sm muted">{s.name}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-sm">{s.ticker}</div>
+                  <div className="truncate text-xs muted">{s.name}</div>
                 </div>
               </div>
-              <MiniSparkline values={s.spark} />
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <div className="font-semibold">${s.price.toFixed(2)}</div>
-              <div className={clsx('text-sm flex items-center gap-0', s.change >= 0 ? 'text-success' : 'text-danger')}>
-                {s.change >= 0 ? (
-                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
-                ) : (
-                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
-                )}
-                {Math.abs(s.change).toFixed(2)}%
+              <div className="mt-1.5 flex items-baseline justify-between pl-10">
+                <span className="font-semibold text-sm">${s.price.toFixed(2)}</span>
+                <span className={clsx('text-xs font-medium flex items-center gap-0.5', s.change >= 0 ? 'text-success' : 'text-danger')}>
+                  {s.change >= 0 ? (
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                  ) : (
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                  )}
+                  ${Math.abs(s.change).toFixed(2)} ({pct >= 0 ? '' : '-'}{Math.abs(pct).toFixed(2)}%)
+                </span>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

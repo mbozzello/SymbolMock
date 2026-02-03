@@ -738,7 +738,7 @@ function UnregisteredPage() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/registered" replace />} />
+      <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="/home" element={<Home />} />
       <Route path="/registered" element={<RegisteredPage />} />
       <Route path="/unreg" element={<UnregisteredPage />} />

@@ -438,7 +438,7 @@ export default function CollapsibleStockHeader({
             {/* Row 1: Trending, Market Cap, 52W High, 52W Low */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-base">🔥</span>
+                {(ticker === 'TSLA' || ticker === 'AAPL') && <span className="text-base">🔥</span>}
                 <span className="font-bold text-text">Trending #2 Overall</span>
                 <button 
                   type="button"

@@ -67,15 +67,15 @@ function TickerItem({ symbol, change }) {
 
 export default function TickerTape() {
   const scrollingSymbols = [
-    { symbol: 'UAMY', change: 7.03 },
-    { symbol: 'ALT', change: 4.59 },
-    { symbol: 'SRPT', change: 7.1 },
-    { symbol: 'GME', change: 0.7 },
-    { symbol: 'INTC', change: -0.58 },
+    { symbol: 'TSLA', change: 4.02 },
+    { symbol: 'BTC', change: 11.8 },
+    { symbol: 'PZZA', change: 0.72 },
+    { symbol: 'SPOT', change: 3.44 },
+    { symbol: 'ETH', change: 9.0 },
+    { symbol: 'AMD', change: -0.88 },
+    { symbol: 'SNAP', change: 0 },
     { symbol: 'NVDA', change: 2.45 },
-    { symbol: 'PLTR', change: 5.67 },
     { symbol: 'AAPL', change: -0.82 },
-    { symbol: 'TSLA', change: 3.21 },
     { symbol: 'META', change: 0.67 },
   ]
   const duplicatedScroll = [...scrollingSymbols, ...scrollingSymbols]
@@ -83,7 +83,7 @@ export default function TickerTape() {
   return (
     <div className="sticky top-0 z-10 border-b border-border bg-background overflow-hidden">
       <div className="flex items-center min-h-[40px] py-1.5">
-        {/* Left: All + SPY + BTC (static) */}
+        {/* Left: All + SPY + QQQ + Trending (static) */}
         <div className="flex items-center gap-3 pl-4 pr-3 shrink-0 border-r border-border">
           <button
             type="button"
@@ -91,23 +91,21 @@ export default function TickerTape() {
           >
             All
           </button>
-          <TickerItem symbol="SPY" change={-0.14} />
-          <TickerItem symbol="BTC" change={1.23} />
-        </div>
-
-        {/* TRENDING: label + 38% static; only the ticker strip scrolls */}
-        <div className="flex items-center flex-1 min-w-0">
-          <div className="flex items-center pl-4 pr-3 shrink-0">
+          <TickerItem symbol="SPY" change={0.72} />
+          <TickerItem symbol="QQQ" change={-0.49} />
+          <div className="flex items-center pl-2 pr-1">
             <span className="text-xs font-semibold text-muted uppercase tracking-wide">Trending</span>
           </div>
-          <div className="ticker-tape-scroll-wrap flex-1 min-w-0 overflow-hidden">
-            <div className="ticker-tape-content">
-              {duplicatedScroll.map((item, i) => (
-                <div key={`${item.symbol}-${i}`} className="ticker-tape-item px-3">
-                  <TickerItem symbol={item.symbol} change={item.change} />
-                </div>
-              ))}
-            </div>
+        </div>
+
+        {/* Scrolling ticker strip */}
+        <div className="ticker-tape-scroll-wrap flex-1 min-w-0 overflow-hidden">
+          <div className="ticker-tape-content">
+            {duplicatedScroll.map((item, i) => (
+              <div key={`${item.symbol}-${i}`} className="ticker-tape-item px-3">
+                <TickerItem symbol={item.symbol} change={item.change} />
+              </div>
+            ))}
           </div>
         </div>
       </div>
