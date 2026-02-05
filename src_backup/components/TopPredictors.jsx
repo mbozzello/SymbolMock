@@ -1,5 +1,5 @@
 const PREDICTORS = [
-  { rank: 1, user: 'howardlindzon', avatar: '/avatars/howard-lindzon.png', performance: 452 },
+  { rank: 1, user: 'howardlindzon', avatar: '/avatars/top-voice-1.png', performance: 452 },
   { rank: 2, user: 'amitDBA', avatar: '/avatars/top-voice-2.png', performance: 318 },
   { rank: 3, user: 'Trading4Living', avatar: '/avatars/top-voice-3.png', performance: 287 },
   { rank: 4, user: 'gpaisa', avatar: '/avatars/top-voice-1.png', performance: 150 },

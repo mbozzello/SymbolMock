@@ -1,0 +1,199 @@
+@import "tailwindcss";
+@reference "tailwindcss/utilities";
+
+/* Theme variables */
+:root {
+  /* Dark theme (default) */
+  --color-background: #0b0f14;
+  --color-surface: #0f141a;
+  --color-surfaceMuted: #111820;
+  --color-text: #e6edf3;
+  --color-textMuted: #9aa9b2;
+  --color-primary: #2aa6ff;
+  --color-accent: #9aa9b2;
+  --color-success: #17c964;
+  --color-danger: #f31260;
+  --color-warning: #f5a524;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+  
+  /* Light theme */
+  &[data-theme="light"] {
+    --color-background: #fafafa;
+    --color-surface: #ffffff;
+    --color-surfaceMuted: #f5f5f5;
+    --color-text: #171717;
+    --color-textMuted: #737373;
+    --color-primary: #171717;
+    --color-accent: #525252;
+    --color-success: #16a34a;
+    --color-danger: #dc2626;
+    --color-warning: #d97706;
+    --color-border: #e5e5e5;
+    --color-border-strong: #171717;
+  }
+}
+
+@theme {
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-surface-muted: var(--color-surfaceMuted);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-textMuted);
+  --color-muted: var(--color-textMuted);
+  --color-primary: var(--color-primary);
+  --color-accent: var(--color-accent);
+  --color-success: var(--color-success);
+  --color-danger: var(--color-danger);
+  --color-warning: var(--color-warning);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  h1, .h1 { font-size: 1.25rem; font-weight: 600; }
+  h2, .h2 { font-size: 1.125rem; font-weight: 600; }
+  h3, .h3 { font-size: 1rem; font-weight: 600; }
+  .text-body { font-size: 0.875rem; }
+  .text-small { font-size: 0.75rem; }
+  .text-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Add transitions to all themeable elements */
+  .bg-surface {
+    background-color: var(--color-surface);
+    transition: background-color 0.3s ease;
+  }
+  
+  .text-text {
+    color: var(--color-text);
+    transition: color 0.3s ease;
+  }
+  
+  .text-textMuted {
+    color: var(--color-textMuted);
+    transition: color 0.3s ease;
+  }
+  
+  .border-white\/5 {
+    transition: border-color 0.3s ease;
+  }
+}
+
+@layer components {
+  /* Deprecated: use one solid background instead of cards; kept minimal for any legacy use */
+  .card-surface {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .muted {
+    color: var(--color-textMuted);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .badge-sm {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover {
+    background-color: var(--color-surface-muted);
+    border-color: var(--color-border-strong);
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-surface);
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+    background-color: var(--color-primary);
+  }
+
+  /* Success button - functional color */
+  .btn-success {
+    background-color: color-mix(in srgb, var(--color-success), transparent 85%);
+    border-color: color-mix(in srgb, var(--color-success), transparent 70%);
+    color: var(--color-success);
+  }
+
+  .btn-success:hover {
+    background-color: color-mix(in srgb, var(--color-success), transparent 70%);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Live audio wave bars for earnings call */
+@keyframes audio-wave-bar {
+  0%, 100% { height: 4px; }
+  50% { height: 20px; }
+}
+
+.animate-audio-wave-bar {
+  animation: audio-wave-bar 0.5s ease-in-out infinite;
+}
+
+/* Watchers count float-up fade */
+@keyframes float-watchers {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float-watchers {
+  animation: float-watchers 0.7s ease-out forwards;
+  pointer-events: none;
+}

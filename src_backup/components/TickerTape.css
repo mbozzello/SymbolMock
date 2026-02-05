@@ -1,0 +1,30 @@
+.ticker-tape-scroll-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.ticker-tape-content {
+  display: flex;
+  align-items: center;
+  animation: ticker-scroll 40s linear infinite;
+  will-change: transform;
+}
+
+.ticker-tape-item {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ticker-tape-scroll-wrap:hover .ticker-tape-content {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

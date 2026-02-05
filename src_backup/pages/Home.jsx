@@ -3,26 +3,13 @@ import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import MessagePostBox from '../components/MessagePostBox.jsx'
-import SymbolHeaderAbovePostBox from '../components/SymbolHeaderAbovePostBox.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
-import { useBookmarks } from '../contexts/BookmarkContext.jsx'
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
 const FEED_FILTERS = ['All', 'Political Tailwind', 'Permit Surge', 'Short Sting', 'Dip The Gift']
-
-const FIRST_FEED_MESSAGE = {
-  id: 'home-feed-1',
-  username: 'TeslaFanatic',
-  avatar: '/avatars/top-voice-1.png',
-  body: 'If $TSLA continues to soar, I might just invest in a state-of-the-art AI assistant from their amazing robotics team!',
-  time: '3m',
-  comments: 140,
-  reposts: 14,
-  likes: 203,
-}
 
 const WATCHLIST = [
   { ticker: 'AAPL', name: 'Apple Inc', price: 254.92, change: -2.34, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
@@ -38,7 +25,6 @@ const WATCHLIST = [
 ]
 
 export default function Home() {
-  const { toggleBookmark, isBookmarked } = useBookmarks()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -81,7 +67,6 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-4 py-4 flex gap-6">
           {/* Main feed column */}
           <div className="flex-1 min-w-0">
-            <SymbolHeaderAbovePostBox />
             <MessagePostBox placeholder="What're your thoughts on $TSLA?" />
 
             {/* Feed controls */}
@@ -138,17 +123,17 @@ export default function Home() {
             <article className="border-b border-border pb-4">
               <div className="flex items-start gap-3 pt-4">
                 <img
-                  src={FIRST_FEED_MESSAGE.avatar}
+                  src="/avatars/top-voice-1.png"
                   alt=""
                   className="w-10 h-10 rounded-full object-cover border border-border shrink-0"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{FIRST_FEED_MESSAGE.username}</span>
-                    <span className="text-xs muted">{FIRST_FEED_MESSAGE.time}</span>
+                    <span className="font-semibold text-sm">TeslaFanatic</span>
+                    <span className="text-xs muted">3m</span>
                   </div>
                   <p className="mt-1 text-sm text-text leading-snug">
-                    {FIRST_FEED_MESSAGE.body}
+                    If $TSLA continues to soar, I might just invest in a state-of-the-art AI assistant from their amazing robotics team!
                   </p>
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     <div className="aspect-video rounded-lg overflow-hidden bg-surface-muted border border-border">
@@ -161,38 +146,34 @@ export default function Home() {
                       <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop" alt="" className="w-full h-full object-cover" />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between w-full mt-3 text-sm muted">
+                  <div className="flex items-center gap-6 mt-3 text-sm muted">
                     <button className="flex items-center gap-1.5 hover:text-text transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>
-                      {FIRST_FEED_MESSAGE.comments}
+                      140
                     </button>
                     <button className="flex items-center gap-1.5 hover:text-text transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                      {FIRST_FEED_MESSAGE.reposts}
+                      14
                     </button>
                     <button className="flex items-center gap-1.5 hover:text-text transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
-                      {FIRST_FEED_MESSAGE.likes}
+                      203
                     </button>
                     <button className="p-1 hover:text-text transition-colors" aria-label="Share">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                       </svg>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleBookmark(FIRST_FEED_MESSAGE)}
-                      className={clsx('p-1 transition-colors', isBookmarked(FIRST_FEED_MESSAGE.id) ? 'text-primary' : 'hover:text-text')}
-                      aria-label={isBookmarked(FIRST_FEED_MESSAGE.id) ? 'Remove bookmark' : 'Bookmark'}
-                    >
-                      <svg className="w-4 h-4" fill={isBookmarked(FIRST_FEED_MESSAGE.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" />
+                    <button className="p-1 hover:text-text transition-colors" aria-label="Search">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
                       </svg>
                     </button>
                   </div>

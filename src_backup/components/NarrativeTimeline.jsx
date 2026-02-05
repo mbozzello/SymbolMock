@@ -188,6 +188,7 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
   })
 
   const allEvents = useMemo(() => {
+    // Mock events over the last ~90 days
     const now = new Date()
     const daysAgo = (n) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - n)
     return [
@@ -195,83 +196,83 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
         id: 1,
         type: 'News',
         date: daysAgo(4),
-        title: 'Defense contract chatter trending',
-        details: 'Coverage picked up; stream sentiment skewed bullish.',
-        source: 'Stocktwits',
-        link: '#',
+          title: 'Defense contract chatter trending',
+          details: 'Coverage picked up; stream sentiment skewed bullish.',
+          source: 'Stocktwits',
+          link: '#',
       },
       {
         id: 2,
         type: 'Trending',
         date: daysAgo(7),
-        title: 'Ranked #1 Trending on Stocktwits',
-        details: 'Gap up +9% on 2.4x volume drove a surge in mentions.',
-        source: 'Stocktwits',
+          title: 'Ranked #1 Trending on Stocktwits',
+          details: 'Gap up +9% on 2.4x volume drove a surge in mentions.',
+          source: 'Stocktwits',
       },
       {
         id: 3,
         type: 'Earnings',
         date: daysAgo(18),
-        title: 'Q2 beat; FY guide raised',
-        details: 'Rev +6% vs. cons; GM +120bps; FCF guide +$25M. Live thread available.',
-        source: 'Stocktwits',
-        link: '#',
+          title: 'Q2 beat; FY guide raised',
+          details: 'Rev +6% vs. cons; GM +120bps; FCF guide +$25M. Live thread available.',
+          source: 'Stocktwits',
+          link: '#',
       },
       {
         id: 4,
         type: 'Sentiment',
         date: daysAgo(20),
         title: 'Message volume spike 3.1x vs 30d baseline',
-        details: 'Tone skewed bullish; options chatter elevated.',
-        source: 'Stocktwits',
+          details: 'Tone skewed bullish; options chatter elevated.',
+          source: 'Stocktwits',
       },
       {
         id: 5,
         type: 'News',
         date: daysAgo(33),
-        title: 'Analyst upgrade; PT +18%',
-        details: 'Aggregated; cites execution and margin profile.',
-        source: 'Stocktwits',
+          title: 'Analyst upgrade; PT +18%',
+          details: 'Aggregated; cites execution and margin profile.',
+          source: 'Stocktwits',
       },
       {
         id: 6,
         type: 'Trending',
         date: daysAgo(45),
         title: 'Ranked #1 Trending on Stocktwits',
-        details: 'Breakout action (+5.4% on 1.8x volume) pushed it to #1.',
-        source: 'Stocktwits',
+          details: 'Breakout action (+5.4% on 1.8x volume) pushed it to #1.',
+          source: 'Stocktwits',
       },
       {
         id: 7,
         type: 'News',
         date: daysAgo(52),
-        title: 'Company post: product milestone ahead of schedule',
-        details: 'Verified via the company stream.',
-        source: 'Stocktwits',
+          title: 'Company post: product milestone ahead of schedule',
+          details: 'Verified via the company stream.',
+          source: 'Stocktwits',
       },
       {
         id: 8,
         type: 'Sentiment',
         date: daysAgo(63),
         title: 'Bullish sentiment surges to 92/100',
-        details: 'Reading from sentiment signals.',
-        source: 'Stocktwits',
+          details: 'Reading from sentiment signals.',
+          source: 'Stocktwits',
       },
       {
         id: 9,
         type: 'Earnings',
         date: daysAgo(74),
         title: 'Pre-ann: narrows range, reiterates FY targets',
-        details: 'Signals confidence into the quarter; surfaced in news flow.',
-        source: 'Stocktwits',
+          details: 'Signals confidence into the quarter; surfaced in news flow.',
+          source: 'Stocktwits',
       },
       {
         id: 10,
         type: 'Trending',
         date: daysAgo(82),
         title: 'Ranked #1 Trending on Stocktwits',
-        details: 'Volatility (−7% gap, heavy volume, AH reversal) spiked conversation.',
-        source: 'Stocktwits',
+          details: 'Volatility (−7% gap, heavy volume, AH reversal) spiked conversation.',
+          source: 'Stocktwits',
       },
     ]
   }, [])
@@ -328,8 +329,8 @@ export default function NarrativeTimeline({ variant = 'sidebar' }) {
               <div className={clsx('space-y-3', variant === 'embedded' && 'overflow-y-auto max-h-62')}
               >
                 {filteredSorted.map((e, idx) => (
-                  <EventRow key={e.id} event={e} isLast={idx === filteredSorted.length - 1} />
-                ))}
+                  <EventRow key={e.id} event={e} isLast={idx === filteredSorted.length - 1} />)
+                )}
               </div>
             )}
           </div>

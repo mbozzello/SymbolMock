@@ -27,16 +27,16 @@ const PRIVATE_JOURNAL_MODAL_TEXT =
 
 const POST_ACTIONS = [
   { key: 'images', label: 'Images', color: '#dc2626' },
+  { key: 'video', label: 'Video', color: '#16a34a' },
   { key: 'gifs', label: 'GIFs', color: '#7c3aed' },
   { key: 'polls', label: 'Polls', color: '#0d9488' },
   { key: 'scheduler', label: 'Schedule', color: '#c2410c' },
   { key: 'emoji', label: 'Emoji', color: '#ea580c' },
   { key: 'predict', label: 'Predict', color: '#2563eb' },
   { key: 'marketTags', label: 'Tags', color: '#eab308' },
-  { key: 'reaction', label: 'Debate', color: '#16a34a' },
 ]
 
-export default function MessagePostBox({ placeholder = "What're your thoughts on $TSLA?", onPost }) {
+export default function MessagePostBox({ placeholder = "What're your thoughts on $TSLA?" }) {
   const [message, setMessage] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [visibility, setVisibility] = useState('everyone')
@@ -44,24 +44,20 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   const [showPredictionModal, setShowPredictionModal] = useState(false)
   const [targetPrice, setTargetPrice] = useState('')
   const [targetDate, setTargetDate] = useState('')
-  const [hasReaction, setHasReaction] = useState(false)
 
   const hasInteracted =
     message.trim() !== '' ||
     visibility === 'private' ||
     showPredictionModal ||
     targetPrice !== '' ||
-    targetDate !== '' ||
-    hasReaction
+    targetDate !== ''
 
-  const isReadyToPost = hasInteracted
+  const isReadyToPost = isFocused && hasInteracted
 
   const handlePost = () => {
-    const body = message.trim()
-    if (body) {
-      onPost?.({ body, visibility, hasReaction })
+    if (message.trim()) {
+      console.log('Posting:', { message, visibility })
       setMessage('')
-      setHasReaction(false)
     }
   }
 
@@ -89,6 +85,13 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
         <circle cx="12" cy="12" r="7" />
         <circle cx="12" cy="12" r="4" />
         <circle cx="12" cy="12" r="2" fill="currentColor" />
+      </svg>
+    ),
+    // Green circle with white play triangle
+    video: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="currentColor" />
+        <path d="M10 8l6 4-6 4V8z" fill="white" />
       </svg>
     ),
     // Red picture frame with white mountains and sun
@@ -138,7 +141,6 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
         <line x1="7" y1="7" x2="7.01" y2="7" />
       </svg>
     ),
-    reaction: <span className="text-lg leading-none" aria-hidden>⚖️</span>,
   }
 
   return (
@@ -258,16 +260,6 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                   </div>
                 </div>
               )}
-              {hasReaction && (
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/30">
-                    ⚖️ Users can debate this message
-                  </span>
-                  <button type="button" onClick={() => setHasReaction(false)} className="p-0.5 rounded-full hover:bg-surface-muted text-muted hover:text-text" aria-label="Remove debate">
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
           <div className="flex items-center gap-4 flex-nowrap">
@@ -275,19 +267,13 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
               <button
                 key={action.key}
                 type="button"
-                onClick={
-                  action.key === 'predict'
-                    ? () => setShowPredictionModal((v) => !v)
-                    : action.key === 'reaction'
-                    ? () => setHasReaction((v) => !v)
-                    : undefined
-                }
+                onClick={action.key === 'predict' ? () => setShowPredictionModal((v) => !v) : undefined}
                 className="flex items-center gap-1.5 text-sm font-medium text-text hover:opacity-80 transition-opacity shrink-0"
                 style={{ color: action.color }}
                 aria-label={action.label}
               >
                 {actionIcons[action.key]}
-                {(action.key === 'predict' || action.key === 'marketTags' || action.key === 'reaction') && <span>{action.label}</span>}
+                {(action.key === 'predict' || action.key === 'marketTags') && <span>{action.label}</span>}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2 shrink-0">
