@@ -13,6 +13,8 @@ import MessagePostBox from './components/MessagePostBox.jsx'
 import Home from './pages/Home.jsx'
 import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
+import News from './pages/News.jsx'
+import Scheduled from './pages/Scheduled.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 
 function clsx(...values) {
@@ -746,6 +748,8 @@ export default function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/scheduled" element={<Scheduled />} />
         <Route path="/registered" element={<RegisteredPage />} />
         <Route path="/unreg" element={<UnregisteredPage />} />
         <Route path="/newpage" element={<NewPage />} />
