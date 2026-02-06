@@ -46,9 +46,12 @@ const RECENTLY_VIEWED = [
 const TRENDING_SEARCHES = [
   { type: 'symbol', label: '$AAPL', pctChange: -2.3, query: 'AAPL' },
   { type: 'symbol', label: '$TSLA', pctChange: 1.8, query: 'TSLA' },
+  { type: 'symbol', label: '$NVDA', pctChange: 4.2, query: 'NVDA' },
   { type: 'person', label: '@Steeletwits', query: 'Steeletwits', avatar: '/avatars/michele-steele.png' },
+  { type: 'person', label: '@howardlindzon', query: 'howardlindzon', avatar: '/avatars/howard-lindzon.png' },
   { type: 'term', label: 'elon musk', query: 'elon musk' },
   { type: 'term', label: 'tsla earnings', query: 'tsla earnings' },
+  { type: 'term', label: 'fed rate cut', query: 'fed rate cut' },
 ]
 
 // Profiles for "From profile" filter typeahead (e.g. typing "H" shows @howardlindzon + others)
@@ -552,7 +555,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                   })}
                   <div className="border-t border-border my-2" />
                   <div className="px-3 pb-2">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">Trending Searches</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">TOP SEARCHES</div>
                     <div className="flex flex-wrap gap-2">
                       {TRENDING_SEARCHES.map((item) => {
                         const isSymbol = item.type === 'symbol'

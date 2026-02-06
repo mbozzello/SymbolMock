@@ -8,6 +8,7 @@ import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import DebateBox from '../components/DebateBox.jsx'
 import { useBookmarks } from '../contexts/BookmarkContext.jsx'
+import { getTickerLogo } from '../constants/tickerLogos.js'
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
@@ -23,6 +24,28 @@ const FIRST_FEED_MESSAGE = {
   comments: 140,
   reposts: 14,
   likes: 203,
+}
+
+const HOWARD_LINDZON_MESSAGE = {
+  id: 'home-feed-howard',
+  username: 'howardlindzon',
+  avatar: '/avatars/howard-lindzon.png',
+  body: '$TSLA is going to tank with Elon Musk leading it',
+  time: '5m',
+  symbol: 'TSLA',
+  sentiment: 'bearish',
+  prediction: {
+    priceTarget: 369,
+    stopLoss: 450,
+    targetDate: 'April 20, 2026',
+    currentPrice: 248.92,
+    startingPrice: 265.00,
+    sincePrediction: -16.08,
+    sincePredictionPct: -6.07,
+  },
+  comments: 42,
+  reposts: 8,
+  likes: 156,
 }
 
 const WATCHLIST = [
@@ -61,6 +84,12 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState('All')
   const [userPosts, setUserPosts] = useState([])
   const postIdRef = useRef(0)
+  const [howardDebate, setHowardDebate] = useState({
+    thumbsUp: 87,
+    thumbsDown: 34,
+    upVoters: SEED_AGREE_VOTERS.slice(0, 3),
+    downVoters: SEED_DISAGREE_VOTERS.slice(0, 2),
+  })
 
   const handlePost = (payload) => {
     const id = `user-post-${++postIdRef.current}`
@@ -133,6 +162,31 @@ export default function Home() {
         }
       })
     )
+  }
+
+  const handleHowardDebateVote = (vote) => {
+    setHowardDebate((prev) => {
+      const { thumbsUp = 0, thumbsDown = 0, upVoters = [], downVoters = [] } = prev
+      const up = upVoters.filter((v) => v.id !== 'current')
+      const down = downVoters.filter((v) => v.id !== 'current')
+      const wasUp = upVoters.some((v) => v.id === 'current')
+      const wasDown = downVoters.some((v) => v.id === 'current')
+      let newThumbsUp = thumbsUp
+      let newThumbsDown = thumbsDown
+      if (vote === 'up') {
+        if (wasDown) newThumbsDown--
+        if (!wasUp) newThumbsUp++
+        return { thumbsUp: newThumbsUp, thumbsDown: newThumbsDown, upVoters: [...up, CURRENT_USER], downVoters: down }
+      }
+      if (vote === 'down') {
+        if (wasUp) newThumbsUp--
+        if (!wasDown) newThumbsDown++
+        return { thumbsUp: newThumbsUp, thumbsDown: newThumbsDown, upVoters: up, downVoters: [...down, CURRENT_USER] }
+      }
+      if (wasUp) newThumbsUp--
+      if (wasDown) newThumbsDown--
+      return { thumbsUp: newThumbsUp, thumbsDown: newThumbsDown, upVoters: up, downVoters: down }
+    })
   }
 
   useEffect(() => {
@@ -343,6 +397,134 @@ export default function Home() {
                       aria-label={isBookmarked(FIRST_FEED_MESSAGE.id) ? 'Remove bookmark' : 'Bookmark'}
                     >
                       <svg className="w-4 h-4" fill={isBookmarked(FIRST_FEED_MESSAGE.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Feed: howardlindzon price prediction */}
+            <article className="border-b border-border pb-4">
+              <div className="flex items-start gap-3 pt-4">
+                <img
+                  src={HOWARD_LINDZON_MESSAGE.avatar}
+                  alt=""
+                  className="w-10 h-10 rounded-full object-cover border border-border shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">{HOWARD_LINDZON_MESSAGE.username}</span>
+                    <span className="text-xs muted">{HOWARD_LINDZON_MESSAGE.time}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-text leading-snug">{HOWARD_LINDZON_MESSAGE.body}</p>
+                  <div className="mt-3 rounded-xl border border-border bg-surface overflow-hidden max-w-md">
+                    {/* Top section: symbol + sentiment */}
+                    <div className="flex items-start justify-between gap-4 p-4 pb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-surface-muted border border-border flex items-center justify-center overflow-hidden shrink-0">
+                            {getTickerLogo(HOWARD_LINDZON_MESSAGE.symbol) ? (
+                              <img src={getTickerLogo(HOWARD_LINDZON_MESSAGE.symbol)} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-lg font-bold text-text">{HOWARD_LINDZON_MESSAGE.symbol.slice(0, 1)}</span>
+                            )}
+                          </div>
+                          <span className="text-lg font-bold text-text">{HOWARD_LINDZON_MESSAGE.symbol}</span>
+                        </div>
+                        <p className="text-sm text-muted mt-1">Price Prediction</p>
+                      </div>
+                      <span
+                        className={clsx(
+                          'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0',
+                          HOWARD_LINDZON_MESSAGE.sentiment === 'bearish'
+                            ? 'bg-danger/15 text-danger'
+                            : 'bg-success/15 text-success'
+                        )}
+                      >
+                        {HOWARD_LINDZON_MESSAGE.sentiment === 'bearish' ? (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                        )}
+                        {HOWARD_LINDZON_MESSAGE.sentiment === 'bearish' ? 'Bearish' : 'Bullish'}
+                      </span>
+                    </div>
+                    {/* Core prediction: Target Date | Target Price in blue box */}
+                    <div className="mx-4 mb-4 rounded-lg bg-primary/20 border border-primary/30 p-4">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <div className="text-xs text-muted mb-0.5">Target Date</div>
+                          <div className="text-base font-bold text-text">{HOWARD_LINDZON_MESSAGE.prediction.targetDate}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted mb-0.5">Target Price</div>
+                          <div className="text-base font-bold text-danger">${HOWARD_LINDZON_MESSAGE.prediction.priceTarget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Financial metrics */}
+                    <div className="px-4 pb-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted">Current Price</span>
+                        <span className="font-medium text-text">${HOWARD_LINDZON_MESSAGE.prediction.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted">Starting Price</span>
+                        <span className="font-medium text-text">${HOWARD_LINDZON_MESSAGE.prediction.startingPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted">Stop Loss</span>
+                        <span className="font-medium text-text">${HOWARD_LINDZON_MESSAGE.prediction.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted">Since Prediction</span>
+                        <span className="font-medium text-danger">↓ ${Math.abs(HOWARD_LINDZON_MESSAGE.prediction.sincePrediction).toFixed(2)} ({HOWARD_LINDZON_MESSAGE.prediction.sincePredictionPct}%)</span>
+                      </div>
+                    </div>
+                    {/* Details button */}
+                    <button type="button" className="w-full py-2.5 px-4 bg-surface-muted/80 hover:bg-surface-muted border-t border-border flex items-center justify-center gap-2 text-sm font-medium text-text transition-colors">
+                      Details
+                      <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                  </div>
+                  <DebateBox
+                    postId={HOWARD_LINDZON_MESSAGE.id}
+                    debate={howardDebate}
+                    onVote={(_, vote) => handleHowardDebateVote(vote)}
+                  />
+                  <div className="flex items-center justify-between w-full mt-3 text-sm muted">
+                    <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      {HOWARD_LINDZON_MESSAGE.comments}
+                    </button>
+                    <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      {HOWARD_LINDZON_MESSAGE.reposts}
+                    </button>
+                    <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {HOWARD_LINDZON_MESSAGE.likes}
+                    </button>
+                    <button className="p-1 hover:text-text transition-colors" aria-label="Share">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleBookmark(HOWARD_LINDZON_MESSAGE)}
+                      className={clsx('p-1 transition-colors', isBookmarked(HOWARD_LINDZON_MESSAGE.id) ? 'text-primary' : 'hover:text-text')}
+                      aria-label={isBookmarked(HOWARD_LINDZON_MESSAGE.id) ? 'Remove bookmark' : 'Bookmark'}
+                    >
+                      <svg className="w-4 h-4" fill={isBookmarked(HOWARD_LINDZON_MESSAGE.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" />
                       </svg>
                     </button>
