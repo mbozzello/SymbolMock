@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
@@ -54,6 +54,7 @@ const HOWARD_PROFILE = {
       { ticker: 'AMZN', count: 24 },
     ],
   },
+  frequentTags: ['Momentum', 'Swing trading'],
 }
 
 const HOWARD_PRIVATE_JOURNAL = [
@@ -136,6 +137,7 @@ const HOWARD_POSTS = [
 
 export default function Profile() {
   const { username } = useParams()
+  const navigate = useNavigate()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -158,6 +160,19 @@ export default function Profile() {
   const posts = username === 'howardlindzon' ? HOWARD_POSTS : []
 
   const toggleDarkMode = () => setDarkMode((prev) => !prev)
+
+  const goToSearchWithProfileFilters = () => {
+    const tickers = []
+    if (profile.tickerMentions?.['30d']?.[0]) tickers.push(profile.tickerMentions['30d'][0].ticker)
+    if (profile.tickerMentions?.['90d']?.[0]) tickers.push(profile.tickerMentions['90d'][0].ticker)
+    const tags = (profile.frequentTags || []).slice(0, 2)
+    const params = new URLSearchParams()
+    params.set('from', profile.username)
+    if (tickers[0]) params.set('q', tickers[0])
+    if (tickers.length) params.set('ticker', [...new Set(tickers)].join(','))
+    if (tags.length) params.set('tags', tags.map((t) => t.replace(/\s/g, '+')).join(','))
+    navigate(`/search?${params.toString()}`)
+  }
 
   if (!profile) {
     return (
@@ -321,6 +336,25 @@ export default function Profile() {
                   </svg>
                   Joined {profile.joinedDate}
                 </span>
+                <span className="flex items-center gap-2">
+                  <a href="#" className="text-text-muted hover:text-text transition-colors" aria-label="YouTube" title="YouTube">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                  </a>
+                  <a href="#" className="text-text-muted hover:text-text transition-colors" aria-label="Instagram" title="Instagram">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                    </svg>
+                  </a>
+                  <a href="#" className="text-text-muted hover:text-text transition-colors" aria-label="X" title="X">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
+                </span>
               </div>
 
               <div className="flex gap-6 mt-3 text-sm">
@@ -328,9 +362,9 @@ export default function Profile() {
                 <span><span className="font-semibold text-text">{profile.followersCount}</span> Followers</span>
               </div>
 
-              {(profile.sentiment || profile.tickerMentions) && (
+              {(profile.sentiment || profile.tickerMentions || profile.frequentTags) && (
                 <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex gap-8 items-stretch">
+                  <div className="flex gap-4 items-stretch flex-wrap">
                     {profile.sentiment && (
                       <div className="flex-1 flex flex-col">
                         <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Post Sentiment</div>
@@ -377,7 +411,11 @@ export default function Profile() {
                           <div className="flex flex-col gap-1.5">
                             <div className="text-sm font-semibold text-text">30 days</div>
                             {profile.tickerMentions['30d'][0] && (
-                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none">
+                              <button
+                                type="button"
+                                onClick={goToSearchWithProfileFilters}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none hover:bg-surface transition-colors text-left"
+                              >
                                 {getTickerLogo(profile.tickerMentions['30d'][0].ticker) ? (
                                   <img src={getTickerLogo(profile.tickerMentions['30d'][0].ticker)} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
                                 ) : (
@@ -385,13 +423,17 @@ export default function Profile() {
                                 )}
                                 <span className="text-xs font-semibold text-text">${profile.tickerMentions['30d'][0].ticker}</span>
                                 <span className="text-[10px] text-muted">×{profile.tickerMentions['30d'][0].count}</span>
-                              </div>
+                              </button>
                             )}
                           </div>
                           <div className="flex flex-col gap-1.5">
                             <div className="text-sm font-semibold text-text">90 days</div>
                             {profile.tickerMentions['90d'][0] && (
-                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none">
+                              <button
+                                type="button"
+                                onClick={goToSearchWithProfileFilters}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none hover:bg-surface transition-colors text-left"
+                              >
                                 {getTickerLogo(profile.tickerMentions['90d'][0].ticker) ? (
                                   <img src={getTickerLogo(profile.tickerMentions['90d'][0].ticker)} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
                                 ) : (
@@ -399,9 +441,26 @@ export default function Profile() {
                                 )}
                                 <span className="text-xs font-semibold text-text">${profile.tickerMentions['90d'][0].ticker}</span>
                                 <span className="text-[10px] text-muted">×{profile.tickerMentions['90d'][0].count}</span>
-                              </div>
+                              </button>
                             )}
                           </div>
+                        </div>
+                      </div>
+                    )}
+                    {profile.frequentTags && profile.frequentTags.length > 0 && (
+                      <div className="flex-1 flex flex-col min-w-0">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Frequent Tags</div>
+                        <div className="flex gap-2 flex-1 min-h-[52px] items-center flex-wrap">
+                          {profile.frequentTags.slice(0, 2).map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={goToSearchWithProfileFilters}
+                              className="inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-muted border border-border text-xs font-medium text-text hover:bg-surface transition-colors"
+                            >
+                              {tag}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     )}

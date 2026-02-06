@@ -82,15 +82,40 @@ const SEARCH_MESSAGES = [
   { id: '5', username: 'TheofficialElonMusk', displayName: 'Elon Musk', avatar: '/avatars/top-voice-1.png', body: 'Optimus in production next year. This will be bigger than the car business.', time: '1d', comments: 2100, reposts: 3400, likes: 18900 },
 ]
 
+// Mock messages from Howard for "from profile + ticker/tag" search (all from Howard, contain symbol or tag)
+const HOWARD_AVATAR = '/avatars/howard-lindzon.png'
+const HOWARD_SEARCH_MESSAGES = [
+  { id: 'h1', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: '$TSLA is going to tank. Target $369, stop $450. April 20, 2026.', time: '1h', comments: 124, reposts: 89, likes: 512, tags: ['Momentum'] },
+  { id: 'h2', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: 'Building conviction on $TSLA short thesis. Elon distraction factor underrated.', time: '3h', comments: 67, reposts: 42, likes: 289, tags: ['Momentum', 'Swing trading'] },
+  { id: 'h3', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: 'Watching $TSLA at these levels. Momentum fading into the close.', time: '5h', comments: 31, reposts: 18, likes: 156, tags: ['Momentum'] },
+  { id: 'h4', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: 'Bitcoin breaking out. $BTC above key level and I like the setup for a swing.', time: '8h', comments: 203, reposts: 112, likes: 890, tags: ['Swing trading'] },
+  { id: 'h5', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: '$BTC and macro — Fed narrative still driving the tape. Momentum play here.', time: '12h', comments: 88, reposts: 54, likes: 421, tags: ['Momentum'] },
+  { id: 'h6', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: 'Swing trading $BTC on this dip. Risk/reward looks good.', time: '1d', comments: 45, reposts: 29, likes: 234, tags: ['Swing trading'] },
+  { id: 'h7', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: 'Momentum names getting hit. Staying patient for better entries.', time: '2d', comments: 22, reposts: 11, likes: 98, tags: ['Momentum'] },
+  { id: 'h8', username: 'howardlindzon', displayName: 'Howard Lindzon', avatar: HOWARD_AVATAR, body: 'Swing trading setup on a few names. Will share when they trigger.', time: '3d', comments: 19, reposts: 8, likes: 76, tags: ['Swing trading'] },
+]
+
 function formatEngagement(n) {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K`
   return String(n)
+}
+
+function parseTickersFromUrl(tickerParam) {
+  if (!tickerParam || typeof tickerParam !== 'string') return []
+  return tickerParam.split(',').map((t) => t.trim()).filter(Boolean)
+}
+function parseTagsFromUrl(tagsParam) {
+  if (!tagsParam || typeof tagsParam !== 'string') return []
+  return tagsParam.split(',').map((t) => t.trim().replace(/\+/g, ' ')).filter(Boolean)
 }
 
 export default function Search() {
   const { toggleBookmark, isBookmarked } = useBookmarks()
   const [searchParams, setSearchParams] = useSearchParams()
   const q = searchParams.get('q') || ''
+  const urlFrom = searchParams.get('from') || ''
+  const urlTickers = parseTickersFromUrl(searchParams.get('ticker'))
+  const urlTags = parseTagsFromUrl(searchParams.get('tags'))
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -99,15 +124,66 @@ export default function Search() {
   const [activeTab, setActiveTab] = useState('Top')
   const [filterOpen, setFilterOpen] = useState(false)
   const [tagsExpanded, setTagsExpanded] = useState(false)
-  const [fromProfileFilter, setFromProfileFilter] = useState(false)
-  const [withTickerFilter, setWithTickerFilter] = useState(false)
-  const [fromProfileQuery, setFromProfileQuery] = useState('')
+  const [fromProfileFilter, setFromProfileFilter] = useState(!!urlFrom)
+  const [withTickerFilter, setWithTickerFilter] = useState(urlTickers.length > 0)
+  const [fromProfileQuery, setFromProfileQuery] = useState(urlFrom)
   const [fromProfileDropdownOpen, setFromProfileDropdownOpen] = useState(false)
-  const [withTickerQuery, setWithTickerQuery] = useState('')
+  const [withTickerQuery, setWithTickerQuery] = useState(urlTickers.length ? urlTickers[0] : '')
   const [withTickerDropdownOpen, setWithTickerDropdownOpen] = useState(false)
+  const [selectedTags, setSelectedTags] = useState(() => (urlTags[0] ? [urlTags[0]] : []))
   const filterRef = useRef(null)
   const fromProfileRef = useRef(null)
   const withTickerRef = useRef(null)
+
+  // Sync URL (from profile navigation) into filter UI
+  useEffect(() => {
+    if (urlFrom) {
+      setFromProfileFilter(true)
+      setFromProfileQuery(urlFrom)
+    } else {
+      setFromProfileFilter(false)
+      setFromProfileQuery('')
+    }
+  }, [urlFrom])
+  useEffect(() => {
+    if (urlTickers.length) {
+      setWithTickerFilter(true)
+      setWithTickerQuery(urlTickers[0])
+    } else {
+      setWithTickerFilter(false)
+      setWithTickerQuery('')
+    }
+  }, [urlTickers.join(',')])
+  useEffect(() => {
+    setSelectedTags(urlTags[0] ? [urlTags[0]] : [])
+  }, [urlTags.join(',')])
+
+  const clearFromProfile = () => {
+    setFromProfileFilter(false)
+    setFromProfileQuery('')
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('from')
+      return next
+    })
+  }
+  const clearWithTicker = () => {
+    setWithTickerFilter(false)
+    setWithTickerQuery('')
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('ticker')
+      return next
+    })
+  }
+  const clearWithTag = () => {
+    setSelectedTags([])
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('tags')
+      return next
+    })
+  }
 
   const fromProfileSuggestions = useMemo(() => {
     const pq = fromProfileQuery.trim().toLowerCase()
@@ -119,6 +195,21 @@ export default function Search() {
     const rest = matched.filter((p) => p.handle !== 'howardlindzon')
     return (howard ? [howard, ...rest] : rest).slice(0, 5)
   }, [fromProfileQuery])
+
+  const isFromHowardWithFilter = fromProfileQuery?.toLowerCase() === 'howardlindzon' && ((withTickerFilter && withTickerQuery.trim()) || selectedTags.length > 0)
+  const streamMessages = useMemo(() => {
+    if (!isFromHowardWithFilter) return SEARCH_MESSAGES
+    const ticker = withTickerQuery.trim().toUpperCase()
+    const tag = selectedTags[0]
+    return HOWARD_SEARCH_MESSAGES.filter((msg) => {
+      const hasTicker = ticker && (msg.body.includes(`$${ticker}`) || msg.body.toUpperCase().includes(ticker))
+      const hasTag = tag && (msg.tags && msg.tags.includes(tag))
+      if (ticker && tag) return hasTicker || hasTag
+      if (ticker) return hasTicker
+      if (tag) return hasTag
+      return true
+    })
+  }, [isFromHowardWithFilter, withTickerQuery, selectedTags])
 
   const tq = withTickerQuery.trim().toLowerCase()
   const tickerStocksFiltered = useMemo(() => {
@@ -210,9 +301,9 @@ export default function Search() {
           toggleDarkMode={toggleDarkMode}
           searchQueryFromUrl={q}
           fromProfileFilter={fromProfileFilter}
-          onClearFromProfile={() => setFromProfileFilter(false)}
+          onClearFromProfile={clearFromProfile}
           withTickerFilter={withTickerFilter}
-          onClearWithTicker={() => setWithTickerFilter(false)}
+          onClearWithTicker={clearWithTicker}
         />
         <TickerTape />
 
@@ -224,7 +315,7 @@ export default function Search() {
               ref={filterRef}
               className={clsx(
                 'flex items-center gap-2 rounded-lg border border-border bg-surface-muted mb-4 overflow-visible',
-                (fromProfileFilter || withTickerFilter) ? 'pl-2 pr-2 py-1.5' : 'px-3 py-2'
+                (fromProfileFilter || withTickerFilter || selectedTags.length > 0) ? 'pl-2 pr-2 py-1.5' : 'px-3 py-2'
               )}
             >
               {/* Filter button + dropdown */}
@@ -285,21 +376,22 @@ export default function Search() {
                 )}
               </div>
 
-              {/* From Profile chip */}
+              {/* From profile @Username chip */}
               {fromProfileFilter && (
                 <div ref={fromProfileRef} className="relative shrink-0">
                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-surface border border-border text-sm min-w-0">
-                    <span className="font-bold text-text shrink-0">From</span>
+                    <span className="font-bold text-text shrink-0">From profile</span>
+                    <span className="text-text shrink-0">@</span>
                     <input
                       type="text"
                       value={fromProfileQuery}
                       onChange={(e) => { setFromProfileQuery(e.target.value); setFromProfileDropdownOpen(true) }}
                       onFocus={() => setFromProfileDropdownOpen(true)}
-                      placeholder="Profile"
+                      placeholder="username"
                       className="min-w-[80px] w-24 max-w-[140px] py-0.5 px-0 bg-transparent border-0 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-0"
                       aria-label="Search profile"
                     />
-                    <button type="button" onClick={() => setFromProfileFilter(false)} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove From Profile filter">
+                    <button type="button" onClick={clearFromProfile} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove From Profile filter">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="15" y1="5" x2="5" y2="15" /><line x1="5" y1="5" x2="15" y2="15" /></svg>
                     </button>
                   </span>
@@ -330,17 +422,22 @@ export default function Search() {
               {withTickerFilter && (
                 <div ref={withTickerRef} className="relative shrink-0">
                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-surface border border-border text-sm min-w-0">
-                    <span className="font-bold text-text shrink-0">With $</span>
+                    <span className="font-bold text-text shrink-0">With $ticker</span>
                     <input
                       type="text"
                       value={withTickerQuery}
-                      onChange={(e) => { setWithTickerQuery(e.target.value.toUpperCase()); setWithTickerDropdownOpen(true) }}
+                      onChange={(e) => {
+                      const raw = e.target.value.toUpperCase()
+                      const single = raw.includes(',') ? raw.split(',')[0].trim() : raw
+                      setWithTickerQuery(single)
+                      setWithTickerDropdownOpen(true)
+                    }}
                       onFocus={() => setWithTickerDropdownOpen(true)}
                       placeholder="ticker"
                       className="min-w-[72px] w-20 max-w-[120px] py-0.5 px-0 bg-transparent border-0 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-0 uppercase"
                       aria-label="Search symbol"
                     />
-                    <button type="button" onClick={() => setWithTickerFilter(false)} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove With $ticker filter">
+                    <button type="button" onClick={clearWithTicker} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove With $ticker filter">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="15" y1="5" x2="5" y2="15" /><line x1="5" y1="5" x2="15" y2="15" /></svg>
                     </button>
                   </span>
@@ -393,6 +490,17 @@ export default function Search() {
                 </div>
               )}
 
+              {/* With tag chip */}
+              {selectedTags.length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-surface border border-border text-sm shrink-0">
+                  <span className="font-bold text-text shrink-0">With tag</span>
+                  <span className="text-text">{selectedTags[0]}</span>
+                  <button type="button" onClick={clearWithTag} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove With tag filter">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="15" y1="5" x2="5" y2="15" /><line x1="5" y1="5" x2="15" y2="15" /></svg>
+                  </button>
+                </span>
+              )}
+
               {/* Main search input */}
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -435,7 +543,7 @@ export default function Search() {
             {/* Message stream (Top / Latest show messages; People/Media could show different content later) */}
             {(activeTab === 'Top' || activeTab === 'Latest') && (
               <div className="divide-y divide-border">
-                {SEARCH_MESSAGES.map((msg) => (
+                {streamMessages.map((msg) => (
                   <article key={msg.id} className="py-4">
                     <div className="flex items-start gap-3">
                       <img
