@@ -11,6 +11,7 @@ import TickerTape from './components/TickerTape.jsx'
 import Poll from './components/Poll.jsx'
 import MessagePostBox from './components/MessagePostBox.jsx'
 import Home from './pages/Home.jsx'
+import Homepage from './pages/Homepage.jsx'
 import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
 import News from './pages/News.jsx'
@@ -748,7 +749,8 @@ export default function App() {
     <BookmarkProvider>
       <TickerTapeProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/symbol" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<Homepage />} />
         <Route path="/symbol" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />

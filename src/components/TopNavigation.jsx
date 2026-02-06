@@ -211,9 +211,14 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
   const navItems = ['Markets', 'News', 'Earnings']
 
   const isSearchPage = location.pathname === '/search'
-  const handleTrendingClick = (query) => {
-    if (!query) return
-    navigate(`/search?q=${encodeURIComponent(query)}`)
+  const handleTrendingClick = (item) => {
+    if (!item?.query) return
+    if (item.type === 'symbol') {
+      navigate('/symbol')
+      setSearchDropdownOpen(false)
+      return
+    }
+    navigate(`/search?q=${encodeURIComponent(item.query)}`)
     setSearchDropdownOpen(false)
   }
 
@@ -518,7 +523,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                       const logo = getTickerLogo(item.ticker)
                       const isUp = item.pctChange != null && item.pctChange >= 0
                       return (
-                        <button key={`stock-${item.ticker}`} type="button" className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-muted/80 text-left">
+                        <button key={`stock-${item.ticker}`} type="button" onClick={() => { navigate('/symbol'); setSearchDropdownOpen(false) }} className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-muted/80 text-left">
                           <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-muted flex items-center justify-center shrink-0">
                             {logo ? <img src={logo} alt="" className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-text">{item.ticker.slice(0, 1)}</span>}
                           </div>
@@ -571,7 +576,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                           <button
                             key={`${item.type}-${item.label}`}
                             type="button"
-                            onClick={() => handleTrendingClick(item.query)}
+                            onClick={() => handleTrendingClick(item)}
                             className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted/60 px-3 py-1.5 text-xs font-semibold text-text hover:bg-surface-muted transition-colors"
                           >
                             {item.type === 'person' && item.avatar ? (
@@ -627,6 +632,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                       <button
                         key={item.ticker}
                         type="button"
+                        onClick={() => { navigate('/symbol'); setSearchDropdownOpen(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-muted/80 text-left"
                       >
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-muted flex items-center justify-center shrink-0">
@@ -667,6 +673,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                       <button
                         key={item.ticker}
                         type="button"
+                        onClick={() => { navigate('/symbol'); setSearchDropdownOpen(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-muted/80 text-left"
                       >
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-muted flex items-center justify-center shrink-0">
