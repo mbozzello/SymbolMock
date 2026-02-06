@@ -1,3 +1,4 @@
+import { useState } from 'react'
 
 function ThumbsUpIcon({ className, filled }) {
   return (
@@ -16,6 +17,7 @@ function ThumbsDownIcon({ className, filled }) {
 }
 
 export default function DebateBox({ postId, debate, onVote }) {
+  const [justVoted, setJustVoted] = useState(false)
   const {
     thumbsUp: thumbsUpCount,
     thumbsDown: thumbsDownCount,
@@ -34,10 +36,18 @@ export default function DebateBox({ postId, debate, onVote }) {
     ? 'down'
     : null
 
+  const hasVoted = userVote !== null
+
   const handleVote = (vote) => {
     const newVote = userVote === vote ? null : vote
     onVote?.(postId, newVote)
+    if (newVote) {
+      setJustVoted(true)
+      setTimeout(() => setJustVoted(false), 1200)
+    }
   }
+
+  const isWithMajority = hasVoted && ((userVote === 'up' && upPct >= 50) || (userVote === 'down' && downPct >= 50))
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 p-3">
@@ -70,8 +80,22 @@ export default function DebateBox({ postId, debate, onVote }) {
           <span className="text-sm font-medium">No</span>
         </button>
       </div>
-      {total > 0 && (
+      {!hasVoted ? (
+        <div className="mt-3 pt-3 border-t border-border flex items-center justify-center gap-2 py-1">
+          <span className="text-xs text-muted animate-pulse">Tap to reveal where the crowd stands</span>
+          <span className="text-sm opacity-60" role="img" aria-hidden>👀</span>
+        </div>
+      ) : (
         <div className="mt-3 pt-3 border-t border-border">
+          {justVoted && (
+            <p className="text-xs font-semibold mb-2 text-center">
+              {isWithMajority ? (
+                <span className="text-success">You're with the majority!</span>
+              ) : (
+                <span className="text-amber-600 dark:text-amber-400">Contrarian — you're in the minority!</span>
+              )}
+            </p>
+          )}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 shrink-0">
               <div className="flex -space-x-1.5">
@@ -86,20 +110,20 @@ export default function DebateBox({ postId, debate, onVote }) {
                 ))}
               </div>
               <span className="text-xs text-muted whitespace-nowrap">{thumbsUp} agree</span>
-              <span className="text-xs font-bold text-success">{upPct}%</span>
+              <span className="text-xs font-bold text-success tabular-nums">{upPct}%</span>
             </div>
-            <div className="flex-1 min-w-0 h-2 rounded-full overflow-hidden flex">
+            <div className="flex-1 min-w-0 h-2 rounded-full overflow-hidden flex bg-surface">
               <div
-                className="h-full rounded-l-full bg-success transition-all shrink-0"
+                className="h-full rounded-l-full bg-success transition-all duration-700 ease-out shrink-0"
                 style={{ width: `${upPct}%` }}
               />
               <div
-                className="h-full rounded-r-full bg-danger transition-all shrink-0"
+                className="h-full rounded-r-full bg-danger transition-all duration-700 ease-out shrink-0"
                 style={{ width: `${downPct}%` }}
               />
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs font-bold text-danger">{downPct}%</span>
+              <span className="text-xs font-bold text-danger tabular-nums">{downPct}%</span>
               <span className="text-xs text-muted whitespace-nowrap">{thumbsDown} disagree</span>
               <div className="flex -space-x-1.5">
                 {downVoters.slice(0, 5).map((v, i) => (

@@ -748,8 +748,8 @@ export default function App() {
     <BookmarkProvider>
       <TickerTapeProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Navigate to="/symbol" replace />} />
+        <Route path="/symbol" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/news" element={<News />} />

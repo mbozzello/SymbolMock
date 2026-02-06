@@ -113,7 +113,7 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
         {watchlist.map((s) => {
           const pct = s.price !== 0 ? ((s.change / s.price) * 100) : 0
           return (
-            <div key={s.ticker} className="py-2.5 border-b border-border last:border-b-0">
+            <Link key={s.ticker} to="/symbol" className="block py-2.5 border-b border-border last:border-b-0 hover:bg-surface-muted/50 transition-colors -mx-1 px-1 rounded">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted border border-border">
                   {getTickerLogo(s.ticker) ? (
@@ -138,7 +138,7 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
                   ${Math.abs(s.change).toFixed(2)} ({pct >= 0 ? '' : '-'}{Math.abs(pct).toFixed(2)}%)
                 </span>
               </div>
-            </div>
+            </Link>
           )
         })}
       </div>

@@ -5,9 +5,9 @@ import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 
 const WATCHLIST = [
+  { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
   { ticker: 'AAPL', name: 'Apple Inc', price: 254.92, change: -2.34, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
   { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 889.42, change: -1.12, spark: [30, 32, 31, 33, 35, 34, 33, 32] },
-  { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
 ]
 
 function CommunityIcon({ className = 'w-5 h-5' }) {
@@ -481,7 +481,7 @@ export default function News() {
                 <MicIcon className="w-5 h-5 text-success" />
                 <h2 className="text-lg font-bold text-text">Stocktwits Voices</h2>
               </div>
-              <Link to="/home" className="text-sm font-medium text-success hover:underline flex items-center gap-1">
+              <Link to="/symbol" className="text-sm font-medium text-success hover:underline flex items-center gap-1">
                 View All
                 <ChevronRight className="w-4 h-4" />
               </Link>
@@ -506,7 +506,7 @@ export default function News() {
                     {cardContent}
                   </a>
                 ) : (
-                  <Link key={i} to="/home" className={cardClass}>
+                  <Link key={i} to="/symbol" className={cardClass}>
                     {cardContent}
                   </Link>
                 )
@@ -520,7 +520,7 @@ export default function News() {
                 <h2 className="text-lg font-bold text-text">Trending Now</h2>
                 <p className="text-sm text-text-muted">What&apos;s hot in the market right now</p>
               </div>
-              <Link to="/home" className="text-sm font-medium text-success hover:underline flex items-center gap-1 shrink-0">
+              <Link to="/symbol" className="text-sm font-medium text-success hover:underline flex items-center gap-1 shrink-0">
                 View All
                 <ChevronRight className="w-4 h-4" />
               </Link>
@@ -560,7 +560,7 @@ export default function News() {
                 <h2 className="text-lg font-bold text-text">Weekend Rip</h2>
                 <p className="text-sm text-text-muted">Weekend market wrap and week ahead preview</p>
               </div>
-              <Link to="/home" className="text-sm font-medium text-success hover:underline flex items-center gap-1 shrink-0">
+              <Link to="/symbol" className="text-sm font-medium text-success hover:underline flex items-center gap-1 shrink-0">
                 View All
                 <ChevronRight className="w-4 h-4" />
               </Link>

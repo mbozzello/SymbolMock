@@ -197,8 +197,14 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
 
   const handleSearch = (e) => {
     e.preventDefault()
-    if (onSearch && searchQuery.trim()) {
-      onSearch(searchQuery.trim())
+    const query = searchQuery.trim()
+    if (query) {
+      if (onSearch) {
+        onSearch(query)
+      } else {
+        navigate(`/search?q=${encodeURIComponent(query)}`)
+        setSearchDropdownOpen(false)
+      }
     }
   }
 

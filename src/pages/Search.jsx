@@ -14,6 +14,7 @@ function clsx(...values) {
 
 // Same watchlist as Home so left rail matches
 const WATCHLIST = [
+  { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
   { ticker: 'AAPL', name: 'Apple Inc', price: 254.92, change: -2.34, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
   { ticker: 'ABNB', name: 'Airbnb', price: 142.50, change: 1.20, spark: [18, 18.4, 18.2, 18.9, 19.4, 19.1, 19.9, 20.2] },
   { ticker: 'AMC', name: 'AMC Entertainment', price: 4.21, change: -0.15, spark: [12, 12.2, 12.5, 12.8, 13.1, 12.9, 13.3, 12.67] },
@@ -73,14 +74,46 @@ const SEARCH_TAGS = [
   '10-K',
 ]
 
-// Mock high-engagement stream messages for "elon musk" search (avatars use existing files in public/avatars)
-const SEARCH_MESSAGES = [
+// Mock stream messages for any search term — diverse pool for robust testing
+const FAKE_SEARCH_MESSAGES = [
   { id: '1', username: 'Elon_Musk', displayName: 'Elon Musk', avatar: '/avatars/top-voice-1.png', body: 'Next generation of autonomy will make the current FSD stack look like a toy. $TSLA', time: '2h', comments: 892, reposts: 4200, likes: 24100 },
   { id: '2', username: 'TeslaDaily', displayName: 'Tesla Daily', avatar: '/avatars/top-voice-2.png', body: 'Elon on earnings call: "We are not a car company. We are an energy and AI company." The narrative shift is real.', time: '5h', comments: 312, reposts: 1800, likes: 8500 },
   { id: '3', username: 'muskempire', displayName: 'Elon Musk', avatar: '/avatars/top-voice-3.png', body: 'SpaceX and Tesla both pushing the boundary. What do you think about $TSLA at these levels?', time: '8h', comments: 445, reposts: 2100, likes: 12300 },
   { id: '4', username: 'TechInvestor', displayName: 'Tech Investor', avatar: '/avatars/user-avatar.png', body: 'Elon Musk just tweeted about AI and robotics. $TSLA and $NVDA both moving. The man moves markets.', time: '12h', comments: 1200, reposts: 800, likes: 5600 },
   { id: '5', username: 'TheofficialElonMusk', displayName: 'Elon Musk', avatar: '/avatars/top-voice-1.png', body: 'Optimus in production next year. This will be bigger than the car business.', time: '1d', comments: 2100, reposts: 3400, likes: 18900 },
+  { id: '6', username: 'CryptoKing', displayName: 'Crypto King', avatar: '/avatars/top-voice-2.png', body: 'Bitcoin above $100k by EOY. $BTC accumulation phase is almost over. Halving thesis playing out.', time: '1h', comments: 420, reposts: 890, likes: 5200 },
+  { id: '7', username: 'NVDA_Bull', displayName: 'NVDA Bull', avatar: '/avatars/top-voice-3.png', body: '$NVDA Blackwell ramp is underrated. Data center demand is insatiable. Adding on dips.', time: '3h', comments: 156, reposts: 340, likes: 2100 },
+  { id: '8', username: 'AppleFan', displayName: 'Apple Fan', avatar: '/avatars/user-avatar.png', body: 'Apple Intelligence is the real deal. $AAPL finally embracing AI — watch the services attach rate.', time: '6h', comments: 89, reposts: 120, likes: 890 },
+  { id: '9', username: 'MomentumTrader', displayName: 'Momentum Trader', avatar: '/avatars/top-voice-1.png', body: 'ETH/BTC ratio looking to breakout. $ETH accumulation at these levels. DeFi summer 2.0 incoming.', time: '9h', comments: 234, reposts: 156, likes: 1450 },
+  { id: '10', username: 'PLTR_Watcher', displayName: 'PLTR Watcher', avatar: '/avatars/top-voice-2.png', body: '$PLTR commercial growth accelerating. AIP driving adoption. Still early in the platform shift.', time: '12h', comments: 67, reposts: 98, likes: 670 },
+  { id: '11', username: 'FedWatcher', displayName: 'Fed Watcher', avatar: '/avatars/top-voice-3.png', body: 'Rate cuts priced in. Macro setup favors risk assets. $SPY $QQQ breakouts look clean.', time: '1d', comments: 312, reposts: 445, likes: 2300 },
+  { id: '12', username: 'HOOD_Bull', displayName: 'HOOD Bull', avatar: '/avatars/user-avatar.png', body: 'Robinhood crypto momentum is real. $HOOD options flow picking up. Earnings could surprise.', time: '2d', comments: 45, reposts: 67, likes: 420 },
+  { id: '13', username: 'AMZN_Value', displayName: 'AMZN Value', avatar: '/avatars/top-voice-1.png', body: 'Amazon AWS growth reaccelerating. $AMZN margins expanding. Cloud wars far from over.', time: '2d', comments: 78, reposts: 112, likes: 890 },
+  { id: '14', username: 'DogeArmy', displayName: 'Doge Army', avatar: '/avatars/top-voice-2.png', body: '$DOGE Elon tweets = moon. Meme season is back. In for the ride.', time: '3d', comments: 1200, reposts: 3400, likes: 8900 },
+  { id: '15', username: 'MSFT_AI', displayName: 'MSFT AI', avatar: '/avatars/top-voice-3.png', body: 'Microsoft Copilot monetization ramping. $MSFT Azure + OpenAI integration is the moat.', time: '3d', comments: 56, reposts: 89, likes: 540 },
 ]
+
+function getFakeMessagesForQuery(query) {
+  const q = (query || '').trim()
+  if (!q) return FAKE_SEARCH_MESSAGES
+  const qLower = q.toLowerCase()
+  const tokens = q.split(/\s+/).filter(Boolean)
+  const matches = FAKE_SEARCH_MESSAGES.filter((msg) => {
+    const text = `${msg.body} ${msg.username} ${msg.displayName}`.toLowerCase()
+    return tokens.every((t) => {
+      const tt = t.replace(/^\$/, '').toLowerCase()
+      return text.includes(t.toLowerCase()) || text.includes(tt)
+    })
+  })
+  if (matches.length > 0) return matches
+  // Fallback: inject search term into each message so every result contains it
+  const tickerStyle = q.match(/^[A-Za-z]{1,5}$/) ? `$${q.toUpperCase()}` : q
+  return FAKE_SEARCH_MESSAGES.map((msg, i) => ({
+    ...msg,
+    id: `fallback-${q}-${i}`,
+    body: `${tickerStyle} — ${msg.body}`,
+  }))
+}
 
 // Mock messages from Howard for "from profile + ticker/tag" search (all from Howard, contain symbol or tag)
 const HOWARD_AVATAR = '/avatars/howard-lindzon.png'
@@ -137,6 +170,7 @@ export default function Search() {
   const filterRef = useRef(null)
   const fromProfileRef = useRef(null)
   const withTickerRef = useRef(null)
+  const resultsRef = useRef(null)
 
   // Sync URL (from profile navigation) into filter UI
   useEffect(() => {
@@ -206,20 +240,21 @@ export default function Search() {
 
   const isFromHoward = fromProfileQuery?.toLowerCase() === 'howardlindzon'
   const streamMessages = useMemo(() => {
-    if (!isFromHoward) return SEARCH_MESSAGES
-    const ticker = withTickerQuery.trim().toUpperCase()
-    const tag = selectedTags[0]
-    // When no ticker/tag filter, show all Howard messages; otherwise filter by ticker and/or tag
-    if (!ticker && !tag) return HOWARD_SEARCH_MESSAGES
-    return HOWARD_SEARCH_MESSAGES.filter((msg) => {
-      const hasTicker = ticker && (msg.body.includes(`$${ticker}`) || msg.body.toUpperCase().includes(ticker))
-      const hasTag = tag && (msg.tags && msg.tags.includes(tag))
-      if (ticker && tag) return hasTicker || hasTag
-      if (ticker) return hasTicker
-      if (tag) return hasTag
-      return true
-    })
-  }, [isFromHoward, withTickerQuery, selectedTags])
+    if (isFromHoward) {
+      const ticker = withTickerQuery.trim().toUpperCase()
+      const tag = selectedTags[0]
+      if (!ticker && !tag) return HOWARD_SEARCH_MESSAGES
+      return HOWARD_SEARCH_MESSAGES.filter((msg) => {
+        const hasTicker = ticker && (msg.body.includes(`$${ticker}`) || msg.body.toUpperCase().includes(ticker))
+        const hasTag = tag && (msg.tags && msg.tags.includes(tag))
+        if (ticker && tag) return hasTicker || hasTag
+        if (ticker) return hasTicker
+        if (tag) return hasTag
+        return true
+      })
+    }
+    return getFakeMessagesForQuery(q)
+  }, [isFromHoward, withTickerQuery, selectedTags, q])
 
   const tq = withTickerQuery.trim().toLowerCase()
   const tickerStocksFiltered = useMemo(() => {
@@ -569,6 +604,12 @@ export default function Search() {
                   type="text"
                   value={q}
                   onChange={(e) => setSearchParams((prev) => ({ ...Object.fromEntries(prev), q: e.target.value || undefined }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      resultsRef.current?.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
                   placeholder="Search symbols, people, or phrases"
                   className="flex-1 min-w-0 py-1.5 bg-transparent border-0 text-text placeholder:text-text-muted focus:outline-none focus:ring-0 text-sm"
                   aria-label="Search"
@@ -600,7 +641,7 @@ export default function Search() {
 
             {/* Message stream (Top / Latest show messages; People/Media could show different content later) */}
             {(activeTab === 'Top' || activeTab === 'Latest') && (
-              <div className="divide-y divide-border">
+              <div ref={resultsRef} className="divide-y divide-border">
                 {streamMessages.map((msg) => (
                   <article key={msg.id} className="py-4">
                     <div className="flex items-start gap-3">
