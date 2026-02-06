@@ -16,6 +16,7 @@ import Bookmarks from './pages/Bookmarks.jsx'
 import News from './pages/News.jsx'
 import Markets from './pages/Markets.jsx'
 import Scheduled from './pages/Scheduled.jsx'
+import Profile from './pages/Profile.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
 
@@ -754,6 +755,7 @@ export default function App() {
         <Route path="/news" element={<News />} />
         <Route path="/markets" element={<Markets />} />
         <Route path="/scheduled" element={<Scheduled />} />
+        <Route path="/profile/:username" element={<Profile />} />
         <Route path="/registered" element={<RegisteredPage />} />
         <Route path="/unreg" element={<UnregisteredPage />} />
         <Route path="/newpage" element={<NewPage />} />

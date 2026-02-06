@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
@@ -408,14 +409,18 @@ export default function Home() {
             {/* Feed: howardlindzon price prediction */}
             <article className="border-b border-border pb-4">
               <div className="flex items-start gap-3 pt-4">
-                <img
-                  src={HOWARD_LINDZON_MESSAGE.avatar}
-                  alt=""
-                  className="w-10 h-10 rounded-full object-cover border border-border shrink-0"
-                />
+                <Link to={`/profile/${HOWARD_LINDZON_MESSAGE.username}`} className="shrink-0">
+                  <img
+                    src={HOWARD_LINDZON_MESSAGE.avatar}
+                    alt=""
+                    className="w-10 h-10 rounded-full object-cover border border-border"
+                  />
+                </Link>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{HOWARD_LINDZON_MESSAGE.username}</span>
+                    <Link to={`/profile/${HOWARD_LINDZON_MESSAGE.username}`} className="font-semibold text-sm text-text hover:underline">
+                      {HOWARD_LINDZON_MESSAGE.username}
+                    </Link>
                     <span className="text-xs muted">{HOWARD_LINDZON_MESSAGE.time}</span>
                   </div>
                   <p className="mt-1 text-sm text-text leading-snug">{HOWARD_LINDZON_MESSAGE.body}</p>
