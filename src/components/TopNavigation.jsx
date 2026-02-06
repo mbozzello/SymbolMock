@@ -45,6 +45,7 @@ const RECENTLY_VIEWED = [
 
 const TRENDING_SEARCHES = [
   { type: 'symbol', label: '$AAPL', pctChange: -2.3, query: 'AAPL' },
+  { type: 'symbol', label: '$BTC', pctChange: 2.1, query: 'BTC' },
   { type: 'symbol', label: '$TSLA', pctChange: 1.8, query: 'TSLA' },
   { type: 'symbol', label: '$NVDA', pctChange: 4.2, query: 'NVDA' },
   { type: 'person', label: '@Steeletwits', query: 'Steeletwits', avatar: '/avatars/michele-steele.png' },
@@ -569,6 +570,8 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                           >
                             {item.type === 'person' && item.avatar ? (
                               <img src={item.avatar} alt="" className="h-4 w-4 rounded-full object-cover" />
+                            ) : item.type === 'symbol' && getTickerLogo(item.query) ? (
+                              <img src={getTickerLogo(item.query)} alt="" className="h-4 w-4 rounded-full object-cover shrink-0" />
                             ) : null}
                             <span>{item.label}</span>
                             {isSymbol && item.pctChange != null && (

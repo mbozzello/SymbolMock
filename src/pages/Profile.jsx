@@ -5,6 +5,7 @@ import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
+import { getTickerLogo } from '../constants/tickerLogos.js'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -36,6 +37,23 @@ const HOWARD_PROFILE = {
     '30d': { pct: 75, direction: 'bullish', label: 'Extremely Bullish' },
     '90d': { pct: 45, direction: 'bearish', label: 'Bearish' },
   },
+  tickerMentions: {
+    '30d': [
+      { ticker: 'TSLA', count: 28 },
+      { ticker: 'BTC', count: 22 },
+      { ticker: 'HOOD', count: 15 },
+      { ticker: 'MSFT', count: 12 },
+      { ticker: 'NVDA', count: 9 },
+    ],
+    '90d': [
+      { ticker: 'BTC', count: 54 },
+      { ticker: 'TSLA', count: 67 },
+      { ticker: 'HOOD', count: 41 },
+      { ticker: 'RKLB', count: 33 },
+      { ticker: 'MSFT', count: 29 },
+      { ticker: 'AMZN', count: 24 },
+    ],
+  },
 }
 
 const HOWARD_PRIVATE_JOURNAL = [
@@ -62,7 +80,8 @@ function SentimentCircle({ pct, direction, size = 36 }) {
   const radius = (size - 4) / 2
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (pct / 100) * circumference
-  const textColor = isBullish ? 'var(--color-success)' : 'var(--color-danger)'
+  const textColor = isBullish ? 'text-success' : 'text-danger'
+  const textSize = size >= 48 ? 'text-xs' : 'text-[10px]'
   return (
     <div className="relative shrink-0 inline-flex items-center justify-center">
       <svg width={size} height={size} className="shrink-0" viewBox={`0 0 ${size} ${size}`}>
@@ -88,8 +107,7 @@ function SentimentCircle({ pct, direction, size = 36 }) {
         />
       </svg>
       <span
-        className="absolute text-[10px] font-bold tabular-nums"
-        style={{ color: textColor }}
+        className={clsx('absolute font-bold tabular-nums', textSize, textColor)}
       >
         {pct}%
       </span>
@@ -225,6 +243,20 @@ export default function Profile() {
                     </button>
                     <button
                       type="button"
+                      className="relative p-2 rounded-full border border-border hover:bg-surface-muted transition-colors"
+                      aria-label="Alerts"
+                    >
+                      <svg className="w-5 h-5 text-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-3 h-3 rounded-full bg-surface-muted border border-border">
+                        <svg className="w-2 h-2 text-text" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path d="M12 4v16m8-8H4" strokeLinecap="round" />
+                        </svg>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
                       className="p-2 rounded-full border border-border hover:bg-surface-muted transition-colors"
                       aria-label="Message"
                     >
@@ -296,40 +328,83 @@ export default function Profile() {
                 <span><span className="font-semibold text-text">{profile.followersCount}</span> Followers</span>
               </div>
 
-              {profile.sentiment && (
+              {(profile.sentiment || profile.tickerMentions) && (
                 <div className="mt-4 pt-4 border-t border-border">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Post Sentiment</div>
-                  <div className="flex flex-wrap gap-6">
-                    <div className="flex items-center gap-3">
-                      <SentimentCircle
-                        pct={profile.sentiment['30d'].pct}
-                        direction={profile.sentiment['30d'].direction}
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-text">30 days</div>
-                        <div className={clsx(
-                          'text-sm font-medium',
-                          profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger'
-                        )}>
-                          {profile.sentiment['30d'].pct}% {profile.sentiment['30d'].label}
+                  <div className="flex gap-8 items-stretch">
+                    {profile.sentiment && (
+                      <div className="flex-1 flex flex-col">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Post Sentiment</div>
+                        <div className="flex gap-3 flex-1 min-h-[52px] items-center">
+                          <div className="flex items-center gap-3">
+                            <SentimentCircle
+                              pct={profile.sentiment['30d'].pct}
+                              direction={profile.sentiment['30d'].direction}
+                              size={48}
+                            />
+                            <div>
+                              <div className="text-sm font-semibold text-text">30 days</div>
+                              <div className={clsx(
+                                'text-sm font-medium leading-tight',
+                                profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger'
+                              )}>
+                                {profile.sentiment['30d'].pct}% {profile.sentiment['30d'].label}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <SentimentCircle
+                              pct={profile.sentiment['90d'].pct}
+                              direction={profile.sentiment['90d'].direction}
+                              size={48}
+                            />
+                            <div>
+                              <div className="text-sm font-semibold text-text">90 days</div>
+                              <div className={clsx(
+                                'text-sm font-medium leading-tight',
+                                profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger'
+                              )}>
+                                {profile.sentiment['90d'].pct}% {profile.sentiment['90d'].label}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <SentimentCircle
-                        pct={profile.sentiment['90d'].pct}
-                        direction={profile.sentiment['90d'].direction}
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-text">90 days</div>
-                        <div className={clsx(
-                          'text-sm font-medium',
-                          profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger'
-                        )}>
-                          {profile.sentiment['90d'].pct}% {profile.sentiment['90d'].label}
+                    )}
+                    {profile.tickerMentions && (
+                      <div className="flex-1 flex flex-col">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Most Ticker Mentions</div>
+                        <div className="flex gap-3 flex-1 min-h-[52px] items-center">
+                          <div className="flex flex-col gap-1.5">
+                            <div className="text-sm font-semibold text-text">30 days</div>
+                            {profile.tickerMentions['30d'][0] && (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none">
+                                {getTickerLogo(profile.tickerMentions['30d'][0].ticker) ? (
+                                  <img src={getTickerLogo(profile.tickerMentions['30d'][0].ticker)} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
+                                ) : (
+                                  <span className="w-4 h-4 rounded-full bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{profile.tickerMentions['30d'][0].ticker[0]}</span>
+                                )}
+                                <span className="text-xs font-semibold text-text">${profile.tickerMentions['30d'][0].ticker}</span>
+                                <span className="text-[10px] text-muted">×{profile.tickerMentions['30d'][0].count}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <div className="text-sm font-semibold text-text">90 days</div>
+                            {profile.tickerMentions['90d'][0] && (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none">
+                                {getTickerLogo(profile.tickerMentions['90d'][0].ticker) ? (
+                                  <img src={getTickerLogo(profile.tickerMentions['90d'][0].ticker)} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
+                                ) : (
+                                  <span className="w-4 h-4 rounded-full bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{profile.tickerMentions['90d'][0].ticker[0]}</span>
+                                )}
+                                <span className="text-xs font-semibold text-text">${profile.tickerMentions['90d'][0].ticker}</span>
+                                <span className="text-[10px] text-muted">×{profile.tickerMentions['90d'][0].count}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
