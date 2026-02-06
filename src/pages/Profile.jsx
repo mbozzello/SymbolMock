@@ -135,7 +135,7 @@ const HOWARD_POSTS = [
   },
 ]
 
-export default function Profile() {
+export default function Profile({ isOwnProfile = false }) {
   const { username } = useParams()
   const navigate = useNavigate()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)

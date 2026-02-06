@@ -756,6 +756,7 @@ export default function App() {
         <Route path="/markets" element={<Markets />} />
         <Route path="/scheduled" element={<Scheduled />} />
         <Route path="/profile/:username" element={<Profile />} />
+        <Route path="/myprofile/:username" element={<Profile isOwnProfile />} />
         <Route path="/registered" element={<RegisteredPage />} />
         <Route path="/unreg" element={<UnregisteredPage />} />
         <Route path="/newpage" element={<NewPage />} />
