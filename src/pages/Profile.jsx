@@ -135,6 +135,18 @@ const HOWARD_POSTS = [
   },
 ]
 
+// Price since post: % change of mentioned ticker since the post was made (for "my profile" section)
+const PRICE_SINCE_POST_MESSAGES = [
+  { id: 'psp1', body: 'Decent support around here on $TSLA, but great support a bit lower. I like that area better.', ticker: 'TSLA', postDate: 'Jul 07, 2017 10:11 AM', pctChangeSincePost: 1758.92 },
+  { id: 'psp2', body: '$BTC breaking out. Key level and I like the setup for a swing.', ticker: 'BTC', postDate: 'Mar 12, 2020 2:30 PM', pctChangeSincePost: 892.4 },
+  { id: 'psp3', body: 'Adding $NVDA on this dip. AI capex cycle has legs.', ticker: 'NVDA', postDate: 'Jan 15, 2023 9:00 AM', pctChangeSincePost: 312.5 },
+  { id: 'psp4', body: '$HOOD at these levels is a buy. Execution and growth story intact.', ticker: 'HOOD', postDate: 'Aug 02, 2024 11:45 AM', pctChangeSincePost: -42.3 },
+  { id: 'psp5', body: 'Trimmed $TSLA here. Risk/reward no longer in favor after the run.', ticker: 'TSLA', postDate: 'Nov 08, 2021 3:20 PM', pctChangeSincePost: -38.7 },
+  { id: 'psp6', body: '$RKLB had a great run. Taking some off the table.', ticker: 'RKLB', postDate: 'Sep 14, 2024 10:15 AM', pctChangeSincePost: -28.1 },
+]
+const TOP_3_BULLISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSincePost > 0).sort((a, b) => b.pctChangeSincePost - a.pctChangeSincePost).slice(0, 3)
+const TOP_3_BEARISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSincePost < 0).sort((a, b) => a.pctChangeSincePost - b.pctChangeSincePost).slice(0, 3)
+
 export default function Profile({ isOwnProfile = false }) {
   const { username } = useParams()
   const navigate = useNavigate()
@@ -145,6 +157,8 @@ export default function Profile({ isOwnProfile = false }) {
   })
   const [activeTab, setActiveTab] = useState('Posts')
   const [isFollowing, setIsFollowing] = useState(HOWARD_PROFILE.following)
+  const [priceSincePostView, setPriceSincePostView] = useState('bullish') // 'bullish' | 'bearish'
+  const [priceSincePostIndex, setPriceSincePostIndex] = useState(0)
 
   useEffect(() => {
     if (darkMode) {
@@ -465,6 +479,103 @@ export default function Profile({ isOwnProfile = false }) {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* My profile: Top Bullish / Top Bearish carousel */}
+              {isOwnProfile && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted">Price since post</span>
+                    <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setPriceSincePostView('bullish'); setPriceSincePostIndex(0) }}
+                      className={clsx(
+                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                        priceSincePostView === 'bullish'
+                          ? 'bg-success/15 text-success border border-success/40'
+                          : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
+                      )}
+                    >
+                      Top Bullish
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setPriceSincePostView('bearish'); setPriceSincePostIndex(0) }}
+                      className={clsx(
+                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                        priceSincePostView === 'bearish'
+                          ? 'bg-danger/15 text-danger border border-danger/40'
+                          : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
+                      )}
+                    >
+                      Top Bearish
+                    </button>
+                    </div>
+                  </div>
+                  {(() => {
+                    const list = priceSincePostView === 'bullish' ? TOP_3_BULLISH : TOP_3_BEARISH
+                    const msg = list[priceSincePostIndex]
+                    if (!msg) return null
+                    const isBullish = msg.pctChangeSincePost >= 0
+                    const pctClass = isBullish ? 'text-success' : 'text-danger'
+                    const pctSign = msg.pctChangeSincePost >= 0 ? '+' : ''
+                    const canGoPrev = priceSincePostIndex > 0
+                    const canGoNext = priceSincePostIndex < list.length - 1
+                    return (
+                      <div className="flex items-stretch gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPriceSincePostIndex((i) => Math.max(0, i - 1))}
+                          disabled={!canGoPrev}
+                          className={clsx(
+                            'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-opacity',
+                            canGoPrev ? 'bg-black text-white hover:opacity-90' : 'bg-surface-muted text-text-muted cursor-not-allowed opacity-60'
+                          )}
+                          aria-label="Previous message"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                        </button>
+                        <div className="flex-1 min-w-0 p-3 rounded-lg border border-border bg-surface-muted/50 flex flex-col max-h-[200px]">
+                          <p className="text-sm text-text leading-snug line-clamp-5 flex-1 min-h-0 overflow-hidden">{msg.body}</p>
+                          <div className="mt-2 text-xs text-text-muted">{msg.postDate}</div>
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                              {getTickerLogo(msg.ticker) ? (
+                                <img src={getTickerLogo(msg.ticker)} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
+                              ) : (
+                                <span className="w-5 h-5 rounded bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{msg.ticker[0]}</span>
+                              )}
+                              <span className="font-semibold text-text shrink-0">{msg.ticker}</span>
+                              <span className="text-text-muted text-xs shrink-0">Price since post</span>
+                              <span className={clsx('font-bold shrink-0', pctClass)}>{pctSign}{msg.pctChangeSincePost.toFixed(2)}%</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button type="button" className="p-1.5 rounded-md text-text-muted hover:text-text hover:bg-surface transition-colors" aria-label="Share">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                              </button>
+                              <button type="button" className="text-xs font-medium text-primary hover:underline">
+                                View Message
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPriceSincePostIndex((i) => Math.min(list.length - 1, i + 1))}
+                          disabled={!canGoNext}
+                          className={clsx(
+                            'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-opacity',
+                            canGoNext ? 'bg-black text-white hover:opacity-90' : 'bg-surface-muted text-text-muted cursor-not-allowed opacity-60'
+                          )}
+                          aria-label="Next message"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                        </button>
+                      </div>
+                    )
+                  })()}
                 </div>
               )}
             </div>
