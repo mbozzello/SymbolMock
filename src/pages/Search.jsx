@@ -196,11 +196,13 @@ export default function Search() {
     return (howard ? [howard, ...rest] : rest).slice(0, 5)
   }, [fromProfileQuery])
 
-  const isFromHowardWithFilter = fromProfileQuery?.toLowerCase() === 'howardlindzon' && ((withTickerFilter && withTickerQuery.trim()) || selectedTags.length > 0)
+  const isFromHoward = fromProfileQuery?.toLowerCase() === 'howardlindzon'
   const streamMessages = useMemo(() => {
-    if (!isFromHowardWithFilter) return SEARCH_MESSAGES
+    if (!isFromHoward) return SEARCH_MESSAGES
     const ticker = withTickerQuery.trim().toUpperCase()
     const tag = selectedTags[0]
+    // When no ticker/tag filter, show all Howard messages; otherwise filter by ticker and/or tag
+    if (!ticker && !tag) return HOWARD_SEARCH_MESSAGES
     return HOWARD_SEARCH_MESSAGES.filter((msg) => {
       const hasTicker = ticker && (msg.body.includes(`$${ticker}`) || msg.body.toUpperCase().includes(ticker))
       const hasTag = tag && (msg.tags && msg.tags.includes(tag))
@@ -209,7 +211,7 @@ export default function Search() {
       if (tag) return hasTag
       return true
     })
-  }, [isFromHowardWithFilter, withTickerQuery, selectedTags])
+  }, [isFromHoward, withTickerQuery, selectedTags])
 
   const tq = withTickerQuery.trim().toLowerCase()
   const tickerStocksFiltered = useMemo(() => {

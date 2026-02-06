@@ -57,6 +57,22 @@ const HOWARD_PROFILE = {
   frequentTags: ['Momentum', 'Swing trading'],
   predictionRank: { rank: 278, total: 66000 },        // Prediction rank #278 / 66,000
   marketPredictionRank: { rank: 34, total: 150000 },  // Market Prediction rank #34 / 150,000
+  latestWatchlistActivity: [
+    { type: 'added', ticker: 'TSLA', time: '2h ago' },
+    { type: 'removed', ticker: 'NVDA', time: '1d ago' },
+    { type: 'added', ticker: 'AAPL', time: '3d ago' },
+    { type: 'added', ticker: 'BTC', time: '5d ago' },
+    { type: 'removed', ticker: 'GME', time: '1w ago' },
+  ],
+  sectorFocus: [
+    { name: 'Technology', pct: 32 },
+    { name: 'Financials', pct: 18 },
+    { name: 'Crypto', pct: 16 },
+    { name: 'Communications', pct: 14 },
+    { name: 'Health Care', pct: 10 },
+    { name: 'Energy', pct: 8 },
+    { name: 'Other', pct: 2 },
+  ],
 }
 
 const HOWARD_PRIVATE_JOURNAL = [
@@ -149,6 +165,13 @@ const PRICE_SINCE_POST_MESSAGES = [
 const TOP_3_BULLISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSincePost > 0).sort((a, b) => b.pctChangeSincePost - a.pctChangeSincePost).slice(0, 3)
 const TOP_3_BEARISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSincePost < 0).sort((a, b) => a.pctChangeSincePost - b.pctChangeSincePost).slice(0, 3)
 
+const RANKS_VISIBILITY_KEY = (u) => `profile_ranks_visibility_${u}`
+
+function getRanksVisibleToOthers(username) {
+  if (typeof window === 'undefined') return true
+  return (localStorage.getItem(RANKS_VISIBILITY_KEY(username)) || 'public') !== 'private'
+}
+
 export default function Profile({ isOwnProfile = false }) {
   const { username } = useParams()
   const navigate = useNavigate()
@@ -161,6 +184,25 @@ export default function Profile({ isOwnProfile = false }) {
   const [isFollowing, setIsFollowing] = useState(HOWARD_PROFILE.following)
   const [priceSincePostView, setPriceSincePostView] = useState('bullish') // 'bullish' | 'bearish'
   const [priceSincePostIndex, setPriceSincePostIndex] = useState(0)
+  const [ranksVisibility, setRanksVisibility] = useState('public')
+  const [statsExpanded, setStatsExpanded] = useState(true)
+  const [priceSincePostExpanded, setPriceSincePostExpanded] = useState(true)
+
+  const profile = username === 'howardlindzon' ? HOWARD_PROFILE : null
+  const posts = username === 'howardlindzon' ? HOWARD_POSTS : []
+
+  useEffect(() => {
+    if (username && typeof window !== 'undefined') {
+      setRanksVisibility(localStorage.getItem(RANKS_VISIBILITY_KEY(username)) || 'public')
+    }
+  }, [username])
+
+  const setRanksVisibilityAndStore = (value) => {
+    setRanksVisibility(value)
+    if (username && typeof window !== 'undefined') {
+      localStorage.setItem(RANKS_VISIBILITY_KEY(username), value)
+    }
+  }
 
   useEffect(() => {
     if (darkMode) {
@@ -171,9 +213,6 @@ export default function Profile({ isOwnProfile = false }) {
       localStorage.setItem('theme', 'light')
     }
   }, [darkMode])
-
-  const profile = username === 'howardlindzon' ? HOWARD_PROFILE : null
-  const posts = username === 'howardlindzon' ? HOWARD_POSTS : []
 
   const toggleDarkMode = () => setDarkMode((prev) => !prev)
 
@@ -297,6 +336,17 @@ export default function Profile({ isOwnProfile = false }) {
                     </button>
                     <button
                       type="button"
+                      onClick={() => navigate(`/search?from=${encodeURIComponent(profile.username)}`)}
+                      className="p-2 rounded-full border border-border hover:bg-surface-muted transition-colors"
+                      aria-label="Search posts from this user"
+                    >
+                      <svg className="w-5 h-5 text-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="m21 21-4.35-4.35" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
                       className="p-2 rounded-full border border-border hover:bg-surface-muted transition-colors"
                       aria-label="Share"
                     >
@@ -321,15 +371,29 @@ export default function Profile({ isOwnProfile = false }) {
 
               <p className="mt-4 text-sm text-text leading-relaxed">{profile.bio}</p>
 
-              <div className="flex flex-wrap gap-2 mt-3">
-                {profile.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border"
-                  >
-                    {tag}
-                  </span>
-                ))}
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                {profile.tags[0] === 'Strategy' ? (
+                  <>
+                    <span className="text-xs font-medium text-text-muted">Strategy:</span>
+                    {profile.tags.slice(1).map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </>
+                ) : (
+                  profile.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                )}
               </div>
 
               <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted">
@@ -378,94 +442,69 @@ export default function Profile({ isOwnProfile = false }) {
                 <span><span className="font-semibold text-text">{profile.followersCount}</span> Followers</span>
               </div>
 
-              {(profile.sentiment || profile.tickerMentions || profile.predictionRank) && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex gap-4 items-stretch flex-wrap">
-                    {profile.sentiment && (
-                      <div className="flex-1 flex flex-col">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Post Sentiment</div>
-                        <div className="flex gap-3 flex-1 min-h-[52px] items-center">
-                          <div className="flex items-center gap-3">
-                            <SentimentCircle
-                              pct={profile.sentiment['30d'].pct}
-                              direction={profile.sentiment['30d'].direction}
-                              size={48}
-                            />
-                            <div>
-                              <div className="text-sm font-semibold text-text">30 days</div>
-                              <div className={clsx(
-                                'text-sm font-medium leading-tight',
-                                profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger'
-                              )}>
-                                {profile.sentiment['30d'].pct}% {profile.sentiment['30d'].label}
-                              </div>
+              {(profile.sentiment || profile.tickerMentions || profile.latestWatchlistActivity?.length || profile.sectorFocus?.length) && (
+                <div className="mt-2 pt-2 border-t border-border">
+                  <div className="flex items-center justify-between w-full py-0.5 -my-0.5">
+                    <span className="text-sm font-semibold text-text">Activity</span>
+                    <button
+                      type="button"
+                      onClick={() => setStatsExpanded((e) => !e)}
+                      className="p-1 rounded-lg hover:bg-surface-muted/50 transition-colors"
+                      aria-expanded={statsExpanded}
+                      aria-label={statsExpanded ? 'Collapse stats' : 'Expand stats'}
+                    >
+                      <span className="text-text-muted shrink-0 transition-transform block" style={{ transform: statsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                      </span>
+                    </button>
+                  </div>
+                  {statsExpanded && (
+                  <div className="mt-2 flex gap-3 overflow-x-auto overflow-y-hidden pb-1 flex-nowrap scroll-smooth">
+                    {/* Card 1: Watchlist Activity */}
+                    {profile.latestWatchlistActivity?.length > 0 && (
+                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Watchlist Activity</div>
+                        <div className="flex-1 min-h-0 flex flex-col gap-1.5">
+                          {profile.latestWatchlistActivity.slice(0, 6).map((entry, i) => (
+                            <div key={i} className="flex items-center gap-2 text-xs min-w-0">
+                              {getTickerLogo(entry.ticker) ? (
+                                <img src={getTickerLogo(entry.ticker)} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+                              ) : (
+                                <span className="w-6 h-6 rounded bg-surface flex items-center justify-center text-[10px] font-bold text-text shrink-0">{entry.ticker[0]}</span>
+                              )}
+                              <span className="font-semibold text-text truncate text-sm">${entry.ticker}</span>
+                              <span className={clsx('shrink-0 text-xs font-medium', entry.type === 'added' ? 'text-success' : 'text-danger')} title={entry.type === 'added' ? 'Added' : 'Removed'}>{entry.type === 'added' ? '+' : '−'}</span>
+                              <span className="text-text-muted shrink-0 ml-auto text-xs">{entry.time}</span>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <SentimentCircle
-                              pct={profile.sentiment['90d'].pct}
-                              direction={profile.sentiment['90d'].direction}
-                              size={48}
-                            />
-                            <div>
-                              <div className="text-sm font-semibold text-text">90 days</div>
-                              <div className={clsx(
-                                'text-sm font-medium leading-tight',
-                                profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger'
-                              )}>
-                                {profile.sentiment['90d'].pct}% {profile.sentiment['90d'].label}
-                              </div>
-                            </div>
-                          </div>
+                          ))}
                         </div>
                       </div>
                     )}
+                    {/* Card 2: Top Mentions — 30d & 90d */}
                     {profile.tickerMentions && (
-                      <div className="flex-1 flex flex-col">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Most Ticker Mentions</div>
-                        <div className="flex gap-3 items-start">
-                          <div className="flex flex-col gap-2 flex-1 min-w-0">
-                            <div className="min-h-[48px] flex items-center">
-                              <span className="text-sm font-semibold text-text">30 days</span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {profile.tickerMentions['30d'].slice(0, 2).map((item) => (
-                                <button
-                                  key={item.ticker}
-                                  type="button"
-                                  onClick={goToSearchWithProfileFilters}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none hover:bg-surface transition-colors text-left"
-                                >
-                                  {getTickerLogo(item.ticker) ? (
-                                    <img src={getTickerLogo(item.ticker)} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
-                                  ) : (
-                                    <span className="w-4 h-4 rounded-full bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{item.ticker[0]}</span>
-                                  )}
-                                  <span className="text-xs font-semibold text-text">${item.ticker}</span>
-                                  <span className="text-[10px] text-muted">×{item.count}</span>
+                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Top Mentions</div>
+                        <div className="flex-1 min-h-0 flex flex-col gap-2">
+                          <div>
+                            <div className="text-[9px] font-medium text-text-muted mb-0.5">30 days</div>
+                            <div className="flex flex-wrap gap-1">
+                              {profile.tickerMentions['30d'].slice(0, 3).map((item) => (
+                                <button key={item.ticker} type="button" onClick={goToSearchWithProfileFilters} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface border border-border hover:bg-surface-muted text-left">
+                                  {getTickerLogo(item.ticker) ? <img src={getTickerLogo(item.ticker)} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0" /> : <span className="w-3.5 h-3.5 rounded bg-surface flex items-center justify-center text-[8px] font-bold text-text shrink-0">{item.ticker[0]}</span>}
+                                  <span className="text-[10px] font-semibold text-text">${item.ticker}</span>
+                                  <span className="text-[9px] text-muted">×{item.count}</span>
                                 </button>
                               ))}
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 flex-1 min-w-0">
-                            <div className="min-h-[48px] flex items-center">
-                              <span className="text-sm font-semibold text-text">90 days</span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {profile.tickerMentions['90d'].slice(0, 2).map((item) => (
-                                <button
-                                  key={item.ticker}
-                                  type="button"
-                                  onClick={goToSearchWithProfileFilters}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-muted border border-border w-fit leading-none hover:bg-surface transition-colors text-left"
-                                >
-                                  {getTickerLogo(item.ticker) ? (
-                                    <img src={getTickerLogo(item.ticker)} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
-                                  ) : (
-                                    <span className="w-4 h-4 rounded-full bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{item.ticker[0]}</span>
-                                  )}
-                                  <span className="text-xs font-semibold text-text">${item.ticker}</span>
-                                  <span className="text-[10px] text-muted">×{item.count}</span>
+                          <div>
+                            <div className="text-[9px] font-medium text-text-muted mb-0.5">90 days</div>
+                            <div className="flex flex-wrap gap-1">
+                              {profile.tickerMentions['90d'].slice(0, 3).map((item) => (
+                                <button key={item.ticker} type="button" onClick={goToSearchWithProfileFilters} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface border border-border hover:bg-surface-muted text-left">
+                                  {getTickerLogo(item.ticker) ? <img src={getTickerLogo(item.ticker)} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0" /> : <span className="w-3.5 h-3.5 rounded bg-surface flex items-center justify-center text-[8px] font-bold text-text shrink-0">{item.ticker[0]}</span>}
+                                  <span className="text-[10px] font-semibold text-text">${item.ticker}</span>
+                                  <span className="text-[9px] text-muted">×{item.count}</span>
                                 </button>
                               ))}
                             </div>
@@ -473,61 +512,91 @@ export default function Profile({ isOwnProfile = false }) {
                         </div>
                       </div>
                     )}
-                    {profile.predictionRank && (
-                      <div className="flex-1 flex flex-col min-w-0">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">Price Prediction Rank &gt;</div>
-                        <div className="flex flex-col gap-3 flex-1 min-h-[52px] justify-center">
-                          <div className="text-sm font-semibold text-text">
-                            #{(profile.predictionRank.rank).toLocaleString()} / {(profile.predictionRank.total).toLocaleString()}
-                          </div>
-                          {profile.marketPredictionRank && (
-                            <div className="flex flex-col gap-0.5">
-                              <div className="text-xs font-semibold uppercase tracking-wide text-muted">Market Prediction Rank &gt;</div>
-                              <div className="text-sm font-semibold text-text">
-                                #{(profile.marketPredictionRank.rank).toLocaleString()} / {(profile.marketPredictionRank.total).toLocaleString()}
-                              </div>
+                    {/* Card 3: Sector Focus */}
+                    {profile.sectorFocus?.length > 0 && (
+                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Sector Focus</div>
+                        <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto">
+                          {profile.sectorFocus.map((row) => (
+                            <div key={row.name} className="flex items-center justify-between gap-2 text-[10px] min-w-0">
+                              <span className="text-text truncate">{row.name}</span>
+                              <span className="font-semibold text-text tabular-nums shrink-0">{row.pct}%</span>
                             </div>
-                          )}
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Card 4: Post sentiment — 30d & 90d (off-screen, scroll to see) */}
+                    {profile.sentiment && (
+                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Post Sentiment</div>
+                        <div className="flex-1 min-h-0 flex flex-col gap-2">
+                          <div className={clsx('rounded-lg border p-1.5 flex flex-col gap-0.5', profile.sentiment['30d'].direction === 'bullish' ? 'bg-success/10 border-success/30' : 'bg-danger/10 border-danger/30')}>
+                            <div className="text-[9px] font-medium text-text-muted">30 days</div>
+                            <div className={clsx('text-base font-bold', profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['30d'].pct}%</div>
+                            <span className={clsx('text-[9px] font-medium', profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['30d'].label}</span>
+                          </div>
+                          <div className={clsx('rounded-lg border p-1.5 flex flex-col gap-0.5', profile.sentiment['90d'].direction === 'bullish' ? 'bg-success/10 border-success/30' : 'bg-danger/10 border-danger/30')}>
+                            <div className="text-[9px] font-medium text-text-muted">90 days</div>
+                            <div className={clsx('text-base font-bold', profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['90d'].pct}%</div>
+                            <span className={clsx('text-[9px] font-medium', profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['90d'].label}</span>
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
+                  )}
                 </div>
               )}
 
               {/* My profile: Top Bullish / Top Bearish carousel */}
               {isOwnProfile && (
                 <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-muted">Price since post</span>
-                    <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { setPriceSincePostView('bullish'); setPriceSincePostIndex(0) }}
-                      className={clsx(
-                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
-                        priceSincePostView === 'bullish'
-                          ? 'bg-success/15 text-success border border-success/40'
-                          : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wide text-muted">Price since post</span>
+                    <div className="flex items-center gap-2">
+                      {priceSincePostExpanded && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => { setPriceSincePostView('bullish'); setPriceSincePostIndex(0) }}
+                            className={clsx(
+                              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                              priceSincePostView === 'bullish'
+                                ? 'bg-success/15 text-success border border-success/40'
+                                : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
+                            )}
+                          >
+                            Top Bullish
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setPriceSincePostView('bearish'); setPriceSincePostIndex(0) }}
+                            className={clsx(
+                              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                              priceSincePostView === 'bearish'
+                                ? 'bg-danger/15 text-danger border border-danger/40'
+                                : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
+                            )}
+                          >
+                            Top Bearish
+                          </button>
+                        </>
                       )}
-                    >
-                      Top Bullish
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setPriceSincePostView('bearish'); setPriceSincePostIndex(0) }}
-                      className={clsx(
-                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
-                        priceSincePostView === 'bearish'
-                          ? 'bg-danger/15 text-danger border border-danger/40'
-                          : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
-                      )}
-                    >
-                      Top Bearish
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setPriceSincePostExpanded((e) => !e)}
+                        className="p-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-muted transition-colors shrink-0"
+                        aria-expanded={priceSincePostExpanded}
+                        aria-label={priceSincePostExpanded ? 'Collapse' : 'Expand'}
+                      >
+                        <span className="block transition-transform" style={{ transform: priceSincePostExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                        </span>
+                      </button>
                     </div>
                   </div>
-                  {(() => {
+                  {priceSincePostExpanded && (() => {
                     const list = priceSincePostView === 'bullish' ? TOP_3_BULLISH : TOP_3_BEARISH
                     const msg = list[priceSincePostIndex]
                     if (!msg) return null
@@ -537,7 +606,7 @@ export default function Profile({ isOwnProfile = false }) {
                     const canGoPrev = priceSincePostIndex > 0
                     const canGoNext = priceSincePostIndex < list.length - 1
                     return (
-                      <div className="flex items-stretch gap-2">
+                      <div className="flex items-stretch gap-2 mt-3">
                         <button
                           type="button"
                           onClick={() => setPriceSincePostIndex((i) => Math.max(0, i - 1))}
@@ -561,7 +630,7 @@ export default function Profile({ isOwnProfile = false }) {
                                 <span className="w-5 h-5 rounded bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{msg.ticker[0]}</span>
                               )}
                               <span className="font-semibold text-text shrink-0">{msg.ticker}</span>
-                              <span className="text-text-muted text-xs shrink-0">Price since post</span>
+                              <span className="text-text-muted text-xs font-semibold shrink-0">Price since post</span>
                               <span className={clsx('font-bold shrink-0', pctClass)}>{pctSign}{msg.pctChangeSincePost.toFixed(2)}%</span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">

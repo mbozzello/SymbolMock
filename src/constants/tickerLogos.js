@@ -8,6 +8,7 @@ const LOGO_MAP = {
   NVDA: '/images/logos/nvda.png',
   TSLA: '/images/logos/tesla.png',
   GME: '/images/logos/gme.png',
+  HOOD: '/images/logos/hood.png',
   ARAI: '/images/logos/arai.png',
   BNAI: '/images/logos/bnai.png',
   COPX: '/images/logos/copx.png',
