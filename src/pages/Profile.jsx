@@ -553,7 +553,7 @@ export default function Profile({ isOwnProfile = false }) {
               {isOwnProfile && (
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-bold uppercase tracking-wide text-muted">Price since post</span>
+                    <span className="text-sm font-semibold text-text">Price since post</span>
                     <div className="flex items-center gap-2">
                       {priceSincePostExpanded && (
                         <>

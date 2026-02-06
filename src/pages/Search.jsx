@@ -130,6 +130,8 @@ export default function Search() {
   const [fromProfileDropdownOpen, setFromProfileDropdownOpen] = useState(false)
   const [withTickerQuery, setWithTickerQuery] = useState(urlTickers.length ? urlTickers[0] : '')
   const [withTickerDropdownOpen, setWithTickerDropdownOpen] = useState(false)
+  const [priceSincePostOpen, setPriceSincePostOpen] = useState(false)
+  const [priceSincePostPct, setPriceSincePostPct] = useState('') // e.g. "5", "-10", ""
   const [selectedTags, setSelectedTags] = useState(() => (urlTags[0] ? [urlTags[0]] : []))
   const filterRef = useRef(null)
   const fromProfileRef = useRef(null)
@@ -360,6 +362,35 @@ export default function Search() {
                       <span className="text-sm font-bold text-text">With $ticker</span>
                       <span className="text-sm font-semibold text-text-muted shrink-0">$</span>
                     </button>
+                    <button type="button" onClick={() => setPriceSincePostOpen((o) => !o)} className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-surface-muted/80">
+                      <span className="text-sm font-bold text-text">Price Since Post</span>
+                      <span className="text-sm font-semibold text-text-muted shrink-0" aria-hidden>%</span>
+                    </button>
+                    {priceSincePostOpen && (
+                      <div className="my-1 border-t border-border pt-2 px-3 pb-2">
+                        <label className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 block">% change since post</label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={priceSincePostPct}
+                          onChange={(e) => setPriceSincePostPct(e.target.value.replace(/[^0-9.-]/g, ''))}
+                          placeholder="e.g. 5 or -10"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-white dark:bg-surface text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          aria-label="Price since post % change"
+                        />
+                        {priceSincePostPct.trim() !== '' && (() => {
+                          const num = parseFloat(priceSincePostPct)
+                          if (Number.isNaN(num)) return null
+                          const isPositive = num >= 0
+                          const display = (num > 0 ? '+' : '') + num + '%'
+                          return (
+                            <div className={clsx('mt-1.5 text-sm font-semibold', isPositive ? 'text-success' : 'text-danger')}>
+                              {display}
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    )}
                     <button type="button" onClick={() => setTagsExpanded((e) => !e)} className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-surface-muted/80">
                       <span className="text-sm font-bold text-text">Tags</span>
                       <svg className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
@@ -498,6 +529,19 @@ export default function Search() {
                   <span className="font-bold text-text shrink-0">With tag</span>
                   <span className="text-text">{selectedTags[0]}</span>
                   <button type="button" onClick={clearWithTag} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove With tag filter">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="15" y1="5" x2="5" y2="15" /><line x1="5" y1="5" x2="15" y2="15" /></svg>
+                  </button>
+                </span>
+              )}
+
+              {/* Price since post chip (when value is set) */}
+              {priceSincePostPct.trim() !== '' && !Number.isNaN(parseFloat(priceSincePostPct)) && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-surface border border-border text-sm shrink-0">
+                  <span className="font-bold text-text shrink-0">Price since post</span>
+                  <span className={clsx('font-semibold shrink-0', parseFloat(priceSincePostPct) >= 0 ? 'text-success' : 'text-danger')}>
+                    {(parseFloat(priceSincePostPct) >= 0 ? '+' : '') + parseFloat(priceSincePostPct) + '%'}
+                  </span>
+                  <button type="button" onClick={() => setPriceSincePostPct('')} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove Price since post filter">
                     <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="15" y1="5" x2="5" y2="15" /><line x1="5" y1="5" x2="15" y2="15" /></svg>
                   </button>
                 </span>
