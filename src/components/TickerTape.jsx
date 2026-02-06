@@ -1,5 +1,6 @@
 import React from 'react'
 import { getTickerLogo } from '../constants/tickerLogos'
+import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
 import './TickerTape.css'
 
 function clsx(...values) {
@@ -65,32 +66,52 @@ function TickerItem({ symbol, change }) {
   )
 }
 
+const DEFAULT_TRENDING = [
+  { symbol: 'TSLA', change: 4.02 },
+  { symbol: 'BTC', change: 11.8 },
+  { symbol: 'PZZA', change: 0.72 },
+  { symbol: 'SPOT', change: 3.44 },
+  { symbol: 'ETH', change: 9.0 },
+  { symbol: 'AMD', change: -0.88 },
+  { symbol: 'SNAP', change: 0 },
+  { symbol: 'NVDA', change: 2.45 },
+  { symbol: 'AAPL', change: -0.82 },
+  { symbol: 'META', change: 0.67 },
+]
+
 export default function TickerTape() {
-  const scrollingSymbols = [
-    { symbol: 'TSLA', change: 4.02 },
-    { symbol: 'BTC', change: 11.8 },
-    { symbol: 'PZZA', change: 0.72 },
-    { symbol: 'SPOT', change: 3.44 },
-    { symbol: 'ETH', change: 9.0 },
-    { symbol: 'AMD', change: -0.88 },
-    { symbol: 'SNAP', change: 0 },
-    { symbol: 'NVDA', change: 2.45 },
-    { symbol: 'AAPL', change: -0.82 },
-    { symbol: 'META', change: 0.67 },
-  ]
+  const { customTickers, clearCustomTickers } = useTickerTape()
+  const scrollingSymbols = customTickers && customTickers.length > 0 ? customTickers : DEFAULT_TRENDING
   const duplicatedScroll = [...scrollingSymbols, ...scrollingSymbols]
+  const isCustom = customTickers && customTickers.length > 0
 
   return (
     <div className="sticky top-0 z-10 border-b border-border bg-background overflow-hidden">
       <div className="flex items-center min-h-[40px] py-1.5">
-        {/* Left: All + SPY + QQQ + Trending (static) */}
+        {/* Left: All/Custom + SPY + QQQ + Trending (static) */}
         <div className="flex items-center gap-3 pl-4 pr-3 shrink-0 border-r border-border">
-          <button
-            type="button"
-            className="px-3 py-1 rounded-full border border-border bg-surface font-bold text-sm text-text hover:bg-surface-muted transition-colors"
-          >
-            All
-          </button>
+          {isCustom ? (
+            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-border bg-primary/15 font-bold text-sm text-primary">
+              <span>Custom</span>
+              <button
+                type="button"
+                onClick={clearCustomTickers}
+                className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-primary/30 transition-colors"
+                aria-label="Remove custom tickers"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="px-3 py-1 rounded-full border border-border bg-surface font-bold text-sm text-text hover:bg-surface-muted transition-colors"
+            >
+              All
+            </button>
+          )}
           <TickerItem symbol="SPY" change={0.72} />
           <TickerItem symbol="QQQ" change={-0.49} />
           <div className="flex items-center pl-2 pr-1">

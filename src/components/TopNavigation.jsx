@@ -77,6 +77,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
   const location = useLocation()
   const navigate = useNavigate()
   const isNewsPage = location.pathname === '/news'
+  const isMarketsPage = location.pathname === '/markets'
 
   // Keep search input in sync with URL when on search page (e.g. "elon musk" stays in box)
   useEffect(() => {
@@ -197,7 +198,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
     }
   }
 
-  const navItems = ['Trending', 'News', 'Earnings']
+  const navItems = ['Markets', 'News', 'Earnings']
 
   const isSearchPage = location.pathname === '/search'
   const handleTrendingClick = (query) => {
@@ -710,7 +711,8 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
         <div className="flex items-center gap-2 shrink-0">
           {navItems.map((item) => {
             const isNews = item === 'News'
-            const isActive = isNews ? isNewsPage : activeTab === item
+            const isMarkets = item === 'Markets'
+            const isActive = isNews ? isNewsPage : isMarkets ? isMarketsPage : activeTab === item
             const content = (
               <span
                 className={clsx(
@@ -721,11 +723,21 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                 {item}
               </span>
             )
-            return isNews ? (
-              <Link key={item} to="/news" onClick={() => setActiveTab(null)}>
-                {content}
-              </Link>
-            ) : (
+            if (isNews) {
+              return (
+                <Link key={item} to="/news" onClick={() => setActiveTab(null)}>
+                  {content}
+                </Link>
+              )
+            }
+            if (isMarkets) {
+              return (
+                <Link key={item} to="/markets" onClick={() => setActiveTab(null)}>
+                  {content}
+                </Link>
+              )
+            }
+            return (
               <button
                 key={item}
                 onClick={() => setActiveTab(item)}

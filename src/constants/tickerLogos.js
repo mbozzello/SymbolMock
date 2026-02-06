@@ -14,6 +14,10 @@ const LOGO_MAP = {
   DFTX: '/images/logos/dftx.png',
   QCLS: '/images/logos/qcls.png',
   SLV: '/images/logos/slv.png',
+  PLTR: '/images/logos/palantir.png',
+  BTC: '/images/logos/btc.png',
+  ETH: '/images/logos/eth.png',
+  DOGE: '/images/logos/doge.png',
 }
 
 export function getTickerLogo(ticker) {

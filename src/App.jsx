@@ -14,8 +14,10 @@ import Home from './pages/Home.jsx'
 import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
 import News from './pages/News.jsx'
+import Markets from './pages/Markets.jsx'
 import Scheduled from './pages/Scheduled.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
+import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -743,17 +745,20 @@ function UnregisteredPage() {
 export default function App() {
   return (
     <BookmarkProvider>
+      <TickerTapeProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/news" element={<News />} />
+        <Route path="/markets" element={<Markets />} />
         <Route path="/scheduled" element={<Scheduled />} />
         <Route path="/registered" element={<RegisteredPage />} />
         <Route path="/unreg" element={<UnregisteredPage />} />
         <Route path="/newpage" element={<NewPage />} />
       </Routes>
+      </TickerTapeProvider>
     </BookmarkProvider>
   )
 }

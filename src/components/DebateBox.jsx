@@ -71,35 +71,47 @@ export default function DebateBox({ postId, debate, onVote }) {
         </button>
       </div>
       {total > 0 && (
-        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-1.5">
-              {upVoters.slice(0, 5).map((v, i) => (
-                <img
-                  key={`${v.id}-${i}`}
-                  src={v.avatar}
-                  alt=""
-                  className="w-6 h-6 rounded-full border-2 border-surface object-cover"
-                  title={v.username}
-                />
-              ))}
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex -space-x-1.5">
+                {upVoters.slice(0, 5).map((v, i) => (
+                  <img
+                    key={`${v.id}-${i}`}
+                    src={v.avatar}
+                    alt=""
+                    className="w-6 h-6 rounded-full border-2 border-surface object-cover"
+                    title={v.username}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-muted whitespace-nowrap">{thumbsUp} agree</span>
+              <span className="text-xs font-bold text-success">{upPct}%</span>
             </div>
-            <span className="text-xs font-semibold text-success">{thumbsUp} agree</span>
-            <span className="text-xs text-muted">{upPct}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">{downPct}%</span>
-            <span className="text-xs font-semibold text-danger">{thumbsDown} disagree</span>
-            <div className="flex -space-x-1.5">
-              {downVoters.slice(0, 5).map((v, i) => (
-                <img
-                  key={`${v.id}-${i}`}
-                  src={v.avatar}
-                  alt=""
-                  className="w-6 h-6 rounded-full border-2 border-surface object-cover"
-                  title={v.username}
-                />
-              ))}
+            <div className="flex-1 min-w-0 h-2 rounded-full overflow-hidden flex">
+              <div
+                className="h-full rounded-l-full bg-success transition-all shrink-0"
+                style={{ width: `${upPct}%` }}
+              />
+              <div
+                className="h-full rounded-r-full bg-danger transition-all shrink-0"
+                style={{ width: `${downPct}%` }}
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-bold text-danger">{downPct}%</span>
+              <span className="text-xs text-muted whitespace-nowrap">{thumbsDown} disagree</span>
+              <div className="flex -space-x-1.5">
+                {downVoters.slice(0, 5).map((v, i) => (
+                  <img
+                    key={`${v.id}-${i}`}
+                    src={v.avatar}
+                    alt=""
+                    className="w-6 h-6 rounded-full border-2 border-surface object-cover"
+                    title={v.username}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
