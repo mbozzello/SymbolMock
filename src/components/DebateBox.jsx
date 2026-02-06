@@ -51,7 +51,14 @@ export default function DebateBox({ postId, debate, onVote }) {
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 p-3">
-      <p className="text-sm font-medium text-text mb-2">Do you agree?</p>
+      <p className="text-sm font-medium text-text mb-2">
+        Do you agree?
+        {total > 0 && (
+          <span className="ml-1.5 text-xs text-text-muted tabular-nums font-normal">
+            {total} Voted{!hasVoted ? ' — Vote to see results' : ''}
+          </span>
+        )}
+      </p>
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -80,14 +87,9 @@ export default function DebateBox({ postId, debate, onVote }) {
           <span className="text-sm font-medium">No</span>
         </button>
       </div>
-      {!hasVoted ? (
-        <div className="mt-3 pt-3 border-t border-border flex items-center justify-center gap-2 py-1">
-          <span className="text-xs text-muted animate-pulse">Tap to reveal where the crowd stands</span>
-          <span className="text-sm opacity-60" role="img" aria-hidden>👀</span>
-        </div>
-      ) : (
+      {hasVoted && total > 0 && (
         <div className="mt-3 pt-3 border-t border-border">
-          {justVoted && (
+          {hasVoted && justVoted && (
             <p className="text-xs font-semibold mb-2 text-center">
               {isWithMajority ? (
                 <span className="text-success">You're with the majority!</span>
