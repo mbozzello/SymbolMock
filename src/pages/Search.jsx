@@ -73,12 +73,12 @@ const SEARCH_TAGS = [
   '10-K',
 ]
 
-// Mock high-engagement stream messages for "elon musk" search
+// Mock high-engagement stream messages for "elon musk" search (avatars use existing files in public/avatars)
 const SEARCH_MESSAGES = [
-  { id: '1', username: 'Elon_Musk', displayName: 'Elon Musk', avatar: '/avatars/who-follow-1.png', body: 'Next generation of autonomy will make the current FSD stack look like a toy. $TSLA', time: '2h', comments: 892, reposts: 4200, likes: 24100 },
-  { id: '2', username: 'TeslaDaily', displayName: 'Tesla Daily', avatar: '/avatars/who-follow-2.png', body: 'Elon on earnings call: "We are not a car company. We are an energy and AI company." The narrative shift is real.', time: '5h', comments: 312, reposts: 1800, likes: 8500 },
-  { id: '3', username: 'muskempire', displayName: 'Elon Musk', avatar: '/avatars/who-follow-3.png', body: 'SpaceX and Tesla both pushing the boundary. What do you think about $TSLA at these levels?', time: '8h', comments: 445, reposts: 2100, likes: 12300 },
-  { id: '4', username: 'TechInvestor', displayName: 'Tech Investor', avatar: '/avatars/who-follow-4.png', body: 'Elon Musk just tweeted about AI and robotics. $TSLA and $NVDA both moving. The man moves markets.', time: '12h', comments: 1200, reposts: 800, likes: 5600 },
+  { id: '1', username: 'Elon_Musk', displayName: 'Elon Musk', avatar: '/avatars/top-voice-1.png', body: 'Next generation of autonomy will make the current FSD stack look like a toy. $TSLA', time: '2h', comments: 892, reposts: 4200, likes: 24100 },
+  { id: '2', username: 'TeslaDaily', displayName: 'Tesla Daily', avatar: '/avatars/top-voice-2.png', body: 'Elon on earnings call: "We are not a car company. We are an energy and AI company." The narrative shift is real.', time: '5h', comments: 312, reposts: 1800, likes: 8500 },
+  { id: '3', username: 'muskempire', displayName: 'Elon Musk', avatar: '/avatars/top-voice-3.png', body: 'SpaceX and Tesla both pushing the boundary. What do you think about $TSLA at these levels?', time: '8h', comments: 445, reposts: 2100, likes: 12300 },
+  { id: '4', username: 'TechInvestor', displayName: 'Tech Investor', avatar: '/avatars/user-avatar.png', body: 'Elon Musk just tweeted about AI and robotics. $TSLA and $NVDA both moving. The man moves markets.', time: '12h', comments: 1200, reposts: 800, likes: 5600 },
   { id: '5', username: 'TheofficialElonMusk', displayName: 'Elon Musk', avatar: '/avatars/top-voice-1.png', body: 'Optimus in production next year. This will be bigger than the car business.', time: '1d', comments: 2100, reposts: 3400, likes: 18900 },
 ]
 
@@ -130,8 +130,9 @@ export default function Search() {
   const [fromProfileDropdownOpen, setFromProfileDropdownOpen] = useState(false)
   const [withTickerQuery, setWithTickerQuery] = useState(urlTickers.length ? urlTickers[0] : '')
   const [withTickerDropdownOpen, setWithTickerDropdownOpen] = useState(false)
-  const [priceSincePostOpen, setPriceSincePostOpen] = useState(false)
-  const [priceSincePostPct, setPriceSincePostPct] = useState('') // e.g. "5", "-10", ""
+  const [priceSincePostFilter, setPriceSincePostFilter] = useState(false)
+  const [priceSincePostOperator, setPriceSincePostOperator] = useState('>') // '>' or '<'
+  const [priceSincePostPct, setPriceSincePostPct] = useState('')
   const [selectedTags, setSelectedTags] = useState(() => (urlTags[0] ? [urlTags[0]] : []))
   const filterRef = useRef(null)
   const fromProfileRef = useRef(null)
@@ -185,6 +186,11 @@ export default function Search() {
       next.delete('tags')
       return next
     })
+  }
+  const clearPriceSincePost = () => {
+    setPriceSincePostFilter(false)
+    setPriceSincePostPct('')
+    setPriceSincePostOperator('>')
   }
 
   const fromProfileSuggestions = useMemo(() => {
@@ -362,35 +368,10 @@ export default function Search() {
                       <span className="text-sm font-bold text-text">With $ticker</span>
                       <span className="text-sm font-semibold text-text-muted shrink-0">$</span>
                     </button>
-                    <button type="button" onClick={() => setPriceSincePostOpen((o) => !o)} className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-surface-muted/80">
+                    <button type="button" onClick={() => { setPriceSincePostFilter(true); setFilterOpen(false) }} className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-surface-muted/80">
                       <span className="text-sm font-bold text-text">Price Since Post</span>
                       <span className="text-sm font-semibold text-text-muted shrink-0" aria-hidden>%</span>
                     </button>
-                    {priceSincePostOpen && (
-                      <div className="my-1 border-t border-border pt-2 px-3 pb-2">
-                        <label className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 block">% change since post</label>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={priceSincePostPct}
-                          onChange={(e) => setPriceSincePostPct(e.target.value.replace(/[^0-9.-]/g, ''))}
-                          placeholder="e.g. 5 or -10"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-white dark:bg-surface text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-                          aria-label="Price since post % change"
-                        />
-                        {priceSincePostPct.trim() !== '' && (() => {
-                          const num = parseFloat(priceSincePostPct)
-                          if (Number.isNaN(num)) return null
-                          const isPositive = num >= 0
-                          const display = (num > 0 ? '+' : '') + num + '%'
-                          return (
-                            <div className={clsx('mt-1.5 text-sm font-semibold', isPositive ? 'text-success' : 'text-danger')}>
-                              {display}
-                            </div>
-                          )
-                        })()}
-                      </div>
-                    )}
                     <button type="button" onClick={() => setTagsExpanded((e) => !e)} className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-surface-muted/80">
                       <span className="text-sm font-bold text-text">Tags</span>
                       <svg className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
@@ -534,14 +515,45 @@ export default function Search() {
                 </span>
               )}
 
-              {/* Price since post chip (when value is set) */}
-              {priceSincePostPct.trim() !== '' && !Number.isNaN(parseFloat(priceSincePostPct)) && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-surface border border-border text-sm shrink-0">
+              {/* Price since post chip — enable from filter, type in search bar */}
+              {priceSincePostFilter && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-surface border border-border text-sm min-w-0 shrink-0">
                   <span className="font-bold text-text shrink-0">Price since post</span>
-                  <span className={clsx('font-semibold shrink-0', parseFloat(priceSincePostPct) >= 0 ? 'text-success' : 'text-danger')}>
-                    {(parseFloat(priceSincePostPct) >= 0 ? '+' : '') + parseFloat(priceSincePostPct) + '%'}
+                  <span className="inline-flex items-center rounded bg-surface-muted border border-border overflow-hidden shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setPriceSincePostOperator('>')}
+                      className={clsx('px-1.5 py-0.5 text-xs font-bold focus:outline-none', priceSincePostOperator === '>' ? 'bg-primary text-white' : 'text-text-muted hover:text-text')}
+                      aria-label="Greater than"
+                      title="Greater than"
+                    >
+                      &gt;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriceSincePostOperator('<')}
+                      className={clsx('px-1.5 py-0.5 text-xs font-bold focus:outline-none', priceSincePostOperator === '<' ? 'bg-primary text-white' : 'text-text-muted hover:text-text')}
+                      aria-label="Less than"
+                      title="Less than"
+                    >
+                      &lt;
+                    </button>
                   </span>
-                  <button type="button" onClick={() => setPriceSincePostPct('')} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove Price since post filter">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={priceSincePostPct}
+                    onChange={(e) => setPriceSincePostPct(e.target.value.replace(/[^0-9.-]/g, ''))}
+                    placeholder="%"
+                    className="min-w-[48px] w-12 max-w-[72px] py-0.5 px-1 bg-transparent border-0 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-0 tabular-nums"
+                    aria-label="Price since post % change"
+                  />
+                  {priceSincePostPct.trim() !== '' && !Number.isNaN(parseFloat(priceSincePostPct)) && (
+                    <span className={clsx('text-sm font-semibold shrink-0 tabular-nums', parseFloat(priceSincePostPct) >= 0 ? 'text-success' : 'text-danger')}>
+                      {(parseFloat(priceSincePostPct) >= 0 ? '+' : '') + parseFloat(priceSincePostPct)}%
+                    </span>
+                  )}
+                  <button type="button" onClick={clearPriceSincePost} className="p-0.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text shrink-0" aria-label="Remove Price since post filter">
                     <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="15" y1="5" x2="5" y2="15" /><line x1="5" y1="5" x2="15" y2="15" /></svg>
                   </button>
                 </span>

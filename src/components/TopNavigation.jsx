@@ -31,7 +31,7 @@ const ELON_MUSK_CRYPTO = [
 ]
 const ELON_MUSK_PEOPLE = [
   { handle: 'Elon_Musk', displayName: 'Elon Musk', avatar: '/avatars/who-follow-1.png' },
-  { handle: 'muskempire', displayName: 'Elon Musk', avatar: '/avatars/who-follow-2.png' },
+  { handle: 'muskempire', displayName: 'Elon Musk', avatar: '/avatars/top-voice-3.png' },
   { handle: 'TheofficialElonMusk', displayName: 'Elon Musk', avatar: '/avatars/who-follow-3.png' },
   { handle: 'ElonnMusk', displayName: 'Elon Musk', avatar: '/avatars/who-follow-4.png' },
 ]
