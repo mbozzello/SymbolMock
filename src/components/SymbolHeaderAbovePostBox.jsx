@@ -6,6 +6,23 @@ function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
+function parseWatchers(w) {
+  if (typeof w === 'number' && !isNaN(w)) return w
+  const s = String(w || '0').replace(/,/g, '')
+  const m = s.match(/^([\d.]+)\s*[KkMm]?$/i)
+  if (m) {
+    const n = parseFloat(m[1])
+    if (/[Kk]$/.test(s)) return Math.round(n * 1000)
+    if (/[Mm]$/.test(s)) return Math.round(n * 1000000)
+    return Math.round(n)
+  }
+  return parseInt(s, 10) || 0
+}
+
+function formatNum(n) {
+  return Number(n).toLocaleString()
+}
+
 function MiniChart({ values = [], isUp = true, width = 180, height = 64 }) {
   const padding = { left: 4, right: 4, top: 6, bottom: 6 }
   if (values.length < 2) {
@@ -171,15 +188,28 @@ const DEFAULT_SYMBOL = {
 
 const TABS = ['Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals', 'Info']
 
+const WATCHER_CHUNKS = [2, 5, 10, 3, 5, 8]
+
 export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [internalTab, setInternalTab] = useState('Feed')
+  const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
+  const [floatingWatchers, setFloatingWatchers] = useState(null)
   const activeTab = controlledTab ?? internalTab
   const setTab = onTabChange || ((tab) => setInternalTab(tab))
   const logoUrl = getTickerLogo(symbol.ticker)
   const isUp = (symbol.change ?? 0) >= 0
   const values = symbol.chartValues && symbol.chartValues.length >= 2 ? symbol.chartValues : DEFAULT_SYMBOL.chartValues
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const chunk = WATCHER_CHUNKS[Math.floor(Math.random() * WATCHER_CHUNKS.length)]
+      setWatchersCount((prev) => prev + chunk)
+      setFloatingWatchers({ value: chunk, key: Date.now() })
+    }, 1800)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <div className="rounded-xl border border-border bg-surface overflow-hidden mb-4">
@@ -226,7 +256,18 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               <circle cx="9" cy="7" r="4" />
               <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            <span className="text-sm font-medium text-text">{symbol.followers}</span>
+            <span className="relative inline-flex items-baseline">
+              <span className="text-sm font-medium text-text">{formatNum(watchersCount)}</span>
+              {floatingWatchers && (
+                <span
+                  key={floatingWatchers.key}
+                  className="absolute left-full ml-1 bottom-0 text-green-600 dark:text-green-400 text-xs font-bold animate-watchers-float-wiggle whitespace-nowrap"
+                  onAnimationEnd={() => setFloatingWatchers(null)}
+                >
+                  +{floatingWatchers.value}
+                </span>
+              )}
+            </span>
             <span className="relative top-0.5">
               <span className="w-2 h-2 rounded-full bg-blue-500 block" aria-hidden />
             </span>
