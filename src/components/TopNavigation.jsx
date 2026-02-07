@@ -1,15 +1,24 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+
+const StocktwitsLogo = () => (
+  <Link to="/" className="block shrink-0" aria-label="Stocktwits">
+    <img src="/images/stocktwits-logo.png" alt="Stocktwits" className="h-[39px] w-auto object-contain" />
+  </Link>
+)
 import { getTickerLogo } from '../constants/tickerLogos.js'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-// Mock search results (e.g. when user types "aa") — stocks, crypto, people
+// Mock search results — stocks, crypto, people
 const SEARCH_STOCKS = [
-  { ticker: 'AA', name: 'Alcoa Corp', pctChange: 1.06, inWatchlist: false },
+  { ticker: 'TSLA', name: 'Tesla Inc', pctChange: 3.64, inWatchlist: true },
   { ticker: 'AAPL', name: 'Apple Inc', pctChange: 0.29, inWatchlist: true },
+  { ticker: 'NVDA', name: 'NVIDIA Corp', pctChange: 2.45, inWatchlist: false },
+  { ticker: 'GME', name: 'GameStop Corp', pctChange: -1.2, inWatchlist: false },
+  { ticker: 'AA', name: 'Alcoa Corp', pctChange: 1.06, inWatchlist: false },
   { ticker: 'AABB', name: 'Asia Broadband Inc', pctChange: -9.91, inWatchlist: false },
   { ticker: 'AAL', name: 'American Airlines Group Inc', pctChange: 0.5, inWatchlist: false },
 ]
@@ -19,9 +28,22 @@ const SEARCH_CRYPTO = [
   { ticker: 'GHST', name: 'Aavegotchi', pctChange: -2.91 },
   { ticker: 'AAA', name: 'Moon Rabbit', pctChange: -2.38 },
 ]
+// TSLA-related crypto (shown when user types "tsla")
+const TSLA_CRYPTO = [
+  { ticker: 'TSLA', name: 'TSLA6900', pctChange: null, inWatchlist: true },
+  { ticker: 'TSLAX', name: 'Tesla xStock', pctChange: 5.69, inWatchlist: false },
+  { ticker: 'TSLAON', name: 'Tesla (Ondo Tokenized Stock)', pctChange: 5.89, inWatchlist: false },
+  { ticker: 'TSLA.D', name: 'Dinari TSLA', pctChange: null, inWatchlist: false },
+]
 const SEARCH_PEOPLE = [
   { handle: '0xkolten', displayName: 'Kolten', avatar: '/avatars/who-follow-1.png' },
   { handle: 'AAAple', displayName: 'This My Only Account', avatar: '/avatars/who-follow-2.png' },
+]
+// TSLA-related people (shown when user types "tsla")
+const TSLA_PEOPLE = [
+  { handle: 'TSLA_S3XY', displayName: 'J', avatar: '/avatars/top-voice-3.png' },
+  { handle: 'TSLAfangirl', displayName: 'Mrs. Santos', avatar: '/avatars/who-follow-2.png' },
+  { handle: 'tsla2chng', displayName: 'Trader', avatar: '/avatars/who-follow-1.png' },
 ]
 
 // Mock results when user types "elon musk"
@@ -82,6 +104,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
   const navigate = useNavigate()
   const isNewsPage = location.pathname === '/news'
   const isMarketsPage = location.pathname === '/markets'
+  const isHomePage = location.pathname === '/home'
 
   // Keep search input in sync with URL when on search page (e.g. "elon musk" stays in box)
   useEffect(() => {
@@ -106,24 +129,33 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
 
   const q = searchQuery.trim().toLowerCase()
   const isElonMuskQuery = q === 'elon musk'
+  const isTslaQuery = q === 'tsla'
   const stocksFiltered = useMemo(() => {
     if (!q.length) return []
     if (q === 'aa') return SEARCH_STOCKS
     if (isElonMuskQuery) return []
-    return SEARCH_STOCKS.filter((s) => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
+    const matched = SEARCH_STOCKS.filter((s) => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
+    // Put exact ticker match first
+    const exact = matched.find((s) => s.ticker.toLowerCase() === q)
+    if (exact) {
+      return [exact, ...matched.filter((s) => s.ticker.toLowerCase() !== q)]
+    }
+    return matched
   }, [q, isElonMuskQuery])
   const cryptoFiltered = useMemo(() => {
     if (!q.length) return []
     if (q === 'aa') return SEARCH_CRYPTO
+    if (isTslaQuery) return TSLA_CRYPTO
     if (isElonMuskQuery) return ELON_MUSK_CRYPTO
     return SEARCH_CRYPTO.filter((c) => c.ticker.toLowerCase().includes(q) || c.name.toLowerCase().includes(q))
-  }, [q, isElonMuskQuery])
+  }, [q, isElonMuskQuery, isTslaQuery])
   const peopleFiltered = useMemo(() => {
     if (!q.length) return []
     if (q === 'aa') return SEARCH_PEOPLE
+    if (isTslaQuery) return TSLA_PEOPLE
     if (isElonMuskQuery) return ELON_MUSK_PEOPLE
     return SEARCH_PEOPLE.filter((p) => p.handle.toLowerCase().includes(q) || p.displayName.toLowerCase().includes(q))
-  }, [q, isElonMuskQuery])
+  }, [q, isElonMuskQuery, isTslaQuery])
   const profileSuggestionsFiltered = useMemo(() => {
     if (!fromProfileFilter || !q.length) return []
     return PROFILE_SUGGESTIONS.filter(
@@ -225,6 +257,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
   return (
     <div className="sticky top-0 z-20 border-b border-border bg-background">
       <div className="flex items-center gap-4 px-4 py-2.5">
+        {isHomePage && <StocktwitsLogo />}
         {/* Search + dropdown (never shown on search page; all search UI is in the page content) */}
         {isSearchPage ? (
           <div className="flex-1" />
@@ -707,6 +740,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                     <button
                       key={item.handle}
                       type="button"
+                      onClick={() => { navigate(`/profile/${item.handle}`); setSearchDropdownOpen(false) }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-muted/80 text-left"
                     >
                       <img src={item.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
@@ -714,7 +748,9 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
                         <div className="font-bold text-sm text-text">{item.handle}</div>
                         <div className="text-xs text-text-muted truncate">{item.displayName}</div>
                       </div>
-                      <span className="px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-white dark:bg-surface text-text shrink-0">Follow</span>
+                      <span className="px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-white dark:bg-surface text-text shrink-0">
+                        Follow
+                      </span>
                     </button>
                   ))}
                 </section>

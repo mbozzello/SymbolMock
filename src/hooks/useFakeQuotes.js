@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 /** Base prices for common symbols - TSLA matches /symbol page defaults */
 const BASE_PRICES = {
@@ -60,10 +60,39 @@ function getBasePrice(symbol) {
  * @param {string[]} symbols
  * @returns {{ quotes: Record<string,{ symbol, price, change, changePercent, spark }> }}
  */
+function buildQuoteOutput(state) {
+  const out = {}
+  for (const s of Object.keys(state)) {
+    const q = state[s]
+    const change = q.price - q.openPrice
+    const changePercent = q.openPrice !== 0 ? (change / q.openPrice) * 100 : 0
+    out[s] = {
+      symbol: s,
+      price: q.price,
+      change,
+      changePercent,
+      spark: q.spark,
+    }
+  }
+  return out
+}
+
 export function useFakeQuotes(symbols) {
   const list = [...new Set((symbols || []).map((s) => s?.toUpperCase()).filter(Boolean))]
-  const [quotes, setQuotes] = useState({})
   const stateRef = useRef(null)
+  const [quotes, setQuotes] = useState(() => {
+    const state = {}
+    for (const s of list) {
+      const base = getBasePrice(s)
+      state[s] = {
+        price: base,
+        openPrice: base,
+        spark: Array.from({ length: SPARK_LEN }, (_, i) => base * (1 + (i - SPARK_LEN / 2) * 0.001)),
+      }
+    }
+    stateRef.current = state
+    return buildQuoteOutput(state)
+  })
 
   useEffect(() => {
     const state = stateRef.current ?? {}
@@ -78,6 +107,7 @@ export function useFakeQuotes(symbols) {
       }
     }
     stateRef.current = state
+    setQuotes(buildQuoteOutput(state))
   }, [list.join(',')])
 
   useEffect(() => {
@@ -100,20 +130,7 @@ export function useFakeQuotes(symbols) {
         }
       }
       stateRef.current = next
-      const out = {}
-      for (const s of Object.keys(next)) {
-        const q = next[s]
-        const change = q.price - q.openPrice
-        const changePercent = q.openPrice !== 0 ? (change / q.openPrice) * 100 : 0
-        out[s] = {
-          symbol: s,
-          price: q.price,
-          change,
-          changePercent,
-          spark: q.spark,
-        }
-      }
-      setQuotes(out)
+      setQuotes(buildQuoteOutput(next))
     }
 
     tick()
