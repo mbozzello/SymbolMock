@@ -6,6 +6,7 @@ import TickerTape from '../components/TickerTape.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -174,6 +175,7 @@ function getRanksVisibleToOthers(username) {
 }
 
 export default function Profile({ isOwnProfile = false }) {
+  const { watchlist } = useWatchlist()
   const { username } = useParams()
   const navigate = useNavigate()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -249,7 +251,7 @@ export default function Profile({ isOwnProfile = false }) {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        watchlist={WATCHLIST}
+        watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
       />

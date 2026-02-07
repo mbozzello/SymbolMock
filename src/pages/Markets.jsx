@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
+import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
@@ -103,6 +105,8 @@ function MiniSparkline({ values = [] }) {
 
 export default function Markets() {
   const { applyCustomTickers, clearCustomTickers, customTickers } = useTickerTape()
+  const { getQuote } = useLiveQuotesContext()
+  const { watchlist } = useWatchlist()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -168,8 +172,13 @@ export default function Markets() {
 
   const [dragOverCol, setDragOverCol] = useState(null)
 
-  const sortedAndFilteredRows = (() => {
-    let rows = [...SCREENER_ROWS_BASE]
+  const sortedAndFilteredRows = useMemo(() => {
+    const mergeQuote = (r) => {
+      const q = getQuote(r.ticker)
+      if (!q) return r
+      return { ...r, price: q.price, pctChange: q.changePercent ?? r.pctChange, spark: q.spark?.length ? q.spark : r.spark }
+    }
+    let rows = SCREENER_ROWS_BASE.map(mergeQuote)
     if (assetFilter === 'Equities') rows = rows.filter((r) => r.type === 'equity')
     else if (assetFilter === 'Crypto') rows = rows.filter((r) => r.type === 'crypto')
     if (symbolFilter.trim()) {
@@ -226,7 +235,7 @@ export default function Markets() {
     else if (activeSort === 'topLosers') rows.sort((a, b) => a.pctChange - b.pctChange)
     else rows.sort((a, b) => a.rank - b.rank)
     return rows.map((r, i) => ({ ...r, rank: i + 1 }))
-  })()
+  }, [getQuote, assetFilter, symbolFilter, appliedFilters, activeSort])
 
   useEffect(() => {
     if (darkMode) {
@@ -267,7 +276,7 @@ export default function Markets() {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        watchlist={WATCHLIST}
+        watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={() => setDarkMode((p) => !p)}
       />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useBookmarks } from '../contexts/BookmarkContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
@@ -12,8 +13,8 @@ function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-// Same watchlist as Home so left rail matches
-const WATCHLIST = [
+// Legacy - use useWatchlist() instead
+const _LEGACY_WATCHLIST = [
   { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
   { ticker: 'AAPL', name: 'Apple Inc', price: 254.92, change: -2.34, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
   { ticker: 'ABNB', name: 'Airbnb', price: 142.50, change: 1.20, spark: [18, 18.4, 18.2, 18.9, 19.4, 19.1, 19.9, 20.2] },
@@ -144,6 +145,7 @@ function parseTagsFromUrl(tagsParam) {
 
 export default function Search() {
   const { toggleBookmark, isBookmarked } = useBookmarks()
+  const { watchlist } = useWatchlist()
   const [searchParams, setSearchParams] = useSearchParams()
   const q = searchParams.get('q') || ''
   const urlFrom = searchParams.get('from') || ''
@@ -335,7 +337,7 @@ export default function Search() {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        watchlist={WATCHLIST}
+        watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
       />

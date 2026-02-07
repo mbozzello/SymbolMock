@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -56,10 +57,99 @@ function SentimentGauge({ value = 88, size = 56, strokeWidth = 5 }) {
     <svg viewBox={`0 0 ${size} ${size}`} className="shrink-0" style={{ width: size, height: size }}>
       <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} strokeLinecap="round" />
       <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#22c55e" strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference - filled} transform={`rotate(-90 ${cx} ${cy})`} />
-      <text x={cx} y={cy + 1} textAnchor="middle" fontSize="16" fontWeight="700" fill="currentColor" className="text-text">
+      <text x={cx} y={cy + 1} textAnchor="middle" fontSize="18" fontWeight="700" fill="#22c55e">
         {value}
       </text>
     </svg>
+  )
+}
+
+const WATCHERS_HOVER_DEFAULTS = {
+  change7d: { watchers: 273, percent: 7.8 },
+  dailyChanges: [23, 47, 89, 83, -17, 31, 17],
+  rank: { position: 1, total: 17, category: 'Motor Vehicles' },
+  underTheRadar: '#3 least followed symbol at a 52W high',
+}
+
+function WatchersHoverPanel({ ticker, change7d, dailyChanges, rank, underTheRadar, children }) {
+  const [open, setOpen] = useState(false)
+  const timeoutRef = useRef(null)
+  const c7d = change7d ?? WATCHERS_HOVER_DEFAULTS.change7d
+  const days = dailyChanges ?? WATCHERS_HOVER_DEFAULTS.dailyChanges
+  const r = rank ?? WATCHERS_HOVER_DEFAULTS.rank
+  const utr = underTheRadar ?? WATCHERS_HOVER_DEFAULTS.underTheRadar
+
+  const handleEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setOpen(true)
+  }
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpen(false), 150)
+  }
+
+  useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }, [])
+
+  const maxBar = Math.max(...days.map(Math.abs))
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      {children}
+      {open && (
+        <div
+          className="absolute left-0 top-full mt-1 z-50 min-w-[300px] max-w-[360px] rounded-xl border border-border bg-white dark:bg-surface shadow-xl overflow-hidden"
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+        >
+          <div className="p-4 space-y-4">
+            {/* 7D CHANGE */}
+            <div>
+              <div className="text-[10px] uppercase tracking-wide text-text-muted font-semibold mb-1">7D Change</div>
+              <p className="text-sm text-text font-medium mb-3">
+                +{c7d.watchers} Watchers <span className="text-green-600 font-semibold">(+{c7d.percent}%)</span>
+              </p>
+              <div className="flex items-end gap-1.5 h-16 mb-3">
+                {days.map((d, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center min-h-0">
+                    <span className={`text-[10px] font-semibold shrink-0 mb-1 ${d >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {d >= 0 ? `+${d}` : d}
+                    </span>
+                    <div className="flex-1 flex flex-col justify-end w-full min-h-[24px]">
+                      <div
+                        className="w-full rounded-t flex-shrink-0"
+                        style={{
+                          height: `${Math.max(4, (Math.abs(d) / (maxBar || 1)) * 32)}px`,
+                          backgroundColor: d >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button type="button" className="w-full py-2 rounded-lg bg-surface-muted text-text font-medium text-sm hover:bg-surface-muted/80 transition-colors">
+                Full Watchers Chart
+              </button>
+            </div>
+            {/* WATCHERS RANK */}
+            <div>
+              <div className="text-[10px] uppercase tracking-wide text-text-muted font-semibold mb-1">Watchers Rank</div>
+              <p className="text-sm text-text font-medium">#{r.position} of {r.total} in {r.category}</p>
+            </div>
+            {/* UNDER THE RADAR */}
+            <div>
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-text-muted font-semibold mb-1">
+                Under the Radar
+                <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" aria-hidden />
+              </div>
+              <p className="text-sm text-text font-medium">{utr}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -82,6 +172,7 @@ const DEFAULT_SYMBOL = {
 const TABS = ['Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals', 'Info']
 
 export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange }) {
+  const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [internalTab, setInternalTab] = useState('Feed')
   const activeTab = controlledTab ?? internalTab
@@ -126,22 +217,28 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
         </div>
         <MiniChart values={values} isUp={isUp} width={180} height={64} />
       </div>
-      {/* Section 2: Followers, Mkt Cap, 52W, Earnings */}
+      {/* Section 2: Watchers/Followers, Mkt Cap, 52W, Earnings */}
       <div className="px-4 pb-3 flex flex-wrap items-center gap-4 sm:gap-6">
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          <span className="text-sm font-medium text-text">{symbol.followers}</span>
-          <span className="relative top-0.5">
-            <span className="w-2 h-2 rounded-full bg-blue-500 block" aria-hidden />
-          </span>
-          <button type="button" className="w-8 h-8 rounded-full border border-border bg-surface flex items-center justify-center text-text hover:bg-surface-muted transition-colors shrink-0" aria-label="Follow">
-            <span className="text-lg font-bold leading-none">+</span>
-          </button>
-        </div>
+        <WatchersHoverPanel ticker={symbol.ticker}>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <svg className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span className="text-sm font-medium text-text">{symbol.followers}</span>
+            <span className="relative top-0.5">
+              <span className="w-2 h-2 rounded-full bg-blue-500 block" aria-hidden />
+            </span>
+            <button type="button" onClick={(e) => { e.stopPropagation(); toggleWatch(symbol.ticker, symbol.name); }} className="w-8 h-8 rounded-full border border-border bg-surface flex items-center justify-center text-text hover:bg-surface-muted transition-colors shrink-0" aria-label={isWatched(symbol.ticker) ? 'Remove from watchlist' : 'Add to watchlist'}>
+              {isWatched(symbol.ticker) ? (
+                <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              ) : (
+                <span className="text-lg font-bold leading-none">+</span>
+              )}
+            </button>
+          </div>
+        </WatchersHoverPanel>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-text-muted">
           <span><span className="font-medium text-text">Mkt Cap</span> {symbol.mktCap}</span>
           <span><span className="font-medium text-text">52W Range</span> ${symbol.range52w.low.toFixed(2)} - ${symbol.range52w.high.toFixed(2)}</span>

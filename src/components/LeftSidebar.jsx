@@ -1,5 +1,7 @@
 import { getTickerLogo } from '../constants/tickerLogos'
 import { Link } from 'react-router-dom'
+import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -33,6 +35,9 @@ function MiniSparkline({ values = [] }) {
 }
 
 export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
+  const { removeSymbol } = useWatchlist()
+  const { getQuote } = useLiveQuotesContext()
+
   const content = (
     <div className="flex h-full w-full flex-col gap-4 bg-background p-4 border-r border-border">
       <a href="/" className="block shrink-0" aria-label="Stocktwits">
@@ -111,9 +116,13 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
       </div>
       <div className="flex-1 min-h-0 space-y-0 overflow-y-auto pr-1 mt-2">
         {watchlist.map((s) => {
-          const pct = s.price !== 0 ? ((s.change / s.price) * 100) : 0
+          const q = getQuote(s.ticker)
+          const price = q?.price ?? s.price
+          const change = q?.change ?? s.change
+          const pct = q?.changePercent ?? (price !== 0 ? (change / price) * 100 : 0)
           return (
-            <Link key={s.ticker} to="/symbol" className="block py-2.5 border-b border-border last:border-b-0 hover:bg-surface-muted/50 transition-colors -mx-1 px-1 rounded">
+            <div key={s.ticker} className="group relative block py-2.5 border-b border-border last:border-b-0 hover:bg-surface-muted/50 transition-colors -mx-1 px-1 rounded">
+              <Link to="/symbol" className="block pr-8">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted border border-border">
                   {getTickerLogo(s.ticker) ? (
@@ -128,17 +137,21 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
                 </div>
               </div>
               <div className="mt-1.5 flex items-baseline justify-between pl-10">
-                <span className="font-semibold text-sm">${s.price.toFixed(2)}</span>
-                <span className={clsx('text-xs font-medium flex items-center gap-0.5', s.change >= 0 ? 'text-success' : 'text-danger')}>
-                  {s.change >= 0 ? (
+                <span className="font-semibold text-sm">${typeof price === 'number' ? price.toFixed(2) : '--'}</span>
+                <span className={clsx('text-xs font-medium flex items-center gap-0.5', change >= 0 ? 'text-success' : 'text-danger')}>
+                  {change >= 0 ? (
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
                   ) : (
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
                   )}
-                  ${Math.abs(s.change).toFixed(2)} ({pct >= 0 ? '' : '-'}{Math.abs(pct).toFixed(2)}%)
+                  ${Math.abs(change ?? 0).toFixed(2)} ({pct >= 0 ? '' : '-'}{Math.abs(pct).toFixed(2)}%)
                 </span>
               </div>
-            </Link>
+              </Link>
+              <button type="button" onClick={() => removeSymbol(s.ticker)} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-surface-muted opacity-0 group-hover:opacity-100 transition-opacity" aria-label={`Remove ${s.ticker} from watchlist`}>
+                <svg className="w-3.5 h-3.5 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
           )
         })}
       </div>

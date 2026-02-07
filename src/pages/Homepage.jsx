@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -51,6 +52,13 @@ export default function Homepage() {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
   })
+  const { getQuote } = useLiveQuotesContext()
+
+  const mergeQuote = (staticItem) => {
+    const q = getQuote(staticItem.ticker)
+    if (!q) return staticItem
+    return { ...staticItem, price: q.price, change: q.change, pct: q.changePercent ?? staticItem.pct, spark: q.spark?.length ? q.spark : staticItem.spark }
+  }
 
   return (
     <div className="min-h-screen bg-background text-text">
@@ -107,19 +115,22 @@ export default function Homepage() {
               Sign in to add symbols
             </button>
             <div className="mt-3 space-y-2">
-              {WATCHLIST_PREVIEW.map((s) => (
-                <div key={s.ticker} className="flex items-center gap-2 p-2 rounded-lg bg-surface/50 border border-border">
-                  {getTickerLogo(s.ticker) ? (
-                    <img src={getTickerLogo(s.ticker)} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+              {WATCHLIST_PREVIEW.map((s) => {
+                const item = mergeQuote(s)
+                return (
+                <div key={item.ticker} className="flex items-center gap-2 p-2 rounded-lg bg-surface/50 border border-border">
+                  {getTickerLogo(item.ticker) ? (
+                    <img src={getTickerLogo(item.ticker)} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
                   ) : (
-                    <span className="w-8 h-8 rounded bg-surface flex items-center justify-center text-xs font-bold shrink-0">{s.ticker[0]}</span>
+                    <span className="w-8 h-8 rounded bg-surface flex items-center justify-center text-xs font-bold shrink-0">{item.ticker[0]}</span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold text-text truncate">{s.ticker} {s.name}</div>
-                    <div className="text-xs text-text-muted">${s.price.toFixed(2)} <span className={s.change >= 0 ? 'text-success' : 'text-danger'}>{s.change >= 0 ? '+' : ''}{s.change.toFixed(2)}%</span></div>
+                    <div className="text-xs font-semibold text-text truncate">{item.ticker} {item.name}</div>
+                    <div className="text-xs text-text-muted">${typeof item.price === 'number' ? item.price.toFixed(2) : '--'} <span className={item.change >= 0 ? 'text-success' : 'text-danger'}>{item.change >= 0 ? '+' : ''}{(item.pct ?? item.change ?? 0).toFixed(2)}%</span></div>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         </aside>
@@ -155,30 +166,28 @@ export default function Homepage() {
 
           {/* Top 5 Trending */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {TOP_5_TRENDING.map((s) => (
-              <div key={s.ticker} className="rounded-xl border border-border bg-white dark:bg-surface p-3 flex flex-col gap-2">
+            {TOP_5_TRENDING.map((s) => {
+              const item = mergeQuote(s)
+              return (
+              <div key={item.ticker} className="rounded-xl border border-border bg-white dark:bg-surface p-3 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-text">{s.ticker}</span>
-                  <span className={clsx('text-xs font-bold', s.sentiment >= 55 ? 'text-success' : s.sentiment >= 45 ? 'text-text-muted' : 'text-danger')}>{s.sentimentLabel}</span>
+                  <span className="text-sm font-bold text-text">{item.ticker}</span>
+                  <span className={clsx('text-xs font-bold', item.sentiment >= 55 ? 'text-success' : item.sentiment >= 45 ? 'text-text-muted' : 'text-danger')}>{item.sentimentLabel}</span>
                 </div>
-                <div className="text-lg font-bold text-text">${typeof s.price === 'number' && s.price >= 1000 ? s.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : s.price.toFixed(2)}</div>
+                <div className="text-lg font-bold text-text">${typeof item.price === 'number' && item.price >= 1000 ? item.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : (typeof item.price === 'number' ? item.price.toFixed(2) : '--')}</div>
                 <div className="text-xs">
-                  <span className={s.change >= 0 ? 'text-success' : 'text-danger'}>
-                    {s.change >= 0 ? '+' : ''}{s.change.toFixed(2)} ({s.pct >= 0 ? '+' : ''}{s.pct.toFixed(2)}%)
+                  <span className={item.change >= 0 ? 'text-success' : 'text-danger'}>
+                    {item.change >= 0 ? '+' : ''}{(typeof item.change === 'number' ? item.change : 0).toFixed(2)} ({(item.pct ?? 0) >= 0 ? '+' : ''}{(item.pct ?? 0).toFixed(2)}%)
                   </span>
                 </div>
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-[10px] font-bold text-text">{s.sentiment}</span>
-                  <span className="text-[10px] text-text-muted truncate">Top Topic {s.topTopic}</span>
+                  <span className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-[10px] font-bold text-text">{item.sentiment}</span>
+                  <span className="text-[10px] text-text-muted truncate">Top Topic {item.topTopic}</span>
                 </div>
               </div>
-            ))}
+            )
+            })}
           </div>
-
-          {/* Community Reacts */}
-          <h2 className="text-base font-bold text-text leading-snug">
-            Community Reacts: Silver drops 30%, gold falls as Trump Warsh pick eases Fed independence fear, triggers dollar rally
-          </h2>
         </main>
 
         {/* Column 3: Trending Symbols */}
@@ -188,52 +197,55 @@ export default function Homepage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </Link>
           <div className="space-y-4">
-            {TRENDING_SYMBOLS.map((s) => (
-              <div key={s.ticker} className="rounded-xl border border-border bg-white dark:bg-surface overflow-hidden relative">
-                {s.hasEarnings && (
+            {TRENDING_SYMBOLS.map((s) => {
+              const item = mergeQuote(s)
+              return (
+              <div key={item.ticker} className="rounded-xl border border-border bg-white dark:bg-surface overflow-hidden relative">
+                {item.hasEarnings && (
                   <div className="absolute inset-0 bg-primary/20 z-10 flex items-center justify-center">
                     <div className="bg-primary text-white px-4 py-2 rounded-lg text-center">
-                      <div className="text-xs font-bold">{s.earningsLabel}</div>
-                      <div className="text-lg font-bold">{s.earningsCount.toLocaleString()}</div>
+                    <div className="text-xs font-bold">{item.earningsLabel}</div>
+                        <div className="text-lg font-bold">{item.earningsCount.toLocaleString()}</div>
                       <button type="button" className="mt-2 px-3 py-1 rounded bg-white text-primary text-xs font-semibold">Join Call</button>
                     </div>
                   </div>
                 )}
                 <div className="p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    {getTickerLogo(s.ticker) ? (
-                      <img src={getTickerLogo(s.ticker)} alt="" className="w-10 h-10 rounded object-cover shrink-0" />
+                    {getTickerLogo(item.ticker) ? (
+                      <img src={getTickerLogo(item.ticker)} alt="" className="w-10 h-10 rounded object-cover shrink-0" />
                     ) : (
-                      <span className="w-10 h-10 rounded bg-surface flex items-center justify-center text-sm font-bold shrink-0">{s.ticker[0]}</span>
+                      <span className="w-10 h-10 rounded bg-surface flex items-center justify-center text-sm font-bold shrink-0">{item.ticker[0]}</span>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-bold text-text">{s.ticker}</div>
-                      <div className="text-xs text-text-muted truncate">{s.name}</div>
+                      <div className="text-sm font-bold text-text">{item.ticker}</div>
+                      <div className="text-xs text-text-muted truncate">{item.name}</div>
                     </div>
                     <span className="text-xs text-text-muted flex items-center gap-0.5">
                       <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11v7a2 2 0 002 2h.14a2 2 0 001.72-.91l2.42-4.35 2.42 4.35a2 2 0 001.72.91h1.72a2 2 0 002-2v-7a6.981 6.981 0 00-2.05-4.95z" clipRule="evenodd" /></svg>
-                      {s.watchers}
+                      {item.watchers}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-text">${s.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    <MiniSparkline values={s.spark} isUp={s.change >= 0} />
+                    <span className="text-lg font-bold text-text">${typeof item.price === 'number' ? item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '--'}</span>
+                    <MiniSparkline values={item.spark} isUp={item.change >= 0} />
                   </div>
-                  <div className={clsx('text-xs font-semibold', s.change >= 0 ? 'text-success' : 'text-danger')}>
-                    {s.change >= 0 ? '↑' : '↓'} ${Math.abs(s.change).toFixed(2)} ({s.pct >= 0 ? '+' : ''}{s.pct.toFixed(2)}%) Today
+                  <div className={clsx('text-xs font-semibold', item.change >= 0 ? 'text-success' : 'text-danger')}>
+                    {item.change >= 0 ? '↑' : '↓'} ${Math.abs(item.change ?? 0).toFixed(2)} ({(item.pct ?? 0) >= 0 ? '+' : ''}{(item.pct ?? 0).toFixed(2)}%) Today
                   </div>
                   <div className="mt-2 flex items-center gap-2">
-                    <span className={clsx('text-xs font-bold px-2 py-0.5 rounded', s.sentiment >= 75 ? 'bg-success/20 text-success' : s.sentiment >= 55 ? 'bg-success/10 text-success' : s.sentiment >= 45 ? 'bg-surface-muted text-text-muted' : 'bg-danger/10 text-danger')}>
-                      {s.sentimentLabel.toUpperCase()} ({s.sentiment})
+                    <span className={clsx('text-xs font-bold px-2 py-0.5 rounded', item.sentiment >= 75 ? 'bg-success/20 text-success' : item.sentiment >= 55 ? 'bg-success/10 text-success' : item.sentiment >= 45 ? 'bg-surface-muted text-text-muted' : 'bg-danger/10 text-danger')}>
+                      {item.sentimentLabel.toUpperCase()} ({item.sentiment})
                     </span>
                   </div>
                   <div className="mt-2 flex gap-2">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/10 text-success">{s.bullTag}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-danger/10 text-danger">{s.bearTag}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/10 text-success">{item.bullTag}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-danger/10 text-danger">{item.bearTag}</span>
                   </div>
                 </div>
               </div>
-            ))}
+            )
+            })}
           </div>
         </aside>
       </div>

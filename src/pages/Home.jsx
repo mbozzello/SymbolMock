@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
@@ -9,6 +9,8 @@ import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import DebateBox from '../components/DebateBox.jsx'
 import { useBookmarks } from '../contexts/BookmarkContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
+import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -49,19 +51,6 @@ const HOWARD_LINDZON_MESSAGE = {
   likes: 156,
 }
 
-const WATCHLIST = [
-  { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
-  { ticker: 'AAPL', name: 'Apple Inc', price: 254.92, change: -2.34, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
-  { ticker: 'ABNB', name: 'Airbnb', price: 142.50, change: 1.20, spark: [18, 18.4, 18.2, 18.9, 19.4, 19.1, 19.9, 20.2] },
-  { ticker: 'AMC', name: 'AMC Entertainment', price: 4.21, change: -0.15, spark: [12, 12.2, 12.5, 12.8, 13.1, 12.9, 13.3, 12.67] },
-  { ticker: 'BRK.A', name: 'Berkshire Hathaway', price: 615000, change: 1200, spark: [30, 32, 31, 33, 35, 34, 33, 32] },
-  { ticker: 'C', name: 'Citigroup', price: 68.90, change: -0.45, spark: [15, 14.8, 14.5, 14.7, 14.3, 14.6, 14.2, 14.7] },
-  { ticker: 'DIS', name: 'Walt Disney Co', price: 112.40, change: 0.85, spark: [10, 10.2, 10.1, 10.3, 10.2, 10.4, 10.3, 10.0] },
-  { ticker: 'ETOR', name: 'eToro', price: 8.75, change: 0.22, spark: [8, 8.2, 8.1, 8.3, 8.2, 8.4, 8.3, 8.75] },
-  { ticker: 'FIG', name: 'Fortress Investment', price: 5.60, change: -0.10, spark: [5.5, 5.6, 5.55, 5.65, 5.6, 5.58, 5.62, 5.6] },
-  { ticker: 'GLD', name: 'SPDR Gold Trust', price: 218.30, change: 1.45, spark: [216, 217, 216.5, 217.5, 218, 217.8, 218.2, 218.3] },
-  { ticker: 'LULU', name: 'Lululemon', price: 385.00, change: 4.20, spark: [380, 381, 382, 383, 384, 383.5, 384.5, 385] },
-]
 
 const CURRENT_USER = { id: 'current', username: 'You', avatar: '/avatars/user-avatar.png' }
 const SEED_AGREE_VOTERS = [
@@ -76,8 +65,38 @@ const SEED_DISAGREE_VOTERS = [
   { id: 'd3', username: 'Contrarian', avatar: '/avatars/michele-steele.png' },
 ]
 
+const DEFAULT_SYMBOL = {
+  ticker: 'TSLA',
+  name: 'Tesla Inc',
+  price: 433.07,
+  change: 11.46,
+  changePct: 2.72,
+  updated: '5:00 PM EST',
+  followers: '1,050,370',
+  mktCap: '$1.45T',
+  range52w: { low: 214.25, high: 498.83 },
+  earningsDate: 'Jan 28',
+  sentimentPct: 88,
+  sentimentLabel: 'bullish',
+  chartValues: [410, 412, 418, 422, 425, 428, 430, 433.07],
+}
+
 export default function Home() {
   const { toggleBookmark, isBookmarked } = useBookmarks()
+  const { watchlist } = useWatchlist()
+  const { getQuote } = useLiveQuotesContext()
+
+  const symbol = useMemo(() => {
+    const q = getQuote('TSLA')
+    if (!q) return DEFAULT_SYMBOL
+    return {
+      ...DEFAULT_SYMBOL,
+      price: q.price ?? DEFAULT_SYMBOL.price,
+      change: q.change ?? DEFAULT_SYMBOL.change,
+      changePct: q.changePercent ?? DEFAULT_SYMBOL.changePct,
+      chartValues: q.spark?.length ? q.spark : DEFAULT_SYMBOL.chartValues,
+    }
+  }, [getQuote])
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -214,7 +233,7 @@ export default function Home() {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        watchlist={WATCHLIST}
+        watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
       />
@@ -226,7 +245,7 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-4 py-4 flex gap-6">
           {/* Main feed column */}
           <div className="flex-1 min-w-0">
-            <SymbolHeaderAbovePostBox />
+            <SymbolHeaderAbovePostBox symbol={symbol} />
             <MessagePostBox placeholder="What're your thoughts on $TSLA?" onPost={handlePost} />
 
             {/* Feed controls */}

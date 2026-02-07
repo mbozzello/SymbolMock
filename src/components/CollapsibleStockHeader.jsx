@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -124,7 +125,7 @@ function VolumeGauge({ score = 0, size = 80, strokeWidth = 6, color = 'var(--col
           strokeLinecap="round"
         />
       )}
-      <text x={cx} y={cy + 4} textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor">
+      <text x={cx} y={cy + 4} textAnchor="middle" fontSize="18" fontWeight="700" fill={color}>
         {clamped}
       </text>
     </svg>
@@ -248,6 +249,95 @@ function ChartSparkline({ values = [], isUp = true }) {
   )
 }
 
+const WATCHERS_HOVER_DEFAULTS = {
+  change7d: { watchers: 273, percent: 7.8 },
+  dailyChanges: [23, 47, 89, 83, -17, 31, 17],
+  rank: { position: 1, total: 17, category: 'Specialty Retail' },
+  underTheRadar: '#3 least followed symbol at a 52W high',
+}
+
+function WatchersHoverPanel({ ticker, change7d, dailyChanges, rank, underTheRadar, children }) {
+  const [open, setOpen] = useState(false)
+  const timeoutRef = useRef(null)
+  const c7d = change7d ?? WATCHERS_HOVER_DEFAULTS.change7d
+  const days = dailyChanges ?? WATCHERS_HOVER_DEFAULTS.dailyChanges
+  const r = rank ?? WATCHERS_HOVER_DEFAULTS.rank
+  const utr = underTheRadar ?? WATCHERS_HOVER_DEFAULTS.underTheRadar
+
+  const handleEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setOpen(true)
+  }
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpen(false), 150)
+  }
+
+  useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }, [])
+
+  const maxBar = Math.max(...days.map(Math.abs))
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      {children}
+      {open && (
+        <div
+          className="absolute left-0 top-full mt-1 z-50 min-w-[300px] max-w-[360px] rounded-xl border border-border bg-white dark:bg-surface shadow-xl overflow-hidden"
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+        >
+          <div className="p-4 space-y-4">
+            {/* 7D CHANGE */}
+            <div>
+              <div className="text-[10px] uppercase tracking-wide text-text-muted font-semibold mb-1">7D Change</div>
+              <p className="text-sm text-text font-medium mb-3">
+                +{c7d.watchers} Watchers <span className="text-green-600 font-semibold">(+{c7d.percent}%)</span>
+              </p>
+              <div className="flex items-end gap-1.5 h-16 mb-3">
+                {days.map((d, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center min-h-0">
+                    <span className={`text-[10px] font-semibold shrink-0 mb-1 ${d >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {d >= 0 ? `+${d}` : d}
+                    </span>
+                    <div className="flex-1 flex flex-col justify-end w-full min-h-[24px]">
+                      <div
+                        className="w-full rounded-t flex-shrink-0"
+                        style={{
+                          height: `${Math.max(4, (Math.abs(d) / (maxBar || 1)) * 32)}px`,
+                          backgroundColor: d >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button type="button" className="w-full py-2 rounded-lg bg-surface-muted text-text font-medium text-sm hover:bg-surface-muted/80 transition-colors">
+                Full Watchers Chart
+              </button>
+            </div>
+            {/* WATCHERS RANK */}
+            <div>
+              <div className="text-[10px] uppercase tracking-wide text-text-muted font-semibold mb-1">Watchers Rank</div>
+              <p className="text-sm text-text font-medium">#{r.position} of {r.total} in {r.category}</p>
+            </div>
+            {/* UNDER THE RADAR */}
+            <div>
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-text-muted font-semibold mb-1">
+                Under the Radar
+                <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" aria-hidden />
+              </div>
+              <p className="text-sm text-text font-medium">{utr}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CollapsibleStockHeader({
   title,
   ticker,
@@ -260,6 +350,7 @@ export default function CollapsibleStockHeader({
   headerAction,
   watchers = '1.2K',
 }) {
+  const { isWatched, toggleWatch } = useWatchlist()
   const [open, setOpen] = useState(false)
   const messageVolumeStat = stats.find((s) => s.label === 'Msg Vol (24h)')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(watchers))
@@ -340,34 +431,40 @@ export default function CollapsibleStockHeader({
                   
                   {/* Stats Bar (Always visible) */}
                   <div className="flex items-center gap-3 text-xs border-l border-border pl-3 hidden sm:flex">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-baseline gap-1">
-                        <span className="relative inline-flex items-baseline">
-                          <span className="font-semibold text-text">{formatNum(watchersCount)}</span>
-                          {floatingWatchers && (
-                            <span
-                              key={floatingWatchers.key}
-                              className="absolute left-full ml-0.5 bottom-0 text-success text-[10px] font-bold animate-float-watchers whitespace-nowrap"
-                              onAnimationEnd={() => setFloatingWatchers(null)}
-                            >
-                              +{floatingWatchers.value}
-                            </span>
-                          )}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
+                    <WatchersHoverPanel ticker={ticker}>
+                      <div className="flex items-center gap-2 cursor-pointer">
+                        <div className="flex items-baseline gap-1">
+                          <span className="relative inline-flex items-baseline">
+                            <span className="font-semibold text-text">{formatNum(watchersCount)}</span>
+                            {floatingWatchers && (
+                              <span
+                                key={floatingWatchers.key}
+                                className="absolute left-full ml-0.5 bottom-0 text-success text-[10px] font-bold animate-float-watchers whitespace-nowrap"
+                                onAnimationEnd={() => setFloatingWatchers(null)}
+                              >
+                                +{floatingWatchers.value}
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-wide muted font-semibold">Watchers</span>
+                        </div>
+                        <button 
+                          type="button"
+                          className="p-1 rounded-md border border-border hover:bg-surface-muted transition-colors flex items-center justify-center bg-surface"
+                          aria-label={isWatched(ticker) ? 'Remove from watchlist' : 'Add to watchlist'}
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleWatch(ticker, title); }}
+                        >
+                        {isWatched(ticker) ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                        )}
+                        </button>
                       </div>
-                      <button 
-                        type="button"
-                        className="p-1 rounded-md border border-border hover:bg-surface-muted transition-colors flex items-center justify-center bg-surface"
-                        aria-label="Add to watchlist"
-                        onClick={(e) => { e.stopPropagation(); console.log('Add to watchlist'); }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="12" y1="5" x2="12" y2="19"></line>
-                          <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                      </button>
-                    </div>
+                    </WatchersHoverPanel>
                   </div>
                 </div>
 

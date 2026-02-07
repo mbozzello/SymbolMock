@@ -20,6 +20,8 @@ import Scheduled from './pages/Scheduled.jsx'
 import Profile from './pages/Profile.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
+import { LiveQuotesProvider, useLiveQuotesContext } from './contexts/LiveQuotesContext.jsx'
+import { WatchlistProvider, useWatchlist } from './contexts/WatchlistContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -204,6 +206,8 @@ function SoftGate({ isLocked, label, ctaText = 'Register to unlock more', childr
 }
 
 function useDashboardData({ isUnregistered = false }) {
+  const { watchlist } = useWatchlist()
+  const { getSpark } = useLiveQuotesContext()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [streamTab, setStreamTab] = useState('Latest')
   const [selectedTheme, setSelectedTheme] = useState(null)
@@ -231,29 +235,14 @@ function useDashboardData({ isUnregistered = false }) {
     }
   }, [darkMode])
 
-  const watchlist = useMemo(
-    () => [
-      { ticker: 'GME', name: 'GameStop Corp.', sector: 'Gaming', price: 29.96, change: 0.62, spark: [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14] },
-      { ticker: 'CELH', name: 'Celsius Holdings', sector: 'Beverages', price: 92.31, change: 2.18, spark: [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14] },
-      { ticker: 'NVDA', name: 'NVIDIA Corp.', sector: 'Semis', price: 889.42, change: -1.12, spark: [30, 32, 31, 33, 35, 34, 33, 32] },
-      { ticker: 'AAPL', name: 'Apple Inc.', sector: 'Hardware', price: 182.51, change: 0.84, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
-      { ticker: 'TSLA', name: 'Tesla, Inc.', sector: 'Auto', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
-      { ticker: 'MSFT', name: 'Microsoft Corp.', sector: 'Software', price: 414.63, change: 1.02, spark: [25, 24, 24.5, 25.2, 25.1, 25.6, 26, 26.2] },
-      { ticker: 'AMZN', name: 'Amazon.com', sector: 'E-Comm', price: 171.05, change: 0.31, spark: [18, 18.4, 18.2, 18.9, 19.4, 19.1, 19.9, 20.2] },
-      { ticker: 'META', name: 'Meta Platforms', sector: 'Social', price: 497.88, change: -0.23, spark: [40, 39.5, 39.8, 40.6, 40.1, 41, 41.2, 40.7] },
-      { ticker: 'RKLB', name: 'Rocket Lab USA Inc.', sector: 'Aerospace', price: 44.21, change: 3.45, spark: [10, 10.5, 10.2, 10.8, 11, 11.6, 11.2, 12.5] },
-    ],
-    []
-  )
-
   const quickStartBundle = useMemo(
     () => ['RKLB', 'SPCE', 'LMT', 'NOC', 'BA', 'RTX', 'AVAV', 'IRDM', 'MAXR', 'PL', 'RDW'],
     []
   )
 
   const headerSpark = useMemo(
-    () => watchlist.find((s) => s.ticker === 'CELH')?.spark ?? [],
-    [watchlist]
+    () => getSpark('CELH').length ? getSpark('CELH') : [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14],
+    [watchlist, getSpark]
   )
 
   const posts = useMemo(
@@ -312,14 +301,14 @@ function useDashboardData({ isUnregistered = false }) {
     []
   )
 
-  // CELH spark pattern from watchlist, scaled to GME price range (~27.5–29.96)
+  // CELH spark pattern scaled to GME price range (~27.5–29.96)
   const chartValues = useMemo(() => {
-    const celh = watchlist.find((s) => s.ticker === 'CELH')?.spark ?? [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14]
+    const celh = getSpark('CELH').length ? getSpark('CELH') : [12, 13, 12.6, 12.9, 13.2, 12.8, 13.6, 14]
     const lo = Math.min(...celh)
     const hi = Math.max(...celh)
     const range = Math.max(1, hi - lo)
     return celh.map((v) => 27.5 + ((v - lo) / range) * (29.96 - 27.5))
-  }, [watchlist])
+  }, [getSpark])
 
   const featuredPosts = useMemo(
     () => [
@@ -747,6 +736,8 @@ function UnregisteredPage() {
 export default function App() {
   return (
     <BookmarkProvider>
+      <WatchlistProvider>
+      <LiveQuotesProvider>
       <TickerTapeProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
@@ -764,6 +755,8 @@ export default function App() {
         <Route path="/newpage" element={<NewPage />} />
       </Routes>
       </TickerTapeProvider>
+      </LiveQuotesProvider>
+      </WatchlistProvider>
     </BookmarkProvider>
   )
 }

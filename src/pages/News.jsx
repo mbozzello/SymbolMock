@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 
-const WATCHLIST = [
+const _LEGACY_WATCHLIST = [
   { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: -0.54, spark: [16, 15, 15.5, 16.2, 15.8, 16.5, 16.1, 15.9] },
   { ticker: 'AAPL', name: 'Apple Inc', price: 254.92, change: -2.34, spark: [20, 21, 21.5, 21.1, 22, 21.8, 22.5, 23] },
   { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 889.42, change: -1.12, spark: [30, 32, 31, 33, 35, 34, 33, 32] },
@@ -227,6 +228,7 @@ const HERO_DURATION_MS = 5000
 const PROGRESS_TICK_MS = 50
 
 export default function News() {
+  const { watchlist } = useWatchlist()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -270,7 +272,7 @@ export default function News() {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        watchlist={WATCHLIST}
+        watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
       />

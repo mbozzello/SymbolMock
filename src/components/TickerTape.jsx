@@ -1,6 +1,7 @@
 import React from 'react'
 import { getTickerLogo } from '../constants/tickerLogos'
 import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
+import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import './TickerTape.css'
 
 function clsx(...values) {
@@ -81,9 +82,15 @@ const DEFAULT_TRENDING = [
 
 export default function TickerTape() {
   const { customTickers, clearCustomTickers } = useTickerTape()
+  const { getQuote } = useLiveQuotesContext()
   const scrollingSymbols = customTickers && customTickers.length > 0 ? customTickers : DEFAULT_TRENDING
   const duplicatedScroll = [...scrollingSymbols, ...scrollingSymbols]
   const isCustom = customTickers && customTickers.length > 0
+
+  const getChange = (symbol, fallback) => {
+    const q = getQuote(symbol)
+    return q?.changePercent ?? fallback ?? 0
+  }
 
   return (
     <div className="sticky top-0 z-10 border-b border-border bg-background overflow-hidden">
@@ -112,8 +119,8 @@ export default function TickerTape() {
               All
             </button>
           )}
-          <TickerItem symbol="SPY" change={0.72} />
-          <TickerItem symbol="QQQ" change={-0.49} />
+          <TickerItem symbol="SPY" change={getChange('SPY', 0.72)} />
+          <TickerItem symbol="QQQ" change={getChange('QQQ', -0.49)} />
           <div className="flex items-center pl-2 pr-1">
             <span className="text-xs font-semibold text-muted uppercase tracking-wide">Trending</span>
           </div>
@@ -124,7 +131,7 @@ export default function TickerTape() {
           <div className="ticker-tape-content">
             {duplicatedScroll.map((item, i) => (
               <div key={`${item.symbol}-${i}`} className="ticker-tape-item px-3">
-                <TickerItem symbol={item.symbol} change={item.change} />
+                <TickerItem symbol={item.symbol} change={getChange(item.symbol, item.change)} />
               </div>
             ))}
           </div>

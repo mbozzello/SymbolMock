@@ -6,6 +6,7 @@ import TickerTape from '../components/TickerTape.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import { useBookmarks } from '../contexts/BookmarkContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
 function formatEngagement(n) {
   if (n == null) return '0'
@@ -29,6 +30,7 @@ const WATCHLIST = [
 
 export default function Bookmarks() {
   const { bookmarks, toggleBookmark } = useBookmarks()
+  const { watchlist } = useWatchlist()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -58,7 +60,7 @@ export default function Bookmarks() {
       <LeftSidebar
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        watchlist={WATCHLIST}
+        watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
       />
