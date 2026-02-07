@@ -59,8 +59,14 @@ const HOWARD_PROFILE = {
     ],
   },
   frequentTags: ['Momentum', 'Swing trading'],
-  predictionRank: { rank: 278, total: 66000 },        // Prediction rank #278 / 66,000
-  marketPredictionRank: { rank: 34, total: 150000 },  // Market Prediction rank #34 / 150,000
+  predictionRank: { rank: 3, total: 66000 },
+  predictionStreak: 16,
+  predictionWinRate: 72,
+  predictionROI: 82.98,
+  marketPredictionRank: { rank: 34, total: 155000 },
+  marketPredictionStreak: 14,
+  marketPredictionWinRate: 88,
+  marketPredictionROI: 94.5,
   latestWatchlistActivity: [
     { type: 'added', ticker: 'TSLA', time: '2h ago' },
     { type: 'removed', ticker: 'NVDA', time: '1d ago' },
@@ -94,6 +100,34 @@ function LockIcon({ className = 'w-4 h-4' }) {
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
     </svg>
+  )
+}
+
+function ConsolidatedPredictionBox({ price, market }) {
+  return (
+    <div className="mt-3 rounded-xl px-3 py-2.5 w-[76%]" style={{ backgroundColor: '#31274F' }}>
+      <div className="flex items-center gap-2 mb-2">
+        <svg className="w-4 h-4 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M2 17l5-5 5 5M12 17l5-5 5 5" />
+          <path d="M12 2v8M9 6l3-3 3 3" />
+        </svg>
+        <span className="text-sm font-semibold text-white">Elite Trader</span>
+      </div>
+      <div className="space-y-2 text-[11px] text-white/90">
+        {price && (
+          <div className="flex items-center justify-between">
+            <span className="text-white/70">Price Targets</span>
+            <span>#{price.rank}/{price.total?.toLocaleString() ?? '—'} · <span className="text-green-500 font-medium">+{price.roi}%</span> · {price.winRate}% win · 🔥{price.streak}</span>
+          </div>
+        )}
+        {market && (
+          <div className="flex items-center justify-between">
+            <span className="text-white/70">Market Events</span>
+            <span>#{market.rank}/{market.total?.toLocaleString() ?? '—'} · <span className="text-green-500 font-medium">+{market.roi}%</span> · {market.winRate}% win · 🔥{market.streak}</span>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -443,32 +477,23 @@ export default function Profile({ isOwnProfile = false }) {
                       </svg>
                     </button>
                   </div>
-                  {profile.predictionRank && profile.inPredictions && (
-                    <div className="mt-3 rounded-xl px-3 py-2.5 flex flex-col gap-2 w-[56%]" style={{ backgroundColor: '#31274F' }}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-5 h-5 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M2 17l5-5 5 5M12 17l5-5 5 5" />
-                            <path d="M12 2v8M9 6l3-3 3 3" />
-                          </svg>
-                          <span className="text-sm font-semibold text-white">Elite Trader</span>
-                        </div>
-                        <span className="text-lg font-bold text-white">#{profile.predictionRank.rank}</span>
-                      </div>
-                      <div className="h-1.5 rounded-full overflow-hidden bg-white/20">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${100 - (profile.predictionRank.rank / profile.predictionRank.total) * 100}%`,
-                            background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-white/90 text-center flex items-center justify-center gap-1">
-                        Top {((1 - profile.predictionRank.rank / profile.predictionRank.total) * 100).toFixed(1)}% of {profile.predictionRank.total.toLocaleString()} traders
-                        <span className="text-white/80" aria-hidden>&gt;</span>
-                      </p>
-                    </div>
+                  {profile.inPredictions && (profile.predictionRank || profile.marketPredictionRank) && (
+                    <ConsolidatedPredictionBox
+                      price={profile.predictionRank ? {
+                        rank: profile.predictionRank.rank,
+                        total: profile.predictionRank.total,
+                        roi: profile.predictionROI ?? 0,
+                        winRate: profile.predictionWinRate ?? 0,
+                        streak: profile.predictionStreak ?? 0,
+                      } : null}
+                      market={profile.marketPredictionRank ? {
+                        rank: profile.marketPredictionRank.rank,
+                        total: profile.marketPredictionRank.total,
+                        roi: profile.marketPredictionROI ?? 0,
+                        winRate: profile.marketPredictionWinRate ?? 0,
+                        streak: profile.marketPredictionStreak ?? 0,
+                      } : null}
+                    />
                   )}
                 </div>
               </div>
