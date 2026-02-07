@@ -13,25 +13,38 @@ function InitialsAvatar({ initials }) {
   )
 }
 
-function LeaderRow({ rank, initials, handle, value, avatar }) {
-  return (
-    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2.5">
-      <div className="w-6 shrink-0 text-sm tabular-nums muted">#{rank}</div>
-      <div className="flex min-w-0 items-center gap-3">
+function LeaderRow({ rank, initials, handle, value, avatar, isYou }) {
+  const content = (
+    <div className="grid grid-cols-[auto_1fr_minmax(0,4rem)] items-center gap-2">
+      <div className={clsx('w-6 shrink-0 text-sm tabular-nums', isYou ? 'text-purple-600 font-medium' : 'muted')}>#{rank}</div>
+      <div className="flex min-w-0 items-center gap-2">
         {avatar ? (
-          <img src={avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0 border border-border" />
+          <img src={avatar} alt="" className="w-7 h-7 rounded-full object-cover shrink-0 border border-border" />
         ) : (
           <InitialsAvatar initials={initials} />
         )}
         <div className="min-w-0 truncate font-medium text-sm">@{handle}</div>
       </div>
-      <span className="font-semibold tabular-nums text-sm text-green-600 shrink-0 text-right">+{value}</span>
+      <span className="font-semibold tabular-nums text-xs text-green-600 shrink-0 text-right">+{value}</span>
+    </div>
+  )
+  if (isYou) {
+    return (
+      <div className="border-2 border-purple-500 rounded-lg mx-2 my-2 p-2">
+        <div className="text-[10px] font-medium text-purple-500 mb-1">Your Rank</div>
+        {content}
+      </div>
+    )
+  }
+  return (
+    <div className="px-3 py-2.5">
+      {content}
     </div>
   )
 }
 
 export default function PredictionLeaderboard() {
-  const [predictionType, setPredictionType] = useState('Price') // 'Price' | 'Market'
+  const [predictionType, setPredictionType] = useState('Market') // 'Market' | 'Price'
   const [timeframe, setTimeframe] = useState('All time') // 'Daily' | 'Weekly' | 'Monthly' | 'All time'
   const [creatorOpen, setCreatorOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -50,10 +63,14 @@ export default function PredictionLeaderboard() {
     () => [
       { rank: 1, handle: 'CryptoOracle', value: '156.2%', avatar: '/avatars/user-avatar.png' },
       { rank: 2, handle: 'FedWatcher', value: '112.8%', avatar: '/avatars/top-voice-2.png' },
-      { rank: 3, handle: 'howardlindzon', value: '94.5%', avatar: '/avatars/howard-lindzon.png' },
+      { rank: 3, handle: 'ProfessorShiba', value: '98.5%', avatar: '/avatars/top-voice-3.png' },
       { rank: 4, handle: 'ElectionEdge', value: '87.3%', avatar: '/avatars/top-voice-1.png' },
       { rank: 5, handle: 'MacroMaven', value: '79.1%', avatar: '/avatars/top-voice-2.png' },
     ],
+    []
+  )
+  const currentUserMarketRank = useMemo(
+    () => ({ rank: 34, handle: 'howardlindzon', value: '68.2%', avatar: '/avatars/howard-lindzon.png', isYou: true }),
     []
   )
   const rows = predictionType === 'Price' ? priceRows : marketRows
@@ -69,9 +86,15 @@ export default function PredictionLeaderboard() {
   return (
     <div className="overflow-hidden">
       <div className="flex items-center justify-between py-3">
-        <div className="flex items-center gap-2">
-          <span role="img" aria-label="trophy" className="text-lg">🏆</span>
-          <h3 className="text-base font-semibold text-text">Prediction Leaderboard</h3>
+        <div>
+          <div className="flex items-center gap-2">
+            <span role="img" aria-label="trophy" className="text-lg">🏆</span>
+            <h3 className="text-base font-semibold text-text">Prediction Leaderboard</h3>
+          </div>
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted">
+            <span>Presented by Polymarket</span>
+            <img src="/images/logos/polymarket.png" alt="" className="h-4" aria-hidden />
+          </div>
         </div>
         <button type="button" className="p-1 rounded hover:bg-surface-muted text-muted" aria-label="View all">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +104,7 @@ export default function PredictionLeaderboard() {
       </div>
 
       <div className="flex gap-1 mb-2">
-        {['Price', 'Market'].map((t) => (
+        {['Market', 'Price'].map((t) => (
           <button
             key={t}
             onClick={() => setPredictionType(t)}
@@ -91,7 +114,7 @@ export default function PredictionLeaderboard() {
             )}
             aria-pressed={predictionType === t}
           >
-            {t === 'Price' ? 'Price Targets' : 'Market Events'}
+            {t === 'Market' ? 'Market Events' : 'Price Targets'}
           </button>
         ))}
       </div>
@@ -139,16 +162,19 @@ export default function PredictionLeaderboard() {
       </div>
 
       <div className="space-y-0 border border-border rounded-lg overflow-hidden">
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2 text-xs font-medium text-muted border-b border-border bg-surface-muted/50">
+        <div className="grid grid-cols-[auto_1fr_minmax(0,4rem)] items-center gap-2 px-3 py-2 text-xs font-medium text-muted border-b border-border bg-surface-muted/50">
           <span className="w-6">Rank</span>
           <span>Username</span>
-          <span>ROI</span>
+          <span className="text-right">ROI</span>
         </div>
         {rows.map((r, idx) => (
-          <div key={r.rank} className={clsx(idx !== rows.length - 1 && 'border-b border-border')}>
+          <div key={`${r.handle}-${r.rank}`} className={clsx(idx !== rows.length - 1 && 'border-b border-border')}>
             <LeaderRow {...r} />
           </div>
         ))}
+        {predictionType === 'Market' && (
+          <LeaderRow {...currentUserMarketRank} />
+        )}
       </div>
 
       <div className="mt-3">

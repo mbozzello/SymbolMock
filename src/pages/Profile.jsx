@@ -66,7 +66,7 @@ const HOWARD_PROFILE = {
   marketPredictionRank: { rank: 34, total: 155000 },
   marketPredictionStreak: 14,
   marketPredictionWinRate: 88,
-  marketPredictionROI: 94.5,
+  marketPredictionROI: 68.2,
   latestWatchlistActivity: [
     { type: 'added', ticker: 'TSLA', time: '2h ago' },
     { type: 'removed', ticker: 'NVDA', time: '1d ago' },
@@ -103,16 +103,99 @@ function LockIcon({ className = 'w-4 h-4' }) {
   )
 }
 
-function ConsolidatedPredictionBox({ price, market }) {
+function EyeOpenIcon({ className = 'w-4 h-4' }) {
   return (
-    <div className="mt-3 rounded-xl px-3 py-2.5 w-[76%]" style={{ backgroundColor: '#31274F' }}>
-      <div className="flex items-center gap-2 mb-2">
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  )
+}
+
+function EyeClosedIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+    </svg>
+  )
+}
+
+function ActivityCardWrapper({ cardId, children, isOwnProfile, isHidden, onToggle }) {
+  return (
+    <div className="relative flex-shrink-0">
+      {isOwnProfile && (
+        <button
+          type="button"
+          onClick={() => onToggle(cardId)}
+          className="absolute top-2 right-2 z-10 p-1 rounded text-text-muted hover:text-text hover:bg-black/5 transition-colors"
+          aria-label={isHidden ? 'Show on profile' : 'Hide from profile'}
+          title={isHidden ? 'Show on profile' : 'Hide from profile'}
+        >
+          {isHidden ? <EyeClosedIcon className="w-4 h-4" /> : <EyeOpenIcon className="w-4 h-4" />}
+        </button>
+      )}
+      {children}
+    </div>
+  )
+}
+
+function InfoIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+}
+
+function ConsolidatedPredictionBox({ price, market, username, isOwnProfile, isHidden, onToggleVisibility }) {
+  const canToggle = isOwnProfile && username === 'howardlindzon'
+
+  const headerRow = (
+    <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center gap-2">
         <svg className="w-4 h-4 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M2 17l5-5 5 5M12 17l5-5 5 5" />
           <path d="M12 2v8M9 6l3-3 3 3" />
         </svg>
         <span className="text-sm font-semibold text-white">Elite Trader</span>
       </div>
+      <div className="flex items-center gap-1.5">
+        {canToggle && (
+          <button
+            type="button"
+            onClick={onToggleVisibility}
+            className="p-1 rounded text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label={isHidden ? 'Show prediction stats' : 'Hide prediction stats'}
+          >
+            {isHidden ? <EyeClosedIcon /> : <EyeOpenIcon />}
+          </button>
+        )}
+        <span className="p-1 text-white/80" aria-hidden><InfoIcon /></span>
+      </div>
+    </div>
+  )
+
+  if (isHidden) {
+    if (!canToggle) return null
+    return (
+      <div className="mt-3 rounded-xl px-3 py-2.5 w-[76%] flex items-center justify-between" style={{ backgroundColor: '#31274F' }}>
+        <span className="text-xs text-white/70">Prediction stats hidden</span>
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          className="flex items-center gap-1.5 p-1 rounded text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          aria-label="Show prediction stats"
+        >
+          <EyeClosedIcon />
+          <InfoIcon />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 rounded-xl px-3 py-2.5 w-[76%]" style={{ backgroundColor: '#31274F' }}>
+      {headerRow}
       <div className="space-y-2 text-[11px] text-white/90">
         {price && (
           <div className="flex items-center justify-between">
@@ -191,19 +274,17 @@ const HOWARD_POSTS = [
   },
 ]
 
-// Price since post: % change of mentioned ticker since the post was made (for "my profile" section)
-const PRICE_SINCE_POST_MESSAGES = [
-  { id: 'psp1', body: 'Decent support around here on $TSLA, but great support a bit lower. I like that area better.', ticker: 'TSLA', postDate: 'Jul 07, 2017 10:11 AM', pctChangeSincePost: 1758.92 },
-  { id: 'psp2', body: '$BTC breaking out. Key level and I like the setup for a swing.', ticker: 'BTC', postDate: 'Mar 12, 2020 2:30 PM', pctChangeSincePost: 892.4 },
-  { id: 'psp3', body: 'Adding $NVDA on this dip. AI capex cycle has legs.', ticker: 'NVDA', postDate: 'Jan 15, 2023 9:00 AM', pctChangeSincePost: 312.5 },
-  { id: 'psp4', body: '$HOOD at these levels is a buy. Execution and growth story intact.', ticker: 'HOOD', postDate: 'Aug 02, 2024 11:45 AM', pctChangeSincePost: -42.3 },
-  { id: 'psp5', body: 'Trimmed $TSLA here. Risk/reward no longer in favor after the run.', ticker: 'TSLA', postDate: 'Nov 08, 2021 3:20 PM', pctChangeSincePost: -38.7 },
-  { id: 'psp6', body: '$RKLB had a great run. Taking some off the table.', ticker: 'RKLB', postDate: 'Sep 14, 2024 10:15 AM', pctChangeSincePost: -28.1 },
-]
-const TOP_3_BULLISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSincePost > 0).sort((a, b) => b.pctChangeSincePost - a.pctChangeSincePost).slice(0, 3)
-const TOP_3_BEARISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSincePost < 0).sort((a, b) => a.pctChangeSincePost - b.pctChangeSincePost).slice(0, 3)
-
 const RANKS_VISIBILITY_KEY = (u) => `profile_ranks_visibility_${u}`
+const PREDICTION_STATS_HIDDEN_KEY = (u) => `profile_prediction_stats_hidden_${u}`
+const ACTIVITY_CARDS_HIDDEN_KEY = (u) => `profile_activity_cards_hidden_${u}`
+
+const ACTIVITY_CARD_IDS = {
+  AI_SUMMARY: 'ai-summary',
+  WATCHLIST_ACTIVITY: 'watchlist-activity',
+  TOP_MENTIONS: 'top-mentions',
+  SECTOR_FOCUS: 'sector-focus',
+  POST_SENTIMENT: 'post-sentiment',
+}
 
 const AI_SUMMARY_FULL = "Howard's been posting like an active trader in \"risk-off, rotation\" mode: he's watching broad market action ($SPY/$QQQ) while calling out rising volatility and a shaky tape, then selectively nibbling at beaten-down software/SaaS names (especially $SHOP, plus $IGV/$ADBE) as they get \"thrown out with the bathwater.\" At the same time, he's treating crypto as a harsher, late-cycle shakeout (\"crypto winter,\" riff raff leaving) and taking quicker swings/partials in things like $BTC/$MSTR and $HOOD, while keeping an eye on hard assets/hedges (gold/silver/energy, $GLD/$SLV/$XLE) as uncertainty picks up. He's also clearly focused on AI's real impact—sharing reads on Anthropic/Claude and how AI is shifting data/software moats—mixed with his usual irreverent humor and sharp takes on market narratives, promoters, and the current political noise."
 
@@ -278,11 +359,20 @@ export default function Profile({ isOwnProfile = false }) {
   })
   const [activeTab, setActiveTab] = useState('Posts')
   const [isFollowing, setIsFollowing] = useState(HOWARD_PROFILE.following)
-  const [priceSincePostView, setPriceSincePostView] = useState('bullish') // 'bullish' | 'bearish'
-  const [priceSincePostIndex, setPriceSincePostIndex] = useState(0)
   const [ranksVisibility, setRanksVisibility] = useState('public')
+  const [predictionStatsHidden, setPredictionStatsHidden] = useState(() => {
+    if (typeof window === 'undefined' || !username) return false
+    return localStorage.getItem(PREDICTION_STATS_HIDDEN_KEY(username)) === 'true'
+  })
   const [statsExpanded, setStatsExpanded] = useState(true)
-  const [priceSincePostExpanded, setPriceSincePostExpanded] = useState(true)
+  const [activityInfoModalOpen, setActivityInfoModalOpen] = useState(false)
+  const [activityCardsHidden, setActivityCardsHidden] = useState(() => {
+    if (typeof window === 'undefined' || !username) return []
+    try {
+      const raw = localStorage.getItem(ACTIVITY_CARDS_HIDDEN_KEY(username))
+      return raw ? JSON.parse(raw) : []
+    } catch { return [] }
+  })
 
   const profile = username === 'howardlindzon' ? HOWARD_PROFILE : null
   const posts = username === 'howardlindzon' ? HOWARD_POSTS : []
@@ -290,6 +380,11 @@ export default function Profile({ isOwnProfile = false }) {
   useEffect(() => {
     if (username && typeof window !== 'undefined') {
       setRanksVisibility(localStorage.getItem(RANKS_VISIBILITY_KEY(username)) || 'public')
+      setPredictionStatsHidden(localStorage.getItem(PREDICTION_STATS_HIDDEN_KEY(username)) === 'true')
+      try {
+        const raw = localStorage.getItem(ACTIVITY_CARDS_HIDDEN_KEY(username))
+        setActivityCardsHidden(raw ? JSON.parse(raw) : [])
+      } catch { setActivityCardsHidden([]) }
     }
   }, [username])
 
@@ -298,6 +393,26 @@ export default function Profile({ isOwnProfile = false }) {
     if (username && typeof window !== 'undefined') {
       localStorage.setItem(RANKS_VISIBILITY_KEY(username), value)
     }
+  }
+
+  const toggleActivityCardVisibility = (cardId) => {
+    setActivityCardsHidden((prev) => {
+      const next = prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId]
+      if (username && typeof window !== 'undefined') {
+        localStorage.setItem(ACTIVITY_CARDS_HIDDEN_KEY(username), JSON.stringify(next))
+      }
+      return next
+    })
+  }
+
+  const togglePredictionStatsVisibility = () => {
+    setPredictionStatsHidden((prev) => {
+      const next = !prev
+      if (username && typeof window !== 'undefined') {
+        localStorage.setItem(PREDICTION_STATS_HIDDEN_KEY(username), String(next))
+      }
+      return next
+    })
   }
 
   useEffect(() => {
@@ -387,7 +502,7 @@ export default function Profile({ isOwnProfile = false }) {
                         </svg>
                       </span>
                     )}
-                    {profile.inPredictions && (
+                    {profile.inPredictions && (isOwnProfile || !predictionStatsHidden) && (
                       <span
                         className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-500 shrink-0"
                         aria-label="Participates in predictions"
@@ -493,6 +608,10 @@ export default function Profile({ isOwnProfile = false }) {
                         winRate: profile.marketPredictionWinRate ?? 0,
                         streak: profile.marketPredictionStreak ?? 0,
                       } : null}
+                      username={username}
+                      isOwnProfile={isOwnProfile}
+                      isHidden={predictionStatsHidden}
+                      onToggleVisibility={togglePredictionStatsVisibility}
                     />
                   )}
                 </div>
@@ -571,226 +690,161 @@ export default function Profile({ isOwnProfile = false }) {
                 <span><span className="font-semibold text-text">{profile.followersCount}</span> Followers</span>
               </div>
 
-              {(profile.sentiment || profile.tickerMentions || profile.latestWatchlistActivity?.length || profile.sectorFocus?.length) && (
-                <div className="mt-2 pt-2 border-t border-border">
-                  <div className="flex items-center justify-between w-full py-0.5 -my-0.5">
-                    <span className="text-sm font-semibold text-text">Activity</span>
-                    <button
-                      type="button"
-                      onClick={() => setStatsExpanded((e) => !e)}
-                      className="p-1 rounded-lg hover:bg-surface-muted/50 transition-colors"
-                      aria-expanded={statsExpanded}
-                      aria-label={statsExpanded ? 'Collapse stats' : 'Expand stats'}
-                    >
-                      <span className="text-text-muted shrink-0 transition-transform block" style={{ transform: statsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-                      </span>
-                    </button>
-                  </div>
-                  {statsExpanded && (
-                  <div className="mt-2 flex gap-3 overflow-x-auto overflow-y-hidden pb-1 flex-nowrap scroll-smooth">
-                    {/* Card 1: AI Summary */}
-                    <AISummaryCard />
-                    {/* Card 2: Watchlist Activity */}
-                    {profile.latestWatchlistActivity?.length > 0 && (
-                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Watchlist Activity</div>
-                        <div className="flex-1 min-h-0 flex flex-col gap-1.5">
-                          {profile.latestWatchlistActivity.slice(0, 6).map((entry, i) => (
-                            <div key={i} className="flex items-center gap-2 text-xs min-w-0">
-                              {getTickerLogo(entry.ticker) ? (
-                                <img src={getTickerLogo(entry.ticker)} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
-                              ) : (
-                                <span className="w-6 h-6 rounded bg-surface flex items-center justify-center text-[10px] font-bold text-text shrink-0">{entry.ticker[0]}</span>
-                              )}
-                              <span className="font-semibold text-text truncate text-sm">${entry.ticker}</span>
-                              <span className={clsx('shrink-0 text-xs font-medium', entry.type === 'added' ? 'text-success' : 'text-danger')} title={entry.type === 'added' ? 'Added' : 'Removed'}>{entry.type === 'added' ? '+' : '−'}</span>
-                              <span className="text-text-muted shrink-0 ml-auto text-xs">{entry.time}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {/* Card 2: Top Mentions — 30d & 90d */}
-                    {profile.tickerMentions && (
-                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Top Mentions</div>
-                        <div className="flex-1 min-h-0 flex flex-col gap-2">
-                          <div>
-                            <div className="text-[9px] font-medium text-text-muted mb-0.5">30 days</div>
-                            <div className="flex flex-wrap gap-1">
-                              {profile.tickerMentions['30d'].slice(0, 3).map((item) => (
-                                <button key={item.ticker} type="button" onClick={goToSearchWithProfileFilters} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface border border-border hover:bg-surface-muted text-left">
-                                  {getTickerLogo(item.ticker) ? <img src={getTickerLogo(item.ticker)} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0" /> : <span className="w-3.5 h-3.5 rounded bg-surface flex items-center justify-center text-[8px] font-bold text-text shrink-0">{item.ticker[0]}</span>}
-                                  <span className="text-[10px] font-semibold text-text">${item.ticker}</span>
-                                  <span className="text-[9px] text-muted">×{item.count}</span>
-                                </button>
-                              ))}
-                            </div>
+              {(() => {
+                const cardConfigs = [
+                  { id: ACTIVITY_CARD_IDS.AI_SUMMARY, hasData: true, render: () => <AISummaryCard /> },
+                  { id: ACTIVITY_CARD_IDS.WATCHLIST_ACTIVITY, hasData: profile.latestWatchlistActivity?.length > 0, render: () => (
+                    <div className="w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9] flex-1 min-h-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Watchlist Activity</div>
+                      <div className="flex-1 min-h-0 flex flex-col gap-1.5">
+                        {profile.latestWatchlistActivity.slice(0, 6).map((entry, i) => (
+                          <div key={i} className="flex items-center gap-2 text-xs min-w-0">
+                            {getTickerLogo(entry.ticker) ? (
+                              <img src={getTickerLogo(entry.ticker)} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+                            ) : (
+                              <span className="w-6 h-6 rounded bg-surface flex items-center justify-center text-[10px] font-bold text-text shrink-0">{entry.ticker[0]}</span>
+                            )}
+                            <span className="font-semibold text-text truncate text-sm">${entry.ticker}</span>
+                            <span className={clsx('shrink-0 text-xs font-medium', entry.type === 'added' ? 'text-success' : 'text-danger')} title={entry.type === 'added' ? 'Added' : 'Removed'}>{entry.type === 'added' ? '+' : '−'}</span>
+                            <span className="text-text-muted shrink-0 ml-auto text-xs">{entry.time}</span>
                           </div>
-                          <div>
-                            <div className="text-[9px] font-medium text-text-muted mb-0.5">90 days</div>
-                            <div className="flex flex-wrap gap-1">
-                              {profile.tickerMentions['90d'].slice(0, 3).map((item) => (
-                                <button key={item.ticker} type="button" onClick={goToSearchWithProfileFilters} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface border border-border hover:bg-surface-muted text-left">
-                                  {getTickerLogo(item.ticker) ? <img src={getTickerLogo(item.ticker)} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0" /> : <span className="w-3.5 h-3.5 rounded bg-surface flex items-center justify-center text-[8px] font-bold text-text shrink-0">{item.ticker[0]}</span>}
-                                  <span className="text-[10px] font-semibold text-text">${item.ticker}</span>
-                                  <span className="text-[9px] text-muted">×{item.count}</span>
-                                </button>
-                              ))}
-                            </div>
+                        ))}
+                      </div>
+                    </div>
+                  )},
+                  { id: ACTIVITY_CARD_IDS.TOP_MENTIONS, hasData: !!profile.tickerMentions, render: () => (
+                    <div className="w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9] flex-1 min-h-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Top Mentions</div>
+                      <div className="flex-1 min-h-0 flex flex-col gap-2">
+                        <div>
+                          <div className="text-[9px] font-medium text-text-muted mb-0.5">30 days</div>
+                          <div className="flex flex-wrap gap-1">
+                            {profile.tickerMentions['30d'].slice(0, 3).map((item) => (
+                              <button key={item.ticker} type="button" onClick={goToSearchWithProfileFilters} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface border border-border hover:bg-surface-muted text-left">
+                                {getTickerLogo(item.ticker) ? <img src={getTickerLogo(item.ticker)} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0" /> : <span className="w-3.5 h-3.5 rounded bg-surface flex items-center justify-center text-[8px] font-bold text-text shrink-0">{item.ticker[0]}</span>}
+                                <span className="text-[10px] font-semibold text-text">${item.ticker}</span>
+                                <span className="text-[9px] text-muted">×{item.count}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] font-medium text-text-muted mb-0.5">90 days</div>
+                          <div className="flex flex-wrap gap-1">
+                            {profile.tickerMentions['90d'].slice(0, 3).map((item) => (
+                              <button key={item.ticker} type="button" onClick={goToSearchWithProfileFilters} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface border border-border hover:bg-surface-muted text-left">
+                                {getTickerLogo(item.ticker) ? <img src={getTickerLogo(item.ticker)} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0" /> : <span className="w-3.5 h-3.5 rounded bg-surface flex items-center justify-center text-[8px] font-bold text-text shrink-0">{item.ticker[0]}</span>}
+                                <span className="text-[10px] font-semibold text-text">${item.ticker}</span>
+                                <span className="text-[9px] text-muted">×{item.count}</span>
+                              </button>
+                            ))}
                           </div>
                         </div>
                       </div>
-                    )}
-                    {/* Card 3: Sector Focus */}
-                    {profile.sectorFocus?.length > 0 && (
-                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Sector Focus</div>
-                        <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto">
-                          {profile.sectorFocus.map((row) => (
-                            <div key={row.name} className="flex items-center justify-between gap-2 text-[10px] min-w-0">
-                              <span className="text-text truncate">{row.name}</span>
-                              <span className="font-semibold text-text tabular-nums shrink-0">{row.pct}%</span>
-                            </div>
-                          ))}
+                    </div>
+                  )},
+                  { id: ACTIVITY_CARD_IDS.SECTOR_FOCUS, hasData: (profile.sectorFocus?.length ?? 0) > 0, render: () => (
+                    <div className="w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9] flex-1 min-h-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Sector Focus</div>
+                      <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto">
+                        {profile.sectorFocus.map((row) => (
+                          <div key={row.name} className="flex items-center justify-between gap-2 text-[10px] min-w-0">
+                            <span className="text-text truncate">{row.name}</span>
+                            <span className="font-semibold text-text tabular-nums shrink-0">{row.pct}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )},
+                  { id: ACTIVITY_CARD_IDS.POST_SENTIMENT, hasData: !!profile.sentiment, render: () => (
+                    <div className="w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9] flex-1 min-h-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Post Sentiment</div>
+                      <div className="flex-1 min-h-0 flex flex-col gap-2">
+                        <div className={clsx('rounded-lg border p-1.5 flex flex-col gap-0.5', profile.sentiment['30d'].direction === 'bullish' ? 'bg-success/10 border-success/30' : 'bg-danger/10 border-danger/30')}>
+                          <div className="text-[9px] font-medium text-text-muted">30 days</div>
+                          <div className={clsx('text-base font-bold', profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['30d'].pct}%</div>
+                          <span className={clsx('text-[9px] font-medium', profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['30d'].label}</span>
+                        </div>
+                        <div className={clsx('rounded-lg border p-1.5 flex flex-col gap-0.5', profile.sentiment['90d'].direction === 'bullish' ? 'bg-success/10 border-success/30' : 'bg-danger/10 border-danger/30')}>
+                          <div className="text-[9px] font-medium text-text-muted">90 days</div>
+                          <div className={clsx('text-base font-bold', profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['90d'].pct}%</div>
+                          <span className={clsx('text-[9px] font-medium', profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['90d'].label}</span>
                         </div>
                       </div>
-                    )}
-                    {/* Card 4: Post sentiment — 30d & 90d (off-screen, scroll to see) */}
-                    {profile.sentiment && (
-                      <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Post Sentiment</div>
-                        <div className="flex-1 min-h-0 flex flex-col gap-2">
-                          <div className={clsx('rounded-lg border p-1.5 flex flex-col gap-0.5', profile.sentiment['30d'].direction === 'bullish' ? 'bg-success/10 border-success/30' : 'bg-danger/10 border-danger/30')}>
-                            <div className="text-[9px] font-medium text-text-muted">30 days</div>
-                            <div className={clsx('text-base font-bold', profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['30d'].pct}%</div>
-                            <span className={clsx('text-[9px] font-medium', profile.sentiment['30d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['30d'].label}</span>
-                          </div>
-                          <div className={clsx('rounded-lg border p-1.5 flex flex-col gap-0.5', profile.sentiment['90d'].direction === 'bullish' ? 'bg-success/10 border-success/30' : 'bg-danger/10 border-danger/30')}>
-                            <div className="text-[9px] font-medium text-text-muted">90 days</div>
-                            <div className={clsx('text-base font-bold', profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['90d'].pct}%</div>
-                            <span className={clsx('text-[9px] font-medium', profile.sentiment['90d'].direction === 'bullish' ? 'text-success' : 'text-danger')}>{profile.sentiment['90d'].label}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  )}
-                </div>
-              )}
-
-              {/* My profile: Top Bullish / Top Bearish carousel */}
-              {isOwnProfile && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-text">Price since post</span>
-                    <div className="flex items-center gap-2">
-                      {priceSincePostExpanded && (
-                        <>
+                    </div>
+                  )},
+                ]
+                const visibleCards = cardConfigs.filter((c) => c.hasData && (isOwnProfile ? true : !activityCardsHidden.includes(c.id)))
+                if (visibleCards.length === 0) return null
+                return (
+                  <div className="mt-2 pt-2 border-t border-border">
+                    <div className="flex items-center justify-between w-full py-0.5 -my-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-text">Activity</span>
+                        {isOwnProfile && (
                           <button
                             type="button"
-                            onClick={() => { setPriceSincePostView('bullish'); setPriceSincePostIndex(0) }}
-                            className={clsx(
-                              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
-                              priceSincePostView === 'bullish'
-                                ? 'bg-success/15 text-success border border-success/40'
-                                : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
-                            )}
+                            onClick={() => setActivityInfoModalOpen(true)}
+                            className="p-0.5 rounded text-text-muted hover:text-text hover:bg-surface-muted/50 transition-colors"
+                            aria-label="Activity privacy info"
                           >
-                            Top Bullish
+                            <InfoIcon className="w-4 h-4" />
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => { setPriceSincePostView('bearish'); setPriceSincePostIndex(0) }}
-                            className={clsx(
-                              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
-                              priceSincePostView === 'bearish'
-                                ? 'bg-danger/15 text-danger border border-danger/40'
-                                : 'bg-surface-muted border border-border text-text-muted hover:text-text hover:bg-surface'
-                            )}
-                          >
-                            Top Bearish
-                          </button>
-                        </>
-                      )}
+                        )}
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setPriceSincePostExpanded((e) => !e)}
-                        className="p-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-muted transition-colors shrink-0"
-                        aria-expanded={priceSincePostExpanded}
-                        aria-label={priceSincePostExpanded ? 'Collapse' : 'Expand'}
+                        onClick={() => setStatsExpanded((e) => !e)}
+                        className="p-1 rounded-lg hover:bg-surface-muted/50 transition-colors"
+                        aria-expanded={statsExpanded}
+                        aria-label={statsExpanded ? 'Collapse stats' : 'Expand stats'}
                       >
-                        <span className="block transition-transform" style={{ transform: priceSincePostExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+                        <span className="text-text-muted shrink-0 transition-transform block" style={{ transform: statsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                         </span>
                       </button>
                     </div>
-                  </div>
-                  {priceSincePostExpanded && (() => {
-                    const list = priceSincePostView === 'bullish' ? TOP_3_BULLISH : TOP_3_BEARISH
-                    const msg = list[priceSincePostIndex]
-                    if (!msg) return null
-                    const isBullish = msg.pctChangeSincePost >= 0
-                    const pctClass = isBullish ? 'text-success' : 'text-danger'
-                    const pctSign = msg.pctChangeSincePost >= 0 ? '+' : ''
-                    const canGoPrev = priceSincePostIndex > 0
-                    const canGoNext = priceSincePostIndex < list.length - 1
-                    return (
-                      <div className="flex items-stretch gap-2 mt-3">
-                        <button
-                          type="button"
-                          onClick={() => setPriceSincePostIndex((i) => Math.max(0, i - 1))}
-                          disabled={!canGoPrev}
-                          className={clsx(
-                            'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-opacity',
-                            canGoPrev ? 'bg-black text-white hover:opacity-90' : 'bg-surface-muted text-text-muted cursor-not-allowed opacity-60'
-                          )}
-                          aria-label="Previous message"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-                        </button>
-                        <div className="flex-1 min-w-0 p-3 rounded-lg border border-border bg-surface-muted/50 flex flex-col max-h-[200px]">
-                          <p className="text-sm text-text leading-snug line-clamp-5 flex-1 min-h-0 overflow-hidden">{msg.body}</p>
-                          <div className="mt-2 text-xs text-text-muted">{msg.postDate}</div>
-                          <div className="mt-2 flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                              {getTickerLogo(msg.ticker) ? (
-                                <img src={getTickerLogo(msg.ticker)} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
-                              ) : (
-                                <span className="w-5 h-5 rounded bg-surface flex items-center justify-center text-[9px] font-bold text-text shrink-0">{msg.ticker[0]}</span>
-                              )}
-                              <span className="font-semibold text-text shrink-0">{msg.ticker}</span>
-                              <span className="text-text-muted text-xs font-semibold shrink-0">Price since post</span>
-                              <span className={clsx('font-bold shrink-0', pctClass)}>{pctSign}{msg.pctChangeSincePost.toFixed(2)}%</span>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button type="button" className="p-1.5 rounded-md text-text-muted hover:text-text hover:bg-surface transition-colors" aria-label="Share">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                              </button>
-                              <button type="button" className="text-xs font-medium text-primary hover:underline">
-                                View Message
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setPriceSincePostIndex((i) => Math.min(list.length - 1, i + 1))}
-                          disabled={!canGoNext}
-                          className={clsx(
-                            'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-opacity',
-                            canGoNext ? 'bg-black text-white hover:opacity-90' : 'bg-surface-muted text-text-muted cursor-not-allowed opacity-60'
-                          )}
-                          aria-label="Next message"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-                        </button>
+                    {statsExpanded && (
+                      <div className="mt-2 flex gap-3 overflow-x-auto overflow-y-hidden pb-1 flex-nowrap scroll-smooth">
+                        {visibleCards.map((cfg) => (
+                          <ActivityCardWrapper
+                            key={cfg.id}
+                            cardId={cfg.id}
+                            isOwnProfile={isOwnProfile}
+                            isHidden={activityCardsHidden.includes(cfg.id)}
+                            onToggle={toggleActivityCardVisibility}
+                          >
+                            {cfg.render()}
+                          </ActivityCardWrapper>
+                        ))}
                       </div>
-                    )
-                  })()}
+                    )}
+                  </div>
+                )
+              })()}
+
+              {activityInfoModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog">
+                  <div className="absolute inset-0 bg-black/50" onClick={() => setActivityInfoModalOpen(false)} aria-hidden />
+                  <div className="relative rounded-xl border border-border bg-background p-6 shadow-xl max-w-sm">
+                    <p className="text-sm text-text leading-relaxed">
+                      You may hide any of the activity below by tapping the privacy eye{' '}
+                      <span className="inline-flex align-middle">
+                        <EyeOpenIcon className="w-4 h-4 text-text-muted" />
+                      </span>{' '}
+                      at any time. This will remove the activity when others view your profile.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setActivityInfoModalOpen(false)}
+                      className="mt-4 w-full btn btn-primary text-sm"
+                    >
+                      Got it
+                    </button>
+                  </div>
                 </div>
               )}
+
             </div>
 
             {/* Tabs */}
