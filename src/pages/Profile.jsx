@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
@@ -169,6 +170,63 @@ const TOP_3_BEARISH = [...PRICE_SINCE_POST_MESSAGES].filter((m) => m.pctChangeSi
 
 const RANKS_VISIBILITY_KEY = (u) => `profile_ranks_visibility_${u}`
 
+const AI_SUMMARY_FULL = "Howard's been posting like an active trader in \"risk-off, rotation\" mode: he's watching broad market action ($SPY/$QQQ) while calling out rising volatility and a shaky tape, then selectively nibbling at beaten-down software/SaaS names (especially $SHOP, plus $IGV/$ADBE) as they get \"thrown out with the bathwater.\" At the same time, he's treating crypto as a harsher, late-cycle shakeout (\"crypto winter,\" riff raff leaving) and taking quicker swings/partials in things like $BTC/$MSTR and $HOOD, while keeping an eye on hard assets/hedges (gold/silver/energy, $GLD/$SLV/$XLE) as uncertainty picks up. He's also clearly focused on AI's real impact—sharing reads on Anthropic/Claude and how AI is shifting data/software moats—mixed with his usual irreverent humor and sharp takes on market narratives, promoters, and the current political noise."
+
+function AISummaryCard() {
+  const [open, setOpen] = useState(false)
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 })
+  const cardRef = useRef(null)
+  const timeoutRef = useRef(null)
+  const handleEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect()
+      setCoords({ top: rect.top - 4, left: rect.left, width: rect.width })
+    }
+    setOpen(true)
+  }
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpen(false), 150)
+  }
+  useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }, [])
+  const popup = open && createPortal(
+    <div
+      className="fixed z-[100] min-w-[320px] max-w-[420px] max-h-[min(80vh,520px)] rounded-xl border border-border bg-white dark:bg-surface shadow-xl overflow-hidden"
+      style={{ top: coords.top, left: coords.left, transform: 'translateY(-100%)' }}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      <div className="p-4 overflow-y-auto max-h-[min(80vh,520px)]">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">AI Summary — Last 30 Days</div>
+        <p className="text-sm text-text leading-relaxed">
+          {AI_SUMMARY_FULL}
+        </p>
+      </div>
+    </div>,
+    document.body
+  )
+  return (
+    <>
+      <div
+        ref={cardRef}
+        className="relative inline-block flex-shrink-0"
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+      >
+        <div className="w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9] cursor-pointer">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">AI Summary</div>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <p className="text-[11px] text-text leading-[1.4] line-clamp-8">
+              {AI_SUMMARY_FULL}
+            </p>
+          </div>
+        </div>
+      </div>
+      {popup}
+    </>
+  )
+}
+
 function getRanksVisibleToOthers(username) {
   if (typeof window === 'undefined') return true
   return (localStorage.getItem(RANKS_VISIBILITY_KEY(username)) || 'public') !== 'private'
@@ -265,12 +323,12 @@ export default function Profile({ isOwnProfile = false }) {
           <div className="flex-1 min-w-0">
             {/* Profile header */}
             <div className="border-b border-border pb-4">
-              <div className="flex items-start gap-4">
+              <div className="flex items-center gap-4">
                 <div className="relative shrink-0">
                   <img
                     src={profile.avatar}
                     alt=""
-                    className="w-20 h-20 rounded-full object-cover border border-border"
+                    className="w-40 h-40 rounded-full object-cover border border-border"
                   />
                   {profile.hasEdgeBadge && (
                     <span
@@ -301,7 +359,7 @@ export default function Profile({ isOwnProfile = false }) {
                       <span className="text-xs text-muted">Follows You</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => setIsFollowing((v) => !v)}
@@ -463,7 +521,9 @@ export default function Profile({ isOwnProfile = false }) {
                   </div>
                   {statsExpanded && (
                   <div className="mt-2 flex gap-3 overflow-x-auto overflow-y-hidden pb-1 flex-nowrap scroll-smooth">
-                    {/* Card 1: Watchlist Activity */}
+                    {/* Card 1: AI Summary */}
+                    <AISummaryCard />
+                    {/* Card 2: Watchlist Activity */}
                     {profile.latestWatchlistActivity?.length > 0 && (
                       <div className="flex-shrink-0 w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9]">
                         <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">Watchlist Activity</div>
