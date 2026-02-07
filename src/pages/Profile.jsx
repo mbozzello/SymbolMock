@@ -25,6 +25,7 @@ const HOWARD_PROFILE = {
   displayName: 'Howard Lindzon',
   avatar: '/avatars/howard-lindzon.png',
   verified: true,
+  inPredictions: true,
   followsYou: true,
   following: true,
   bio: 'Co-Founder and CEO Stocktwits, Founder of Wallstrip (Acquired by CBS); Managing Partner of Social Leverage and an angel investor in Robinhood, Etoro, Koyfin, YCharts, Alpaca. Canadian - born and raised in Toronto.',
@@ -352,6 +353,21 @@ export default function Profile({ isOwnProfile = false }) {
                         </svg>
                       </span>
                     )}
+                    {profile.inPredictions && (
+                      <span
+                        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-500 shrink-0"
+                        aria-label="Participates in predictions"
+                        title="Participates in predictions"
+                      >
+                        <svg className="w-3 h-3 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M8 21h8M12 17v4M7 4h10v4c0 3.5-2.5 6-6 6s-4-2.5-4-6V4z" />
+                          <path d="M7 4V2h10v2" />
+                          <path d="M12 17c-3 0-5-2-5-5v-2h10v2c0 3-2 5-5 5z" />
+                          <path d="M5 10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1" />
+                          <path d="M19 10h1a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1" />
+                        </svg>
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-text">{profile.displayName}</span>
@@ -427,6 +443,33 @@ export default function Profile({ isOwnProfile = false }) {
                       </svg>
                     </button>
                   </div>
+                  {profile.predictionRank && profile.inPredictions && (
+                    <div className="mt-3 rounded-xl px-3 py-2.5 flex flex-col gap-2 w-[56%]" style={{ backgroundColor: '#31274F' }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M2 17l5-5 5 5M12 17l5-5 5 5" />
+                            <path d="M12 2v8M9 6l3-3 3 3" />
+                          </svg>
+                          <span className="text-sm font-semibold text-white">Elite Trader</span>
+                        </div>
+                        <span className="text-lg font-bold text-white">#{profile.predictionRank.rank}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden bg-white/20">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${100 - (profile.predictionRank.rank / profile.predictionRank.total) * 100}%`,
+                            background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-white/90 text-center flex items-center justify-center gap-1">
+                        Top {((1 - profile.predictionRank.rank / profile.predictionRank.total) * 100).toFixed(1)}% of {profile.predictionRank.total.toLocaleString()} traders
+                        <span className="text-white/80" aria-hidden>&gt;</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
