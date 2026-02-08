@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
@@ -8,13 +8,39 @@ function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-const TOP_5_TRENDING = [
-  { ticker: 'SPY', name: 'SPDR S&P 500', price: 609.98, change: -5.23, pct: -0.85, sentiment: 62, sentimentLabel: 'Bullish', topTopic: 'Metals Nosedive' },
-  { ticker: 'QQQ', name: 'Invesco QQQ', price: 523.41, change: -6.12, pct: -1.16, sentiment: 58, sentimentLabel: 'Bullish', topTopic: 'New Fed Chair' },
-  { ticker: 'BITCOIN', name: 'Bitcoin', price: 97234.5, change: 1245.2, pct: 1.3, sentiment: 71, sentimentLabel: 'Bullish', topTopic: 'ETF Flows' },
-  { ticker: 'GOLD', name: 'Gold', price: 2654.8, change: -8.4, pct: -0.32, sentiment: 48, sentimentLabel: 'Neutral', topTopic: 'Rate Cuts' },
-  { ticker: 'VIX', name: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'Bearish', topTopic: 'Volatility' },
+const TRENDING_NOW = [
+  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 3.8, comments: '12.8K', sentiment: 75, rank: 1, whyBlurb: 'Cybertruck ramp and FSD rollout fueling discussion.' },
+  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 5.2, comments: '15.2K', sentiment: 82, rank: 2, whyBlurb: 'Data center AI demand and Blackwell chip ramp driving record volume.' },
+  { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -1.2, comments: '8.9K', sentiment: 45, rank: 3, whyBlurb: 'China sales and services growth in focus.' },
+  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 4.1, comments: '9.2K', sentiment: 78, rank: 4, whyBlurb: 'MI300 adoption and data center share gains.' },
+  { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 2.3, comments: '6.1K', sentiment: 68, rank: 5, whyBlurb: 'AWS reacceleration and advertising growth.' },
 ]
+
+const STREAM_MESSAGES = {
+  NVDA: [
+    { id: 1, user: 'AIBull', avatar: '/avatars/top-voice-1.png', body: 'Data center demand is insane. $NVDA guidance will crush again.', time: '2m', comments: 24, reposts: 8, likes: 142 },
+    { id: 2, user: 'TechTrader', avatar: '/avatars/top-voice-2.png', body: 'NVDA at $875 and still not expensive given the growth. Holding through earnings.', time: '5m', comments: 18, reposts: 5, likes: 89 },
+    { id: 3, user: 'ChipWatcher', avatar: '/avatars/top-voice-3.png', body: 'Blackwell ramp is the real story. Anyone trimming here will regret it.', time: '8m', comments: 31, reposts: 12, likes: 203 },
+    { id: 4, user: 'MomentumKing', avatar: '/avatars/howard-lindzon.png', body: '15.2K messages and 82% bullish. Crowd is right on this one.', time: '12m', comments: 9, reposts: 3, likes: 67 },
+  ],
+  TSLA: [
+    { id: 1, user: 'EVBull', avatar: '/avatars/top-voice-1.png', body: 'Cybertruck deliveries ramping. $TSLA demand story intact.', time: '1m', comments: 45, reposts: 11, likes: 278 },
+    { id: 2, user: 'ElonFan', avatar: '/avatars/top-voice-2.png', body: 'FSD rollout accelerating. This is the year Tesla becomes an AI company.', time: '4m', comments: 62, reposts: 19, likes: 391 },
+    { id: 3, user: 'AutoAnalyst', avatar: '/avatars/top-voice-3.png', body: 'Margins holding up better than expected. Long $TSLA.', time: '7m', comments: 22, reposts: 6, likes: 134 },
+  ],
+  AAPL: [
+    { id: 1, user: 'AppleLong', avatar: '/avatars/top-voice-1.png', body: 'Services growth is the real margin story. $AAPL underrated here.', time: '3m', comments: 15, reposts: 4, likes: 98 },
+    { id: 2, user: 'ValueMind', avatar: '/avatars/top-voice-2.png', body: 'China weakness priced in. Buying the dip.', time: '6m', comments: 28, reposts: 7, likes: 156 },
+  ],
+  AMD: [
+    { id: 1, user: 'ChipFan', avatar: '/avatars/top-voice-1.png', body: 'MI300 adoption ramping. $AMD taking share from NVDA in some segments.', time: '2m', comments: 19, reposts: 6, likes: 112 },
+    { id: 2, user: 'DataCenterBull', avatar: '/avatars/top-voice-2.png', body: '78% bullish and for good reason. AMD execution has been stellar.', time: '5m', comments: 11, reposts: 2, likes: 74 },
+  ],
+  AMZN: [
+    { id: 1, user: 'CloudBull', avatar: '/avatars/top-voice-1.png', body: 'AWS growth reaccelerating. $AMZN still cheap vs growth.', time: '4m', comments: 33, reposts: 9, likes: 187 },
+    { id: 2, user: 'RetailWatcher', avatar: '/avatars/top-voice-2.png', body: 'Ads and cloud driving margins. This is a hold for the long term.', time: '9m', comments: 7, reposts: 1, likes: 52 },
+  ],
+}
 
 const TRENDING_SYMBOLS = [
   { ticker: 'NVDA', name: 'NVIDIA Corp.', watchers: '1.1M+', price: 889.42, change: 21.79, pct: 2.45, sentiment: 78, sentimentLabel: 'Extremely Bullish', bullTag: 'Data Center Demand', bearTag: 'Valuation', spark: [860, 865, 870, 875, 880, 885, 888, 889] },
@@ -26,6 +52,36 @@ const WATCHLIST_PREVIEW = [
   { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 889.42, change: 21.79 },
   { ticker: 'AAPL', name: 'Apple Inc.', price: 182.51, change: -1.5 },
 ]
+
+const MARKET_CARDS = [
+  { symbol: 'SPY', price: 609.98, change: -5.23, pct: -0.85, sentiment: 62, sentimentLabel: 'BULLISH', topTopic: 'Metals Nosedive', topTopicIcon: 'medal' },
+  { symbol: 'QQQ', price: 523.41, change: -6.12, pct: -1.16, sentiment: 58, sentimentLabel: 'BULLISH', topTopic: 'New Fed Chair', topTopicIcon: 'chair' },
+  { symbol: 'BITCOIN', price: 97234.5, change: 1245.2, pct: 1.3, sentiment: 71, sentimentLabel: 'BULLISH', topTopic: 'ETF Flows', topTopicIcon: 'chart' },
+  { symbol: 'GOLD', price: 2654.8, change: -8.4, pct: -0.32, sentiment: 48, sentimentLabel: 'NEUTRAL', topTopic: 'Rate Cuts', topTopicIcon: 'scissors' },
+  { symbol: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'BEARISH', topTopic: 'Volatility', topTopicIcon: 'bolt' },
+]
+
+function SentimentGauge({ value, label }) {
+  const isBullish = label === 'BULLISH'
+  const isBearish = label === 'BEARISH'
+  const strokeColor = isBullish ? 'var(--color-success)' : isBearish ? 'var(--color-danger)' : '#f59e0b'
+  const size = 40
+  const r = (size - 4) / 2
+  const circumference = 2 * Math.PI * r
+  const strokeDashoffset = circumference - (value / 100) * circumference
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative inline-flex items-center justify-center">
+        <svg width={size} height={size} className="rotate-[-90deg]">
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth="3" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={strokeColor} strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
+        </svg>
+        <span className="absolute text-xs font-bold text-text">{value}</span>
+      </div>
+      <span className="text-[10px] font-bold mt-0.5 uppercase" style={{ color: strokeColor }}>{label}</span>
+    </div>
+  )
+}
 
 function MiniSparkline({ values = [], isUp }) {
   if (!values?.length) return null
@@ -52,13 +108,30 @@ export default function Homepage() {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
   })
+  const navigate = useNavigate()
+  const [selectedTicker, setSelectedTicker] = useState(TRENDING_NOW[0].ticker)
+  const [newPostCount, setNewPostCount] = useState(0)
+  const incrementIndexRef = useRef(0)
   const { getQuote } = useLiveQuotesContext()
+
+  const NEW_POST_INCREMENTS = [10, 8, 3, 9, 12]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = NEW_POST_INCREMENTS[incrementIndexRef.current % NEW_POST_INCREMENTS.length]
+      incrementIndexRef.current += 1
+      setNewPostCount((c) => c + next)
+    }, 1800)
+    return () => clearInterval(interval)
+  }, [])
 
   const mergeQuote = (staticItem) => {
     const q = getQuote(staticItem.ticker)
     if (!q) return staticItem
-    return { ...staticItem, price: q.price, change: q.change, pct: q.changePercent ?? staticItem.pct, spark: q.spark?.length ? q.spark : staticItem.spark }
+    return { ...staticItem, price: q.price, pct: q.changePercent ?? staticItem.pct }
   }
+
+  const selectedItem = TRENDING_NOW.find((s) => s.ticker === selectedTicker) ?? TRENDING_NOW[0]
+  const messages = (STREAM_MESSAGES[selectedTicker] ?? STREAM_MESSAGES.NVDA).slice(0, 4)
 
   return (
     <div className="min-h-screen bg-background text-text">
@@ -135,119 +208,220 @@ export default function Homepage() {
           </section>
         </aside>
 
-        {/* Column 2: Streaming Live + Top 5 Trending */}
-        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
-          {/* Streaming Live */}
-          <div className="rounded-xl border border-border bg-surface-muted/30 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <img src="/avatars/top-voice-1.png" alt="" className="w-12 h-12 rounded-full object-cover shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs font-semibold uppercase text-text-muted">Streaming Live</div>
-                <div className="text-sm font-bold text-text truncate">Powell Delivers Fed Interest Rate</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-2 rounded-full overflow-hidden flex bg-surface">
-                  <div className="h-full bg-success" style={{ width: '63.1%' }} />
-                  <div className="h-full bg-danger" style={{ width: '36.9%' }} />
+        {/* Middle: Market cards (full width) + Trending Now | Stream */}
+        <main className="flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4">
+          {/* Header: Market Overview (selected) + Following / Watchlist (locked, sign-up to unlock) */}
+          <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
+            <span className="text-base font-bold text-black border-b-2 border-black pb-0.5 -mb-0.5" style={{ borderBottomWidth: 2 }}>
+              Market Overview
+            </span>
+            <span className="flex items-center gap-1.5 text-sm font-medium text-text-muted" title="Sign up to unlock">
+              Following
+              <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            </span>
+            <span className="flex items-center gap-1.5 text-sm font-medium text-text-muted" title="Sign up to unlock">
+              Watchlist
+              <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            </span>
+          </div>
+          {/* Market cards — full width row */}
+          <div className="w-full flex gap-3 overflow-x-auto pb-1 shrink-0">
+            {MARKET_CARDS.map((card) => (
+              <div
+                key={card.symbol}
+                className="flex-1 min-w-[140px] rounded-xl border border-border bg-white dark:bg-surface p-3 flex flex-col"
+              >
+                <div className="text-sm font-bold text-text">{card.symbol}</div>
+                <div className="flex items-center justify-between gap-2 mt-1">
+                  <div className="text-lg font-bold text-text min-w-0">
+                    {card.price >= 1000 ? card.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : card.price.toFixed(2)}
+                  </div>
+                  <SentimentGauge value={card.sentiment} label={card.sentimentLabel} />
                 </div>
-                <span className="text-xs font-semibold text-text-muted whitespace-nowrap">63.1% / 36.9%</span>
+                <div className={clsx('text-xs font-semibold', card.pct >= 0 ? 'text-success' : 'text-danger')}>
+                  ({card.change >= 0 ? '+' : ''}{card.change.toFixed(2)}) {card.pct >= 0 ? '+' : ''}{card.pct.toFixed(2)}%
+                </div>
+                <div className="mt-2 pt-2 border-t border-border">
+                  <div className="text-[9px] font-semibold uppercase tracking-wide text-text-muted mb-1">Top Topic</div>
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-surface-muted text-xs font-medium text-text">
+                    {card.topTopicIcon === 'medal' && <span aria-hidden>🏅</span>}
+                    {card.topTopicIcon === 'chair' && <span aria-hidden>🪑</span>}
+                    {card.topTopicIcon === 'chart' && <span aria-hidden>📈</span>}
+                    {card.topTopicIcon === 'scissors' && <span aria-hidden>✂️</span>}
+                    {card.topTopicIcon === 'bolt' && <span aria-hidden>⚡</span>}
+                    {card.topTopic}
+                  </div>
+                </div>
               </div>
-              <span className="text-xs text-text-muted flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                1,419 watchers
-              </span>
-              <button type="button" className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90">
-                JOIN LIVE
-              </button>
-            </div>
+            ))}
           </div>
 
-          {/* Top 5 Trending */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {TOP_5_TRENDING.map((s) => {
-              const item = mergeQuote(s)
-              return (
-              <div key={item.ticker} className="rounded-xl border border-border bg-white dark:bg-surface p-3 flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-text">{item.ticker}</span>
-                  <span className={clsx('text-xs font-bold', item.sentiment >= 55 ? 'text-success' : item.sentiment >= 45 ? 'text-text-muted' : 'text-danger')}>{item.sentimentLabel}</span>
+          {/* Two columns: equal height so Popular Messages bottom matches Trending Now ($AMZN) bottom; messages scroll inside */}
+          <div className="flex flex-1 min-h-[440px] gap-0 items-stretch">
+          {/* Left: Trending Now — top 5 list */}
+          <aside className="w-[280px] shrink-0 border-r border-border pr-4 flex flex-col min-h-0">
+            <h2 className="text-base font-bold text-text flex items-center gap-2 mb-3 shrink-0">
+              <span className="text-orange-500" aria-hidden>🔥</span>
+              Trending Now
+            </h2>
+            <ul className="flex-1 min-h-0 space-y-0 border-t border-border flex flex-col">
+              {TRENDING_NOW.map((s) => {
+                const item = mergeQuote(s)
+                const isSelected = selectedTicker === item.ticker
+                const isLive = item.ticker === 'AAPL'
+                const pctNum = typeof item.pct === 'number' ? item.pct : 0
+                return (
+                  <li key={item.ticker}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
+                      className={clsx(
+                        'w-full text-left py-3 px-3 -mb-px border-b border-l-4 transition-colors rounded-r-lg',
+                        isLive && 'ring-1 ring-inset ring-purple-300',
+                        isSelected && !isLive && 'bg-amber-50 dark:bg-amber-950/30 border-l-amber-500 border-border',
+                        isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] border-l-[#7c3aed] border-border',
+                        !isSelected && isLive && 'border-l-[#c4b5fd] hover:bg-[rgba(221,214,254,0.15)] border-border',
+                        !isSelected && !isLive && 'border-l-transparent hover:bg-surface-muted/30 border-border'
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-bold text-text">${item.ticker}</span>
+                            {isLive && (
+                              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white shrink-0" style={{ backgroundColor: '#7c3aed' }}>Live</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-text-muted truncate">{item.name}</div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                              {item.comments}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 shrink-0 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                              {item.sentiment}% bullish
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-base font-bold text-text">${typeof item.price === 'number' ? item.price.toFixed(2) : '--'}</div>
+                          <div className={clsx('text-xs font-semibold', pctNum >= 0 ? 'text-success' : 'text-danger')}>
+                            {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </aside>
+
+          {/* Right: Why trending blurb + Popular Messages — fills to match left column height */}
+          <div className="flex-1 min-w-0 pl-4 flex flex-col min-h-0">
+            {/* AAPL: Live earnings call card; others: Why it's trending */}
+            {selectedTicker === 'AAPL' ? (
+              <div
+                className="w-full mb-3 flex items-center justify-between gap-4 rounded-2xl p-4 min-h-[72px] shrink-0"
+                style={{ backgroundColor: 'rgba(221, 214, 254, 0.5)' }}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-bold text-text">Q1 &apos;26 Earnings Call</h3>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white" style={{ backgroundColor: '#7c3aed' }}>Live</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 text-sm text-text-muted">
+                    <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    <span>2.1K Listeners</span>
+                    <span className="text-border">|</span>
+                    <span>Started 21m ago</span>
+                  </div>
                 </div>
-                <div className="text-lg font-bold text-text">${typeof item.price === 'number' && item.price >= 1000 ? item.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : (typeof item.price === 'number' ? item.price.toFixed(2) : '--')}</div>
-                <div className="text-xs">
-                  <span className={item.change >= 0 ? 'text-success' : 'text-danger'}>
-                    {item.change >= 0 ? '+' : ''}{(typeof item.change === 'number' ? item.change : 0).toFixed(2)} ({(item.pct ?? 0) >= 0 ? '+' : ''}{(item.pct ?? 0).toFixed(2)}%)
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 mt-1">
-                  <span className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-[10px] font-bold text-text">{item.sentiment}</span>
-                  <span className="text-[10px] text-text-muted truncate">Top Topic {item.topTopic}</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/symbol')}
+                  className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#7c3aed' }}
+                  aria-label="Join live earnings call"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  Join
+                </button>
               </div>
-            )
-            })}
+            ) : (
+              <div
+                className="w-full mb-3 flex items-center gap-4 rounded-2xl p-4 min-h-[72px] shrink-0"
+                style={{
+                  background: 'linear-gradient(to right, rgba(254, 215, 170, 0.6), rgba(250, 204, 211, 0.5), rgba(221, 214, 254, 0.5))',
+                }}
+              >
+                <div className="w-12 h-12 shrink-0 rounded-full bg-white/90 flex items-center justify-center overflow-hidden shadow-sm">
+                  {getTickerLogo(selectedTicker) ? (
+                    <img src={getTickerLogo(selectedTicker)} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xl font-bold text-text">{selectedTicker[0]}</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-text">Trending #{selectedItem.rank ?? 1}</div>
+                  <p className="text-sm text-text mt-0.5 truncate pr-2">
+                    {selectedItem.name} ({selectedItem.ticker}) is trending as {selectedItem.whyBlurb?.toLowerCase() ?? 'conversation heats up.'}
+                  </p>
+                </div>
+                <button type="button" onClick={() => navigate('/symbol')} className="shrink-0 text-sm font-semibold text-primary hover:underline" aria-label="View full summary">
+                  View Full Summary&gt;
+                </button>
+              </div>
+            )}
+
+            <h3 className="text-sm font-semibold text-text mb-2 shrink-0">Popular Messages</h3>
+            <div className="relative flex-1 min-h-0 flex flex-col rounded-xl border border-border overflow-hidden bg-surface-muted/20">
+              {newPostCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { setNewPostCount(0); navigate('/symbol'); }}
+                  className="absolute top-0 left-1/2 -translate-x-1/2 z-10 -translate-y-1 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-white shadow-lg hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#4285F4' }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                  {newPostCount} New Post{newPostCount === 1 ? '' : 's'}
+                </button>
+              )}
+              <div className="flex-1 overflow-y-auto space-y-3 p-4 min-h-0">
+              {messages.map((msg) => (
+                <div key={msg.id} className="flex gap-3 p-3 rounded-lg bg-background border border-border">
+                  <img src={msg.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-text">{msg.user}</span>
+                      <span className="text-xs text-text-muted">{msg.time}</span>
+                    </div>
+                    <p className="text-sm text-text mt-0.5 leading-snug">{msg.body}</p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        {msg.comments ?? 0}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        {msg.reposts ?? 0}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        {msg.likes ?? 0}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              </div>
+            </div>
+          </div>
           </div>
         </main>
-
-        {/* Column 3: Trending Symbols */}
-        <aside className="hidden xl:flex w-[320px] shrink-0 flex-col border-l border-border p-4 gap-4">
-          <Link to="/markets" className="text-sm font-bold text-text hover:text-primary flex items-center gap-1">
-            Trending Symbols
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          </Link>
-          <div className="space-y-4">
-            {TRENDING_SYMBOLS.map((s) => {
-              const item = mergeQuote(s)
-              return (
-              <div key={item.ticker} className="rounded-xl border border-border bg-white dark:bg-surface overflow-hidden relative">
-                {item.hasEarnings && (
-                  <div className="absolute inset-0 bg-primary/20 z-10 flex items-center justify-center">
-                    <div className="bg-primary text-white px-4 py-2 rounded-lg text-center">
-                    <div className="text-xs font-bold">{item.earningsLabel}</div>
-                        <div className="text-lg font-bold">{item.earningsCount.toLocaleString()}</div>
-                      <button type="button" className="mt-2 px-3 py-1 rounded bg-white text-primary text-xs font-semibold">Join Call</button>
-                    </div>
-                  </div>
-                )}
-                <div className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    {getTickerLogo(item.ticker) ? (
-                      <img src={getTickerLogo(item.ticker)} alt="" className="w-10 h-10 rounded object-cover shrink-0" />
-                    ) : (
-                      <span className="w-10 h-10 rounded bg-surface flex items-center justify-center text-sm font-bold shrink-0">{item.ticker[0]}</span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-bold text-text">{item.ticker}</div>
-                      <div className="text-xs text-text-muted truncate">{item.name}</div>
-                    </div>
-                    <span className="text-xs text-text-muted flex items-center gap-0.5">
-                      <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11v7a2 2 0 002 2h.14a2 2 0 001.72-.91l2.42-4.35 2.42 4.35a2 2 0 001.72.91h1.72a2 2 0 002-2v-7a6.981 6.981 0 00-2.05-4.95z" clipRule="evenodd" /></svg>
-                      {item.watchers}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-text">${typeof item.price === 'number' ? item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '--'}</span>
-                    <MiniSparkline values={item.spark} isUp={item.change >= 0} />
-                  </div>
-                  <div className={clsx('text-xs font-semibold', item.change >= 0 ? 'text-success' : 'text-danger')}>
-                    {item.change >= 0 ? '↑' : '↓'} ${Math.abs(item.change ?? 0).toFixed(2)} ({(item.pct ?? 0) >= 0 ? '+' : ''}{(item.pct ?? 0).toFixed(2)}%) Today
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className={clsx('text-xs font-bold px-2 py-0.5 rounded', item.sentiment >= 75 ? 'bg-success/20 text-success' : item.sentiment >= 55 ? 'bg-success/10 text-success' : item.sentiment >= 45 ? 'bg-surface-muted text-text-muted' : 'bg-danger/10 text-danger')}>
-                      {item.sentimentLabel.toUpperCase()} ({item.sentiment})
-                    </span>
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/10 text-success">{item.bullTag}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-danger/10 text-danger">{item.bearTag}</span>
-                  </div>
-                </div>
-              </div>
-            )
-            })}
-          </div>
-        </aside>
       </div>
     </div>
   )
