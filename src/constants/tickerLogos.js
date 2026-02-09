@@ -1,6 +1,7 @@
 // Maps ticker symbols to logo paths in public/images/logos/
 const LOGO_MAP = {
   AAPL: '/images/logos/apple.png',
+  AMD: '/images/logos/amd.png',
   AMZN: '/images/logos/amzn.png',
   DIS: '/images/logos/dis.png',
   GOOGL: '/images/logos/googl.png',

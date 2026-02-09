@@ -9,11 +9,11 @@ function clsx(...values) {
 }
 
 const TRENDING_NOW = [
-  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 3.8, comments: '12.8K', sentiment: 75, rank: 1, whyBlurb: 'Cybertruck ramp and FSD rollout are fueling discussion as investors weigh AI and robotaxi timelines against margin pressure and competition in China and Europe.' },
-  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 5.2, comments: '15.2K', sentiment: 82, rank: 2, whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume, with analysts debating whether guidance can support current valuations into next year.' },
-  { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -1.2, comments: '8.9K', sentiment: 45, rank: 3, whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability and whether wearables and software can offset hardware cyclicality.' },
-  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 4.1, comments: '9.2K', sentiment: 78, rank: 4, whyBlurb: 'MI300 adoption and data center share gains are in the spotlight with the stock riding momentum from AI build-out and better-than-feared PC and gaming trends.' },
-  { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 2.3, comments: '6.1K', sentiment: 68, rank: 5, whyBlurb: 'AWS reacceleration and advertising growth have reignited interest as margins expand and the market reprices the stock on durable cloud and retail strength.' },
+  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 12.4, comments: '12.8K', sentiment: 75, rank: 1, whyBlurb: 'Cybertruck ramp and FSD rollout are fueling discussion as investors weigh AI and robotaxi timelines against margin pressure and competition in China and Europe.' },
+  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 18.6, comments: '15.2K', sentiment: 82, rank: 2, whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume, with analysts debating whether guidance can support current valuations into next year.' },
+  { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -8.2, comments: '8.9K', sentiment: 45, rank: 3, whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability and whether wearables and software can offset hardware cyclicality.' },
+  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 14.3, comments: '9.2K', sentiment: 78, rank: 4, whyBlurb: 'MI300 adoption and data center share gains are in the spotlight with the stock riding momentum from AI build-out and better-than-feared PC and gaming trends.' },
+  { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 9.7, comments: '6.1K', sentiment: 68, rank: 5, whyBlurb: 'AWS reacceleration and advertising growth have reignited interest as margins expand and the market reprices the stock on durable cloud and retail strength.' },
 ]
 
 /** Popular topic pills per symbol: { emoji, label } */
@@ -137,7 +137,7 @@ function MiniSparkline({ values = [], isUp }) {
   )
 }
 
-export default function Homepage() {
+export default function Homepage2() {
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
@@ -292,79 +292,63 @@ export default function Homepage() {
             ))}
           </div>
 
-          {/* One section: fixed height so right side never expands; messages scroll inside */}
-          <div className="flex h-[500px] min-h-[440px] shrink-0 gap-0 items-stretch rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
-          {/* Left: Trending Now — top 5 list */}
-          <aside className="w-[280px] shrink-0 pr-3 flex flex-col min-h-0">
-            <h2 className="text-base font-bold text-text flex items-center gap-2 mb-3 shrink-0 pt-1 pl-1">
-              <span className="text-orange-500" aria-hidden>🔥</span>
-              Trending Now
-            </h2>
-            <ul className="flex-1 min-h-0 space-y-0 border-t border-border flex flex-col">
+          {/* Horizontal Trending Now tabs — click to select; content below updates */}
+          <div className="flex flex-col gap-0 shrink-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
+            <div className="flex border-b border-border bg-surface-muted/30">
+              <span className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-text border-r border-border shrink-0">
+                <span className="text-orange-500" aria-hidden>🔥</span>
+                Trending Now
+              </span>
               {TRENDING_NOW.map((s) => {
                 const item = mergeQuote(s)
                 const isSelected = selectedTicker === item.ticker
                 const isLive = item.ticker === 'AAPL'
                 const pctNum = typeof item.pct === 'number' ? item.pct : 0
                 return (
-                  <li key={item.ticker} className="flex-1 min-h-0 flex">
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
-                      className={clsx(
-                        'w-full h-full min-h-0 text-left py-3 px-3 -mb-px border-b border-l-4 transition-colors rounded-r-lg flex flex-col justify-center',
-                        isLive && 'ring-1 ring-inset ring-purple-300',
-                        isSelected && !isLive && 'bg-amber-50 dark:bg-amber-950/30 border-l-amber-500 border-border',
-                        isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] border-l-[#7c3aed] border-border',
-                        !isSelected && isLive && 'border-l-[#c4b5fd] hover:bg-[rgba(221,214,254,0.15)] border-border',
-                        !isSelected && !isLive && 'border-l-transparent hover:bg-surface-muted/30 border-border'
+                  <button
+                    key={item.ticker}
+                    type="button"
+                    onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
+                    className={clsx(
+                      'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors border-r border-border last:border-r-0 shrink-0',
+                      isSelected && !isLive && 'bg-amber-50 dark:bg-amber-950/30 text-text border-b-2 border-b-amber-500 -mb-px',
+                      isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] text-text border-b-2 border-b-[#7c3aed] -mb-px',
+                      !isSelected && isLive && 'text-text-muted hover:bg-[rgba(221,214,254,0.15)]',
+                      !isSelected && !isLive && 'text-text-muted hover:bg-surface-muted/50'
+                    )}
+                  >
+                    <div className="w-7 h-7 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
+                      {getTickerLogo(item.ticker) ? (
+                        <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold text-text-muted">{item.ticker[0]}</span>
                       )}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden bg-surface-muted border border-border flex items-center justify-center">
-                          {getTickerLogo(item.ticker) ? (
-                            <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-lg font-bold text-text-muted">{item.ticker[0]}</span>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-base font-bold text-text">${item.ticker}</span>
-                            {isLive && (
-                              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white shrink-0" style={{ backgroundColor: '#7c3aed' }}>Live</span>
-                            )}
-                          </div>
-                          <div className="flex items-baseline gap-2 mt-0.5 text-xs">
-                            <span className="font-semibold text-text">${typeof item.price === 'number' ? item.price.toFixed(2) : '--'}</span>
-                            <span className={clsx('font-semibold', pctNum >= 0 ? 'text-success' : 'text-danger')}>
-                              {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
-                            </span>
-                          </div>
-                          <div className="text-xs text-text-muted truncate mt-0.5">{item.name}</div>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3.5 h-3.5 shrink-0 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                              {item.sentiment}% bullish
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  </li>
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span>${item.ticker}</span>
+                      <span className="text-text-muted font-normal text-xs">
+                        ${typeof item.price === 'number' ? item.price.toFixed(2) : '--'}
+                        <span className={clsx('ml-1', pctNum >= 0 ? 'text-success' : 'text-danger')}>
+                          {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
+                        </span>
+                      </span>
+                    </div>
+                    {isLive && (
+                      <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase text-white shrink-0" style={{ backgroundColor: '#7c3aed' }}>Live</span>
+                    )}
+                  </button>
                 )
               })}
-            </ul>
-          </aside>
+            </div>
 
-          {/* Right: fixed height, overflow hidden — outlined as selected card; messages scroll inside */}
+          {/* Content: Why it's trending + Popular Topics (full width, fixed height; messages scroll inside) */}
           <div
             className={clsx(
-              'flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden rounded-xl border-2 transition-[border-color,box-shadow] p-3',
+              'flex flex-col min-h-0 overflow-hidden rounded-b-2xl border-t-0 border-2 transition-[border-color,box-shadow] p-3 h-[460px]',
               'bg-background/50',
               selectedTicker === 'AAPL'
-                ? 'border-[#7c3aed] shadow-[0_0_0_1px_rgba(124,58,237,0.2)]'
-                : 'border-amber-500/70 shadow-[0_0_0_1px_rgba(245,158,11,0.15)]'
+                ? 'border-[#7c3aed] border-t-[#7c3aed] shadow-[0_0_0_1px_rgba(124,58,237,0.2)]'
+                : 'border-amber-500/70 border-t-amber-500/70 shadow-[0_0_0_1px_rgba(245,158,11,0.15)]'
             )}
           >
             {/* AAPL: Live earnings call card; others: Why it's trending */}
@@ -488,7 +472,7 @@ export default function Homepage() {
                 )
               })}
               </div>
-            </div>
+              </div>
               <div className="flex-[0.1] min-h-0 shrink-0" aria-hidden />
             </div>
           </div>
