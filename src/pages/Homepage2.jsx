@@ -95,24 +95,24 @@ const MARKET_CARDS = [
   { symbol: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'BEARISH', topTopic: 'Volatility', topTopicIcon: 'bolt' },
 ]
 
-function SentimentGauge({ value, label }) {
+function SentimentGauge({ value, label, compact }) {
   const isBullish = label === 'BULLISH'
   const isBearish = label === 'BEARISH'
   const strokeColor = isBullish ? 'var(--color-success)' : isBearish ? 'var(--color-danger)' : '#f59e0b'
-  const size = 40
+  const size = compact ? 28 : 40
   const r = (size - 4) / 2
   const circumference = 2 * Math.PI * r
   const strokeDashoffset = circumference - (value / 100) * circumference
   return (
     <div className="flex flex-col items-center">
       <div className="relative inline-flex items-center justify-center">
-        <svg width={size} height={size} className="rotate-[-90deg]">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth="3" />
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={strokeColor} strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
+        <svg width={size} height={size} className="rotate-[-90deg]" style={{ minWidth: size, minHeight: size }}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth="2.5" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={strokeColor} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
         </svg>
-        <span className="absolute text-xs font-bold text-text">{value}</span>
+        <span className={clsx('absolute font-bold text-text', compact ? 'text-[9px]' : 'text-xs')}>{value}</span>
       </div>
-      <span className="text-[10px] font-bold mt-0.5 uppercase" style={{ color: strokeColor }}>{label}</span>
+      <span className={clsx('font-bold uppercase', compact ? 'text-[8px] mt-0' : 'text-[10px] mt-0.5')} style={{ color: strokeColor }}>{label}</span>
     </div>
   )
 }
@@ -259,26 +259,26 @@ export default function Homepage2() {
               <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             </span>
           </div>
-          {/* Market cards — full width row */}
-          <div className="w-full flex gap-3 overflow-x-auto pb-1 shrink-0">
+          {/* Market cards — full width row (tight layout) */}
+          <div className="w-full flex gap-2 overflow-x-auto pb-1 shrink-0">
             {MARKET_CARDS.map((card) => (
               <div
                 key={card.symbol}
-                className="flex-1 min-w-[140px] rounded-xl border border-border bg-white dark:bg-surface p-3 flex flex-col"
+                className="flex-1 min-w-[130px] rounded-lg border border-border bg-white dark:bg-surface px-2.5 py-2 flex flex-col"
               >
-                <div className="text-sm font-bold text-text">{card.symbol}</div>
-                <div className="flex items-center justify-between gap-2 mt-1">
-                  <div className="text-lg font-bold text-text min-w-0">
+                <div className="text-xs font-bold text-text">{card.symbol}</div>
+                <div className="flex items-center justify-between gap-1.5 mt-0.5">
+                  <div className="text-base font-bold text-text min-w-0">
                     {card.price >= 1000 ? card.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : card.price.toFixed(2)}
                   </div>
-                  <SentimentGauge value={card.sentiment} label={card.sentimentLabel} />
+                  <SentimentGauge value={card.sentiment} label={card.sentimentLabel} compact />
                 </div>
-                <div className={clsx('text-xs font-semibold', card.pct >= 0 ? 'text-success' : 'text-danger')}>
+                <div className={clsx('text-[11px] font-semibold', card.pct >= 0 ? 'text-success' : 'text-danger')}>
                   ({card.change >= 0 ? '+' : ''}{card.change.toFixed(2)}) {card.pct >= 0 ? '+' : ''}{card.pct.toFixed(2)}%
                 </div>
-                <div className="mt-2 pt-2 border-t border-border">
-                  <div className="text-[9px] font-semibold uppercase tracking-wide text-text-muted mb-1">Top Topic</div>
-                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-surface-muted text-xs font-medium text-text">
+                <div className="mt-1.5 pt-1.5 border-t border-border">
+                  <div className="text-[8px] font-semibold uppercase tracking-wide text-text-muted mb-0.5">Top Topic</div>
+                  <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface-muted text-[11px] font-medium text-text">
                     {card.topTopicIcon === 'medal' && <span aria-hidden>🏅</span>}
                     {card.topTopicIcon === 'chair' && <span aria-hidden>🪑</span>}
                     {card.topTopicIcon === 'chart' && <span aria-hidden>📈</span>}
@@ -357,6 +357,13 @@ export default function Homepage2() {
                 className="w-full mb-3 flex items-center justify-between gap-4 rounded-2xl p-4 min-h-[72px] shrink-0"
                 style={{ backgroundColor: 'rgba(221, 214, 254, 0.5)' }}
               >
+                <div className="w-12 h-12 shrink-0 rounded-full bg-white/90 flex items-center justify-center overflow-hidden shadow-sm">
+                  {getTickerLogo('AAPL') ? (
+                    <img src={getTickerLogo('AAPL')} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-base font-bold text-text">A</span>
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-lg font-bold text-text">Q1 &apos;26 Earnings Call</h3>
