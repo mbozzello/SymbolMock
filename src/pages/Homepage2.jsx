@@ -29,7 +29,7 @@ function formatNum(n) {
 const WATCHER_CHUNKS = [2, 5, 10, 3, 5, 8]
 
 const TRENDING_NOW = [
-  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 12.4, comments: '12.8K', sentiment: 75, rank: 1, followers: '1,050,370', whyBlurb: 'Cybertruck ramp and FSD rollout are fueling discussion as investors weigh AI and robotaxi timelines against margin pressure and competition in China and Europe.' },
+  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 12.4, comments: '12.8K', sentiment: 75, rank: 1, followers: '1,050,370', whyBlurb: 'Cybertruck production ramp and full self-driving rollout are driving the conversation as investors weigh AI and robotaxi timelines against margin pressure, competition in China and Europe, and the path to volume growth—with delivery targets, battery cost curves, and regulatory updates also in focus.' },
   { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 18.6, comments: '15.2K', sentiment: 82, rank: 2, followers: '1,120,500', whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume, with analysts debating whether guidance can support current valuations into next year.' },
   { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -8.2, comments: '8.9K', sentiment: 45, rank: 3, followers: '892,500', whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability and whether wearables and software can offset hardware cyclicality.' },
   { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 14.3, comments: '9.2K', sentiment: 78, rank: 4, followers: '445,200', whyBlurb: 'MI300 adoption and data center share gains are in the spotlight with the stock riding momentum from AI build-out and better-than-feared PC and gaming trends.' },
@@ -341,13 +341,14 @@ export default function Homepage2() {
             ))}
           </div>
 
-          {/* Horizontal Trending Now tabs — click to select; content below updates */}
-          <div className="flex flex-col gap-0 shrink-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
+          {/* Trending: header above, then symbol tabs + content for more horizontal space */}
+          <div className="shrink-0">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text mb-1.5">
+              <span className="text-orange-500" aria-hidden>🔥</span>
+              Trending
+            </h2>
+          <div className="flex flex-col gap-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
             <div className="flex border-b border-border bg-surface-muted/30">
-              <span className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-text border-r border-border shrink-0">
-                <span className="text-orange-500" aria-hidden>🔥</span>
-                Trending
-              </span>
               {TRENDING_NOW.map((s) => {
                 const item = mergeQuote(s)
                 const isSelected = selectedTicker === item.ticker
@@ -366,12 +367,25 @@ export default function Homepage2() {
                       !isSelected && !isLive && 'text-text-muted hover:bg-surface-muted/50'
                     )}
                   >
-                    <div className="w-7 h-7 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
-                      {getTickerLogo(item.ticker) ? (
-                        <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xs font-bold text-text-muted">{item.ticker[0]}</span>
-                      )}
+                    <div className="flex flex-col items-center gap-0 shrink-0 -mt-0.5">
+                      <div className="relative">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center">
+                          {getTickerLogo(item.ticker) ? (
+                            <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-sm font-bold text-text-muted">{item.ticker[0]}</span>
+                          )}
+                        </div>
+                        {isLive && (
+                          <span
+                            className="absolute left-1/2 -translate-x-1/2 -top-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase text-white whitespace-nowrap animate-live-pulse"
+                            style={{ backgroundColor: '#7c3aed' }}
+                          >
+                            Live
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-semibold text-text-muted leading-tight">#{item.rank ?? 1}</span>
                     </div>
                     <div className="flex flex-col items-start">
                       <span>${item.ticker}</span>
@@ -385,9 +399,6 @@ export default function Homepage2() {
                         {item.sentiment ?? 50}% bullish
                       </span>
                     </div>
-                    {isLive && (
-                      <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase text-white shrink-0" style={{ backgroundColor: '#7c3aed' }}>Live</span>
-                    )}
                   </button>
                 )
               })}
@@ -399,14 +410,14 @@ export default function Homepage2() {
                 )}
                 aria-label="View full list"
               >
-                <div className="w-7 h-7 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
-                  <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                 </div>
-                <span>View List</span>
+                <span>Full List</span>
               </Link>
             </div>
 
-          {/* Content: Why it's trending + Popular Topics (full width, fixed height; messages scroll inside) */}
+            {/* Content: Why it's trending + Popular Topics (full width, fixed height; messages scroll inside) */}
           <div
             className={clsx(
               'flex flex-col min-h-0 overflow-hidden rounded-b-2xl border-t-0 border-2 transition-[border-color,box-shadow] p-3 h-[460px]',
@@ -416,66 +427,64 @@ export default function Homepage2() {
                 : 'border-amber-500/70 border-t-amber-500/70 shadow-[0_0_0_1px_rgba(245,158,11,0.15)]'
             )}
           >
-            {/* Single line: follower count (tick-up), follow button, symbol sentiment */}
-            <div className="flex items-center gap-3 flex-wrap shrink-0 mb-2 text-sm">
-              <span className="relative inline-flex items-center gap-1.5 text-text-muted">
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                <span className="tabular-nums">{formatNum(watchersCount)}</span>
-                {floatingWatchers > 0 && (
-                  <span className="absolute left-full ml-1 bottom-0 text-green-600 dark:text-green-400 text-xs font-bold animate-watchers-float-wiggle whitespace-nowrap">+{floatingWatchers}</span>
-                )}
-                <span>Watchers</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => toggleWatch(selectedTicker, selectedItem.name)}
-                className="shrink-0 flex items-center gap-1.5 rounded-lg border-2 border-border bg-surface-muted/50 px-3 py-1.5 text-sm font-bold text-text transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
-                aria-label="Add to Watchlist"
-                title="Add to Watchlist"
-              >
-                <span className="leading-none">+</span>
-                <span>Add to Watchlist</span>
-              </button>
-              {(() => {
-                const news = TRENDING_NOW_NEWS[selectedTicker] ?? TRENDING_NOW_NEWS.TSLA
-                const to = news.slug ? `/article/${news.slug}` : '/news'
-                return (
-                  <Link
-                    to={to}
-                    className="flex items-center gap-2 min-w-0 flex-1 rounded-lg border border-border bg-surface/80 hover:border-border-strong hover:bg-surface transition-colors overflow-hidden"
-                    aria-label={news.headline}
-                  >
-                    <div className="w-8 h-8 shrink-0 rounded-l-md overflow-hidden bg-surface-muted">
-                      <img src={news.image} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <span className="text-xs font-medium text-text truncate pr-2 py-1.5">
-                      <span className="text-text-muted">Top News: </span>
-                      {news.headline}
-                    </span>
-                  </Link>
-                )
-              })()}
-            </div>
-
-            {/* AAPL: Live earnings call card; others: Why it's trending */}
-            {selectedTicker === 'AAPL' ? (
-              <div
-                className="w-full mb-3 flex items-center justify-between gap-4 rounded-2xl p-4 min-h-[72px] shrink-0"
-                style={{ backgroundColor: 'rgba(221, 214, 254, 0.5)' }}
-              >
-                <div className="w-12 h-12 shrink-0 rounded-full bg-white/90 flex items-center justify-center overflow-hidden shadow-sm">
-                  {getTickerLogo('AAPL') ? (
-                    <img src={getTickerLogo('AAPL')} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-base font-bold text-text">A</span>
+            {/* Why it's trending card: watchers row + main content in one cohesive box */}
+            <div
+              className="w-full mb-3 rounded-2xl overflow-hidden shrink-0"
+              style={selectedTicker === 'AAPL'
+                ? { backgroundColor: 'rgba(221, 214, 254, 0.5)' }
+                : { background: 'linear-gradient(to right, rgba(254, 215, 170, 0.6), rgba(250, 204, 211, 0.5), rgba(221, 214, 254, 0.5))' }
+              }
+            >
+              {/* Watchers, Add to Watchlist, Top News — part of the same card */}
+              <div className="flex items-center gap-3 flex-wrap px-4 pt-2.5 pb-1 border-b border-black/10 dark:border-white/10 text-sm">
+                <span className="relative inline-flex items-center gap-1.5 text-text-muted">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                  <span className="tabular-nums">{formatNum(watchersCount)}</span>
+                  {floatingWatchers > 0 && (
+                    <span className="absolute left-full ml-1 bottom-0 text-green-600 dark:text-green-400 text-xs font-bold animate-watchers-float-wiggle whitespace-nowrap">+{floatingWatchers}</span>
                   )}
-                </div>
+                  <span>Watchers</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleWatch(selectedTicker, selectedItem.name)}
+                  className="shrink-0 flex items-center gap-1.5 rounded-lg border-2 border-border bg-white/60 dark:bg-surface/60 px-3 py-1.5 text-sm font-bold text-text transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
+                  aria-label="Add to Watchlist"
+                  title="Add to Watchlist"
+                >
+                  <span className="leading-none">+</span>
+                  <span>Add to Watchlist</span>
+                </button>
+                {(() => {
+                  const news = TRENDING_NOW_NEWS[selectedTicker] ?? TRENDING_NOW_NEWS.TSLA
+                  const to = news.slug ? `/article/${news.slug}` : '/news'
+                  return (
+                    <Link
+                      to={to}
+                      className="flex items-center gap-2 min-w-0 flex-1 rounded-lg border border-border bg-white/60 dark:bg-surface/60 hover:border-border-strong hover:bg-white/80 dark:hover:bg-surface/80 transition-colors overflow-hidden"
+                      aria-label={news.headline}
+                    >
+                      <div className="w-8 h-8 shrink-0 rounded-l-md overflow-hidden bg-surface-muted">
+                        <img src={news.image} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-xs font-medium text-text truncate pr-2 py-1.5">
+                        <span className="text-text-muted">Top News: </span>
+                        {news.headline}
+                      </span>
+                    </Link>
+                  )
+                })()}
+              </div>
+
+              {/* AAPL: Live earnings call; others: Why it's trending */}
+              {selectedTicker === 'AAPL' ? (
+              <div className="w-full flex items-center justify-between gap-3 px-4 pt-1.5 pb-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-lg font-bold text-text">Q1 &apos;26 Earnings Call</h3>
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white" style={{ backgroundColor: '#7c3aed' }}>Live</span>
+                    <h3 className="text-base font-bold text-text">Q1 &apos;26 Earnings Call</h3>
+                    <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" style={{ backgroundColor: '#7c3aed' }}>Live</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5 text-sm text-text-muted">
+                  <div className="flex items-center gap-2 mt-1 text-sm text-text-muted">
                     <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                     <span>2.1K Listeners</span>
                     <span className="text-border">|</span>
@@ -485,7 +494,7 @@ export default function Homepage2() {
                 <button
                   type="button"
                   onClick={() => navigate('/symbol')}
-                  className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+                  className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#7c3aed' }}
                   aria-label="Join live earnings call"
                 >
@@ -494,44 +503,49 @@ export default function Homepage2() {
                 </button>
               </div>
             ) : (
-              <div
-                className="w-full mb-3 flex items-center gap-4 rounded-2xl p-4 min-h-[72px] shrink-0"
-                style={{
-                  background: 'linear-gradient(to right, rgba(254, 215, 170, 0.6), rgba(250, 204, 211, 0.5), rgba(221, 214, 254, 0.5))',
-                }}
-              >
-                <div className="w-12 h-12 shrink-0 rounded-full bg-white/90 flex items-center justify-center overflow-hidden shadow-sm">
-                  {getTickerLogo(selectedTicker) ? (
-                    <img src={getTickerLogo(selectedTicker)} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-base font-bold text-text">{selectedTicker[0]}</span>
-                  )}
-                </div>
+              <div className="w-full flex items-center justify-between gap-3 px-4 pt-1.5 pb-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-text">Trending #{selectedItem.rank ?? 1}</div>
-                  <p className="text-sm text-text mt-0.5 truncate pr-1" title={`${selectedItem.name} (${selectedItem.ticker}) is trending as ${selectedItem.whyBlurb?.toLowerCase() ?? 'conversation heats up.'}`}>
-                    {selectedItem.name} ({selectedItem.ticker}) is trending as {selectedItem.whyBlurb?.toLowerCase() ?? 'conversation heats up.'}
+                  <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
+                  <p className="text-sm text-text-muted mt-1 line-clamp-2 pr-2" title={selectedItem.whyBlurb}>
+                    {selectedItem.whyBlurb}
                   </p>
                 </div>
                 <button type="button" onClick={() => navigate('/symbol')} className="shrink-0 text-sm font-semibold text-primary hover:underline whitespace-nowrap" aria-label="View full summary">
-                  View Full Summary&gt;
+                  View Full Summary →
                 </button>
               </div>
             )}
+            </div>
 
             <div className="flex flex-1 min-h-0 flex-col">
               <div className="mb-2 shrink-0 flex items-center gap-2 min-w-0">
-                <h3 className="text-sm font-semibold text-text shrink-0">Popular Topics:</h3>
+                <div className="shrink-0">
+                  <h3 className="text-sm font-semibold text-text">Popular Community Topics</h3>
+                  <p className="text-xs text-text-muted">What the Community&apos;s Saying</p>
+                </div>
                 <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
-                  {popularTopics.map((t, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white dark:bg-surface px-3 py-1 text-xs font-medium text-text shrink-0"
-                    >
-                      <span aria-hidden>{t.emoji}</span>
-                      {t.label}
-                    </span>
-                  ))}
+                  {popularTopics.map((t, i) => {
+                    const slug = t.label.toLowerCase().replace(/\s+/g, '-')
+                    const pillClass = 'inline-flex items-center gap-1.5 rounded-full border border-border bg-white dark:bg-surface px-3 py-1 text-xs font-medium text-text shrink-0'
+                    if (selectedTicker === 'TSLA') {
+                      return (
+                        <Link
+                          key={i}
+                          to={`/symbol?topic=${slug}`}
+                          className={clsx(pillClass, 'hover:border-border-strong hover:bg-surface-muted transition-colors')}
+                        >
+                          <span aria-hidden>{t.emoji}</span>
+                          {t.label}
+                        </Link>
+                      )
+                    }
+                    return (
+                      <span key={i} className={pillClass}>
+                        <span aria-hidden>{t.emoji}</span>
+                        {t.label}
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
               <div className="relative flex-[0.9] min-h-0 flex flex-col rounded-xl border border-border overflow-hidden bg-surface-muted/20">
@@ -588,6 +602,7 @@ export default function Homepage2() {
               </div>
               <div className="flex-[0.1] min-h-0 shrink-0" aria-hidden />
             </div>
+          </div>
           </div>
           </div>
         </main>

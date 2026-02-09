@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
@@ -16,7 +16,14 @@ function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-const FEED_FILTERS = ['All', 'Political Tailwind', 'Permit Surge', 'Short Sting', 'Dip The Gift']
+/** TSLA topic filters (match /home Popular Topics); slug used for ?topic= on URL */
+const SYMBOL_TOPICS = [
+  { label: 'All', slug: 'all' },
+  { label: 'Merging Ambitions', slug: 'merging-ambitions', emoji: '🚀' },
+  { label: 'Robotaxi Dreams', slug: 'robotaxi-dreams', emoji: '🤖' },
+  { label: 'Semi Truck Boost', slug: 'semi-truck-boost', emoji: '🚚' },
+  { label: 'Volatile Range', slug: 'volatile-range', emoji: '📊' },
+]
 
 const FIRST_FEED_MESSAGE = {
   id: 'home-feed-1',
@@ -102,7 +109,30 @@ export default function Home() {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
   })
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [searchParams] = useSearchParams()
+  const topicSlug = searchParams.get('topic')
+  const [activeFilter, setActiveFilter] = useState(() => {
+    const t = SYMBOL_TOPICS.find((x) => x.slug === topicSlug)
+    return t ? t.label : 'All'
+  })
+
+  useEffect(() => {
+    const slug = searchParams.get('topic')
+    const t = SYMBOL_TOPICS.find((x) => x.slug === slug)
+    if (t) setActiveFilter(t.label)
+  }, [searchParams])
+
+  const topicsSectionRef = useRef(null)
+  useEffect(() => {
+    if (!topicSlug) return
+    const el = topicsSectionRef.current
+    if (!el) return
+    const id = requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [topicSlug])
+
   const [userPosts, setUserPosts] = useState([])
   const postIdRef = useRef(0)
   const [howardDebate, setHowardDebate] = useState({
@@ -378,20 +408,21 @@ export default function Home() {
               </article>
             ))}
 
-            {/* Filter pills */}
-            <div className="flex flex-wrap gap-2 py-3">
-              {FEED_FILTERS.map((label) => (
+            {/* Filter pills: All + TSLA topics (match /home Popular Topics) */}
+            <div ref={topicsSectionRef} className="flex flex-wrap gap-2 py-3">
+              {SYMBOL_TOPICS.map((t) => (
                 <button
-                  key={label}
-                  onClick={() => setActiveFilter(label)}
+                  key={t.slug}
+                  onClick={() => setActiveFilter(t.label)}
                   className={clsx(
-                    'px-4 py-2 rounded-full text-sm font-medium transition-colors',
-                    activeFilter === label
+                    'px-4 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5',
+                    activeFilter === t.label
                       ? 'bg-black text-white'
                       : 'bg-surface-muted text-text hover:bg-border border border-border'
                   )}
                 >
-                  {label}
+                  {t.emoji && <span aria-hidden>{t.emoji}</span>}
+                  {t.label}
                 </button>
               ))}
             </div>
