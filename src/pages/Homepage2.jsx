@@ -161,6 +161,20 @@ const TOP_WATCHLIST_REMOVALS = [
   { ticker: 'AAPL', pctChange: 1.8, removals: 87 },
 ]
 
+/** Prediction Leaderboard: top 10, one card per person */
+const PREDICTION_LEADERBOARD = [
+  { rank: 1, handle: 'howardlindzon', avatar: '/avatars/howard-lindzon.png', value: 452 },
+  { rank: 2, handle: 'amitDBA', avatar: '/avatars/top-voice-2.png', value: 318 },
+  { rank: 3, handle: 'Trading4Living', avatar: '/avatars/top-voice-3.png', value: 287 },
+  { rank: 4, handle: 'gpaisa', avatar: '/avatars/top-voice-1.png', value: 150 },
+  { rank: 5, handle: 'ivanhoff', avatar: '/avatars/top-voice-2.png', value: 120 },
+  { rank: 6, handle: 'CryptoOracle', avatar: '/avatars/user-avatar.png', value: 98 },
+  { rank: 7, handle: 'FedWatcher', avatar: '/avatars/top-voice-2.png', value: 87 },
+  { rank: 8, handle: 'ProfessorShiba', avatar: '/avatars/top-voice-3.png', value: 76 },
+  { rank: 9, handle: 'ElectionEdge', avatar: '/avatars/top-voice-1.png', value: 65 },
+  { rank: 10, handle: 'MacroMaven', avatar: '/avatars/top-voice-2.png', value: 54 },
+]
+
 const TOP_NEWS_BY_CATEGORY = {
   Technology: [
     { image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=280&h=160&fit=crop', ticker: 'AAPL', pctChange: 1.8, title: 'Apple Unveils New AI Features at WWDC', source: 'Alex Rivera', time: '2h ago', video: true },
@@ -401,7 +415,7 @@ export default function Homepage2() {
                   ({card.change >= 0 ? '+' : ''}{card.change.toFixed(2)}) {card.pct >= 0 ? '+' : ''}{card.pct.toFixed(2)}%
                 </div>
                 <div className="mt-1.5 pt-1.5 border-t border-border">
-                  <div className="text-[8px] font-semibold uppercase tracking-wide text-text-muted mb-0.5">Top Topic</div>
+                  <div className="text-[8px] font-semibold uppercase tracking-wide text-text-muted mb-0.5">Community Discussing</div>
                   <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface-muted text-[11px] font-medium text-text">
                     {card.topTopicIcon === 'medal' && <span aria-hidden>🏅</span>}
                     {card.topTopicIcon === 'chair' && <span aria-hidden>🪑</span>}
@@ -736,9 +750,29 @@ export default function Homepage2() {
             </div>
           </section>
 
+          {/* Prediction Leaderboard: top 10, one card per person */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-3">Prediction Leaderboard &gt;</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {PREDICTION_LEADERBOARD.map((p) => (
+                <button
+                  key={`leaderboard-${p.rank}-${p.handle}`}
+                  type="button"
+                  onClick={() => navigate('/symbol')}
+                  className="flex shrink-0 w-[140px] flex-col items-center rounded-xl border border-border bg-white dark:bg-surface p-4 hover:border-border-strong hover:shadow-md transition-all"
+                >
+                  <img src={p.avatar} alt="" className="w-12 h-12 rounded-full object-cover border border-border mb-3" />
+                  <span className="text-sm font-bold text-text tabular-nums">#{p.rank}</span>
+                  <span className="mt-1 text-sm font-medium text-text truncate w-full text-center" title={`@${p.handle}`}>@{p.handle}</span>
+                  <span className="mt-2 text-sm font-bold text-success tabular-nums">+{p.value}%</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* Top Watchlist Adds: tight pill carousel */}
           <section className="shrink-0">
-            <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Adds</h2>
+            <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Adds &gt;</h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
               {TOP_WATCHLIST_ADDITIONS.map((item) => (
                 <button
@@ -766,7 +800,7 @@ export default function Homepage2() {
 
           {/* Top Watchlist Removals: tight pill carousel */}
           <section className="shrink-0">
-            <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Removals</h2>
+            <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Removals &gt;</h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
               {TOP_WATCHLIST_REMOVALS.map((item) => (
                 <button
