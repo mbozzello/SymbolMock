@@ -161,6 +161,16 @@ const TOP_WATCHLIST_REMOVALS = [
   { ticker: 'AAPL', pctChange: 1.8, removals: 87 },
 ]
 
+/** Top Discussions: top polls (choices only, no winning %) */
+const TOP_DISCUSSIONS_POLLS = [
+  { id: 6, question: 'Which mega-cap has the best risk/reward here?', choices: ['$AAPL', '$MSFT', '$NVDA', '$GOOGL'], votes: '8.2k', timeLabel: '2d left', published: 'Feb 09, 2026 · 8:00 AM', comments: 203 },
+  { id: 1, question: 'What do you expect from $HOOD earnings on Tuesday?', choices: ['Beat EPS and revenue', 'Beat EPS, miss revenue', 'Miss EPS, beat revenue', 'Miss EPS and revenue'], votes: '5.7k', timeLabel: '21h left', published: 'Feb 09, 2026 · 10:23 AM', comments: 84 },
+  { id: 2, question: 'What will be the S&P 500\'s next 5% move?', choices: ['Up 5%', 'Down 5%'], votes: '14k', timeLabel: 'Ended 13h ago', published: 'Feb 08, 2026 · 2:15 PM', comments: 312 },
+  { id: 3, question: 'Are you buying the dip on any of these beaten down growth stocks?', choices: ['$HOOD', '$APP', '$PLTR', '$RKLB'], votes: '1.7k', timeLabel: 'Ended 1d ago', published: 'Feb 08, 2026 · 9:00 AM', comments: 156 },
+  { id: 4, question: 'Where does crypto go from here?', choices: ['Recovery and trend continuation', 'Sideways consolidation', 'Lower lows ahead', 'Volatile chop before direction'], votes: '11.5k', timeLabel: 'Ended 1d ago', published: 'Feb 07, 2026 · 4:45 PM', comments: 428 },
+  { id: 5, question: 'What do you expect from $RDDT earnings on Thursday?', choices: ['Beat EPS and revenue', 'Beat EPS, miss revenue', 'Miss EPS, beat revenue', 'Miss EPS and revenue'], votes: '3k', timeLabel: 'Ended 4d ago', published: 'Feb 06, 2026 · 11:20 AM', comments: 67 },
+]
+
 /** Prediction Leaderboard: top 10, one card per person */
 const PREDICTION_LEADERBOARD = [
   { rank: 1, handle: 'howardlindzon', avatar: '/avatars/howard-lindzon.png', value: 452 },
@@ -829,6 +839,73 @@ export default function Homepage2() {
                   </span>
                   <span className="text-xs text-text-muted whitespace-nowrap">{item.removals} removals</span>
                 </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Top Discussions: poll carousel (choices + votes, no %) */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-3">Top Discussions &gt;</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {TOP_DISCUSSIONS_POLLS.map((poll) => (
+                <div
+                  key={poll.id}
+                  className="flex shrink-0 w-[280px] h-[340px] flex-col rounded-xl border border-border bg-white dark:bg-surface overflow-hidden"
+                >
+                  <div className="p-3 flex flex-col h-full min-h-0">
+                    <h3 className="text-sm font-bold text-text leading-snug shrink-0">
+                      {poll.question.split(/(\$[A-Za-z]+)/).map((part, i) => {
+                        const match = part.match(/^\$([A-Za-z]+)$/)
+                        if (match) {
+                          const ticker = match[1].toUpperCase()
+                          const logo = getTickerLogo(ticker)
+                          if (logo) {
+                            return (
+                              <span key={i} className="inline-flex items-center gap-1 align-middle">
+                                <img src={logo} alt="" className="w-4 h-4 rounded object-cover shrink-0 inline-block" />
+                                {part}
+                              </span>
+                            )
+                          }
+                        }
+                        return <span key={i}>{part}</span>
+                      })}
+                    </h3>
+                    <ul className={clsx('mt-2.5 flex flex-col gap-1.5 min-h-[120px] flex-1', poll.choices.length === 2 && 'justify-center')} aria-label="Poll choices">
+                      {poll.choices.map((choice, i) => {
+                        const tickerMatch = choice.match(/^\$([A-Za-z]+)$/)
+                        const logo = tickerMatch ? getTickerLogo(tickerMatch[1].toUpperCase()) : null
+                        return (
+                          <li key={i} className={poll.choices.length === 2 ? 'flex-1 flex' : ''}>
+                            <span className={clsx(
+                              'block w-full rounded-lg border border-border bg-surface-muted/50 font-medium text-text',
+                              poll.choices.length === 2 ? 'px-3 py-3.5 text-sm flex-1 flex items-center gap-2' : 'px-3 py-2 text-xs flex items-center gap-2'
+                            )}>
+                              {logo ? <img src={logo} alt="" className="w-5 h-5 rounded object-cover shrink-0" /> : null}
+                              {choice}
+                            </span>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                    <div className="mt-2.5 shrink-0">
+                      <p className="flex items-baseline gap-1">
+                        <span className="text-sm font-bold text-text">{poll.votes} votes</span>
+                        <span className="text-[11px] text-text-muted">· {poll.timeLabel}</span>
+                      </p>
+                      {poll.published && (
+                        <p className="mt-0.5 text-[10px] text-text-muted">Published: {poll.published}</p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => navigate('/symbol')}
+                        className="mt-2 text-xs font-semibold text-primary hover:underline text-left"
+                      >
+                        {poll.comments} comments &gt;
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </section>
