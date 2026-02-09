@@ -3,18 +3,47 @@ import { Link, useNavigate } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
+function parseWatchers(w) {
+  if (typeof w === 'number' && !isNaN(w)) return w
+  const s = String(w || '0').replace(/,/g, '')
+  const m = s.match(/^([\d.]+)\s*[KkMm]?$/i)
+  if (m) {
+    const n = parseFloat(m[1])
+    if (/[Kk]$/.test(s)) return Math.round(n * 1000)
+    if (/[Mm]$/.test(s)) return Math.round(n * 1000000)
+    return Math.round(n)
+  }
+  return parseInt(s, 10) || 0
+}
+
+function formatNum(n) {
+  return Number(n).toLocaleString()
+}
+
+const WATCHER_CHUNKS = [2, 5, 10, 3, 5, 8]
+
 const TRENDING_NOW = [
-  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 12.4, comments: '12.8K', sentiment: 75, rank: 1, whyBlurb: 'Cybertruck ramp and FSD rollout are fueling discussion as investors weigh AI and robotaxi timelines against margin pressure and competition in China and Europe.' },
-  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 18.6, comments: '15.2K', sentiment: 82, rank: 2, whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume, with analysts debating whether guidance can support current valuations into next year.' },
-  { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -8.2, comments: '8.9K', sentiment: 45, rank: 3, whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability and whether wearables and software can offset hardware cyclicality.' },
-  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 14.3, comments: '9.2K', sentiment: 78, rank: 4, whyBlurb: 'MI300 adoption and data center share gains are in the spotlight with the stock riding momentum from AI build-out and better-than-feared PC and gaming trends.' },
-  { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 9.7, comments: '6.1K', sentiment: 68, rank: 5, whyBlurb: 'AWS reacceleration and advertising growth have reignited interest as margins expand and the market reprices the stock on durable cloud and retail strength.' },
+  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 12.4, comments: '12.8K', sentiment: 75, rank: 1, followers: '1,050,370', whyBlurb: 'Cybertruck ramp and FSD rollout are fueling discussion as investors weigh AI and robotaxi timelines against margin pressure and competition in China and Europe.' },
+  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 18.6, comments: '15.2K', sentiment: 82, rank: 2, followers: '1,120,500', whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume, with analysts debating whether guidance can support current valuations into next year.' },
+  { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -8.2, comments: '8.9K', sentiment: 45, rank: 3, followers: '892,500', whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability and whether wearables and software can offset hardware cyclicality.' },
+  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 14.3, comments: '9.2K', sentiment: 78, rank: 4, followers: '445,200', whyBlurb: 'MI300 adoption and data center share gains are in the spotlight with the stock riding momentum from AI build-out and better-than-feared PC and gaming trends.' },
+  { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 9.7, comments: '6.1K', sentiment: 68, rank: 5, followers: '620,800', whyBlurb: 'AWS reacceleration and advertising growth have reignited interest as margins expand and the market reprices the stock on durable cloud and retail strength.' },
 ]
+
+/** Featured news preview per symbol (small image + headline for single-line preview) */
+const TRENDING_NOW_NEWS = {
+  TSLA: { image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=120&h=120&fit=crop', headline: 'Tesla Stock Rises Premarket: CEO Elon Musk Pulls The Curtain Back On Semi Truck', slug: 'tsla-breaking-out' },
+  NVDA: { image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=120&h=120&fit=crop', headline: 'NVIDIA Data Center Revenue Beats Estimates', slug: null },
+  AAPL: { image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=120&h=120&fit=crop', headline: 'Apple Unveils New AI Features at WWDC', slug: null },
+  AMD: { image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=120&h=120&fit=crop', headline: 'AMD MI300 Adoption and Data Center Share Gains', slug: null },
+  AMZN: { image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120&h=120&fit=crop', headline: 'AWS Reacceleration and Advertising Growth Reignite Interest', slug: null },
+}
 
 /** Popular topic pills per symbol: { emoji, label } */
 const POPULAR_TOPICS = {
@@ -100,6 +129,7 @@ function SentimentGauge({ value, label, compact }) {
   const isBearish = label === 'BEARISH'
   const strokeColor = isBullish ? 'var(--color-success)' : isBearish ? 'var(--color-danger)' : '#f59e0b'
   const size = compact ? 28 : 40
+  const stroke = compact ? 2.5 : 3
   const r = (size - 4) / 2
   const circumference = 2 * Math.PI * r
   const strokeDashoffset = circumference - (value / 100) * circumference
@@ -107,8 +137,8 @@ function SentimentGauge({ value, label, compact }) {
     <div className="flex flex-col items-center">
       <div className="relative inline-flex items-center justify-center">
         <svg width={size} height={size} className="rotate-[-90deg]" style={{ minWidth: size, minHeight: size }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth="2.5" />
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={strokeColor} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth={stroke} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={strokeColor} strokeWidth={stroke} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
         </svg>
         <span className={clsx('absolute font-bold text-text', compact ? 'text-[9px]' : 'text-xs')}>{value}</span>
       </div>
@@ -147,6 +177,26 @@ export default function Homepage2() {
   const [newPostCount, setNewPostCount] = useState(0)
   const incrementIndexRef = useRef(0)
   const { getQuote } = useLiveQuotesContext()
+  const { toggleWatch } = useWatchlist()
+
+  const selectedItem = TRENDING_NOW.find((s) => s.ticker === selectedTicker) ?? TRENDING_NOW[0]
+  const [watchersCount, setWatchersCount] = useState(() => parseWatchers(selectedItem.followers))
+  const [floatingWatchers, setFloatingWatchers] = useState(0)
+
+  useEffect(() => {
+    setWatchersCount(parseWatchers(selectedItem.followers))
+    setFloatingWatchers(0)
+  }, [selectedTicker, selectedItem.followers])
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      const chunk = WATCHER_CHUNKS[Math.floor(Math.random() * WATCHER_CHUNKS.length)]
+      setWatchersCount((c) => c + chunk)
+      setFloatingWatchers(chunk)
+      setTimeout(() => setFloatingWatchers(0), 900)
+    }, 1800)
+    return () => clearInterval(t)
+  }, [selectedTicker])
 
   const NEW_POST_INCREMENTS = [10, 8, 3, 9, 12]
   useEffect(() => {
@@ -164,7 +214,6 @@ export default function Homepage2() {
     return { ...staticItem, price: q.price, pct: q.changePercent ?? staticItem.pct }
   }
 
-  const selectedItem = TRENDING_NOW.find((s) => s.ticker === selectedTicker) ?? TRENDING_NOW[0]
   const messages = (STREAM_MESSAGES[selectedTicker] ?? STREAM_MESSAGES.NVDA).slice(0, 4)
   const popularTopics = POPULAR_TOPICS[selectedTicker] ?? POPULAR_TOPICS.TSLA
 
@@ -297,7 +346,7 @@ export default function Homepage2() {
             <div className="flex border-b border-border bg-surface-muted/30">
               <span className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-text border-r border-border shrink-0">
                 <span className="text-orange-500" aria-hidden>🔥</span>
-                Trending Now
+                Trending
               </span>
               {TRENDING_NOW.map((s) => {
                 const item = mergeQuote(s)
@@ -332,6 +381,9 @@ export default function Homepage2() {
                           {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
                         </span>
                       </span>
+                      <span className={clsx('text-[10px] font-medium mt-0.5', (item.sentiment ?? 50) >= 50 ? 'text-success' : 'text-danger')}>
+                        {item.sentiment ?? 50}% bullish
+                      </span>
                     </div>
                     {isLive && (
                       <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase text-white shrink-0" style={{ backgroundColor: '#7c3aed' }}>Live</span>
@@ -339,6 +391,19 @@ export default function Homepage2() {
                   </button>
                 )
               })}
+              <Link
+                to="/markets"
+                className={clsx(
+                  'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors border-r border-border shrink-0',
+                  'text-text-muted hover:bg-surface-muted/50 hover:text-primary'
+                )}
+                aria-label="View full list"
+              >
+                <div className="w-7 h-7 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
+                  <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                </div>
+                <span>View List</span>
+              </Link>
             </div>
 
           {/* Content: Why it's trending + Popular Topics (full width, fixed height; messages scroll inside) */}
@@ -351,6 +416,47 @@ export default function Homepage2() {
                 : 'border-amber-500/70 border-t-amber-500/70 shadow-[0_0_0_1px_rgba(245,158,11,0.15)]'
             )}
           >
+            {/* Single line: follower count (tick-up), follow button, symbol sentiment */}
+            <div className="flex items-center gap-3 flex-wrap shrink-0 mb-2 text-sm">
+              <span className="relative inline-flex items-center gap-1.5 text-text-muted">
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                <span className="tabular-nums">{formatNum(watchersCount)}</span>
+                {floatingWatchers > 0 && (
+                  <span className="absolute left-full ml-1 bottom-0 text-green-600 dark:text-green-400 text-xs font-bold animate-watchers-float-wiggle whitespace-nowrap">+{floatingWatchers}</span>
+                )}
+                <span>Watchers</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => toggleWatch(selectedTicker, selectedItem.name)}
+                className="shrink-0 flex items-center gap-1.5 rounded-lg border-2 border-border bg-surface-muted/50 px-3 py-1.5 text-sm font-bold text-text transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
+                aria-label="Add to Watchlist"
+                title="Add to Watchlist"
+              >
+                <span className="leading-none">+</span>
+                <span>Add to Watchlist</span>
+              </button>
+              {(() => {
+                const news = TRENDING_NOW_NEWS[selectedTicker] ?? TRENDING_NOW_NEWS.TSLA
+                const to = news.slug ? `/article/${news.slug}` : '/news'
+                return (
+                  <Link
+                    to={to}
+                    className="flex items-center gap-2 min-w-0 flex-1 rounded-lg border border-border bg-surface/80 hover:border-border-strong hover:bg-surface transition-colors overflow-hidden"
+                    aria-label={news.headline}
+                  >
+                    <div className="w-8 h-8 shrink-0 rounded-l-md overflow-hidden bg-surface-muted">
+                      <img src={news.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-xs font-medium text-text truncate pr-2 py-1.5">
+                      <span className="text-text-muted">Top News: </span>
+                      {news.headline}
+                    </span>
+                  </Link>
+                )
+              })()}
+            </div>
+
             {/* AAPL: Live earnings call card; others: Why it's trending */}
             {selectedTicker === 'AAPL' ? (
               <div

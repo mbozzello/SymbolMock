@@ -15,6 +15,7 @@ import Homepage2 from './pages/Homepage2.jsx'
 import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
 import News from './pages/News.jsx'
+import Article from './pages/Article.jsx'
 import Markets from './pages/Markets.jsx'
 import Scheduled from './pages/Scheduled.jsx'
 import Profile from './pages/Profile.jsx'
@@ -747,6 +748,7 @@ export default function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/news" element={<News />} />
+        <Route path="/article/:slug" element={<Article />} />
         <Route path="/markets" element={<Markets />} />
         <Route path="/scheduled" element={<Scheduled />} />
         <Route path="/profile/:username" element={<Profile />} />
