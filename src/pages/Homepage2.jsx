@@ -343,9 +343,9 @@ export default function Homepage2() {
 
           {/* Trending: header above, then symbol tabs + content for more horizontal space */}
           <div className="shrink-0">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-text mb-1.5">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-text mb-1.5">
               <span className="text-orange-500" aria-hidden>🔥</span>
-              Trending
+              Trending &gt;
             </h2>
           <div className="flex flex-col gap-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
             <div className="flex border-b border-border bg-surface-muted/30">
@@ -360,7 +360,7 @@ export default function Homepage2() {
                     type="button"
                     onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
                     className={clsx(
-                      'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors border-r border-border last:border-r-0 shrink-0',
+                      'flex items-center gap-3 px-3 py-3.5 text-base font-semibold transition-colors border-r border-border last:border-r-0 min-w-0 flex-1',
                       isSelected && !isLive && 'bg-amber-50 dark:bg-amber-950/30 text-text border-b-2 border-b-amber-500 -mb-px',
                       isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] text-text border-b-2 border-b-[#7c3aed] -mb-px',
                       !isSelected && isLive && 'text-text-muted hover:bg-[rgba(221,214,254,0.15)]',
@@ -369,11 +369,11 @@ export default function Homepage2() {
                   >
                     <div className="flex flex-col items-center gap-0 shrink-0 -mt-0.5">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center">
+                        <div className="w-[57.6px] h-[57.6px] rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
                           {getTickerLogo(item.ticker) ? (
                             <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-sm font-bold text-text-muted">{item.ticker[0]}</span>
+                            <span className="text-base font-bold text-text-muted">{item.ticker[0]}</span>
                           )}
                         </div>
                         {isLive && (
@@ -385,36 +385,23 @@ export default function Homepage2() {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] font-semibold text-text-muted leading-tight">#{item.rank ?? 1}</span>
+                      <span className="text-[11px] font-semibold text-text-muted leading-tight">#{item.rank ?? 1}</span>
                     </div>
                     <div className="flex flex-col items-start">
                       <span>${item.ticker}</span>
-                      <span className="text-text-muted font-normal text-xs">
+                      <span className="text-text-muted font-normal text-sm">
                         ${typeof item.price === 'number' ? item.price.toFixed(2) : '--'}
-                        <span className={clsx('ml-1', pctNum >= 0 ? 'text-success' : 'text-danger')}>
-                          {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
-                        </span>
                       </span>
-                      <span className={clsx('text-[10px] font-medium mt-0.5', (item.sentiment ?? 50) >= 50 ? 'text-success' : 'text-danger')}>
+                      <span className={clsx('text-sm font-semibold', pctNum >= 0 ? 'text-success' : 'text-danger')}>
+                        {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
+                      </span>
+                      <span className={clsx('text-[11px] font-medium mt-0.5', (item.sentiment ?? 50) >= 50 ? 'text-success' : 'text-danger')}>
                         {item.sentiment ?? 50}% bullish
                       </span>
                     </div>
                   </button>
                 )
               })}
-              <Link
-                to="/markets"
-                className={clsx(
-                  'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors border-r border-border shrink-0',
-                  'text-text-muted hover:bg-surface-muted/50 hover:text-primary'
-                )}
-                aria-label="View full list"
-              >
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                </div>
-                <span>Full List</span>
-              </Link>
             </div>
 
             {/* Content: Why it's trending + Popular Topics (full width, fixed height; messages scroll inside) */}
