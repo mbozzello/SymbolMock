@@ -125,12 +125,13 @@ export default function Home() {
   const topicsSectionRef = useRef(null)
   useEffect(() => {
     if (!topicSlug) return
-    const el = topicsSectionRef.current
-    if (!el) return
-    const id = requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-    return () => cancelAnimationFrame(id)
+    const timer = setTimeout(() => {
+      const el = topicsSectionRef.current
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
+      }
+    }, 150)
+    return () => clearTimeout(timer)
   }, [topicSlug])
 
   const [userPosts, setUserPosts] = useState([])
@@ -409,7 +410,7 @@ export default function Home() {
             ))}
 
             {/* Filter pills: All + TSLA topics (match /home Popular Topics) */}
-            <div ref={topicsSectionRef} className="flex flex-wrap gap-2 py-3">
+            <div ref={topicsSectionRef} className="flex flex-wrap gap-2 py-3" style={{ scrollMarginTop: '5rem' }}>
               {SYMBOL_TOPICS.map((t) => (
                 <button
                   key={t.slug}

@@ -124,12 +124,41 @@ const MARKET_CARDS = [
   { symbol: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'BEARISH', topTopic: 'Volatility', topTopicIcon: 'bolt' },
 ]
 
-const TOP_NEWS_CATEGORIES = [
-  { id: 'Technology', label: 'Technology', emoji: '🤖' },
-  { id: 'Healthcare', label: 'Healthcare', emoji: '🏥' },
-  { id: 'Predictive', label: 'Predictive', emoji: '🔮' },
-  { id: 'Finance', label: 'Finance', emoji: '💰' },
-  { id: 'Energy', label: 'Energy', emoji: '⚡' },
+/** Live earnings calls for carousel (symbols we have logos for; listeners in hundreds) */
+const LIVE_EARNINGS_CALLS = [
+  { ticker: 'AAPL', listeners: 240, started: '21m ago' },
+  { ticker: 'NVDA', listeners: 192, started: '14m ago' },
+  { ticker: 'TSLA', listeners: 156, started: '8m ago' },
+  { ticker: 'AMD', listeners: 320, started: '32m ago' },
+  { ticker: 'MSFT', listeners: 278, started: '5m ago' },
+  { ticker: 'GOOGL', listeners: 234, started: '18m ago' },
+  { ticker: 'AMZN', listeners: 412, started: '25m ago' },
+  { ticker: 'PLTR', listeners: 189, started: '41m ago' },
+]
+
+/** Top watchlist adds (symbols we have logos for) */
+const TOP_WATCHLIST_ADDITIONS = [
+  { ticker: 'NVDA', pctChange: 4.2, adds: 892 },
+  { ticker: 'TSLA', pctChange: 2.1, adds: 645 },
+  { ticker: 'PLTR', pctChange: 11.5, adds: 521 },
+  { ticker: 'AAPL', pctChange: 1.8, adds: 478 },
+  { ticker: 'AMD', pctChange: 3.2, adds: 412 },
+  { ticker: 'GME', pctChange: 8.4, adds: 389 },
+  { ticker: 'MSFT', pctChange: 0.9, adds: 256 },
+  { ticker: 'AMZN', pctChange: 1.2, adds: 234 },
+  { ticker: 'GOOGL', pctChange: -0.5, adds: 198 },
+]
+
+/** Top watchlist removals (symbols we have logos for) */
+const TOP_WATCHLIST_REMOVALS = [
+  { ticker: 'HOOD', pctChange: -5.2, removals: 312 },
+  { ticker: 'DIS', pctChange: -3.8, removals: 287 },
+  { ticker: 'TSLA', pctChange: 2.1, removals: 245 },
+  { ticker: 'NVDA', pctChange: 4.2, removals: 198 },
+  { ticker: 'GME', pctChange: 8.4, removals: 176 },
+  { ticker: 'PLTR', pctChange: 11.5, removals: 134 },
+  { ticker: 'AMD', pctChange: 3.2, removals: 98 },
+  { ticker: 'AAPL', pctChange: 1.8, removals: 87 },
 ]
 
 const TOP_NEWS_BY_CATEGORY = {
@@ -221,7 +250,6 @@ export default function Homepage2() {
   const navigate = useNavigate()
   const [selectedTicker, setSelectedTicker] = useState(TRENDING_NOW[0].ticker)
   const [newPostCount, setNewPostCount] = useState(0)
-  const [topNewsCategory, setTopNewsCategory] = useState('Technology')
   const incrementIndexRef = useRef(0)
   const { getQuote } = useLiveQuotesContext()
   const { toggleWatch } = useWatchlist()
@@ -640,31 +668,44 @@ export default function Homepage2() {
           </div>
           </div>
 
-          {/* Top News: category filters + horizontal carousel */}
+          {/* Earnings Call: horizontal carousel of live calls */}
           <section className="shrink-0">
-            <h2 className="text-lg font-bold text-text mb-3">Top News</h2>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {TOP_NEWS_CATEGORIES.map((cat) => (
+            <h2 className="text-lg font-bold text-text mb-3">Earnings Call &gt;</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {LIVE_EARNINGS_CALLS.map((call) => (
                 <button
-                  key={cat.id}
+                  key={call.ticker}
                   type="button"
-                  onClick={() => setTopNewsCategory(cat.id)}
-                  className={clsx(
-                    'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors',
-                    topNewsCategory === cat.id
-                      ? 'bg-success text-white'
-                      : 'bg-surface-muted text-text-muted hover:bg-surface hover:text-text border border-border'
-                  )}
+                  onClick={() => navigate('/symbol')}
+                  className="flex shrink-0 w-[140px] flex-col items-center rounded-xl border border-border bg-white dark:bg-surface p-4 hover:border-border-strong hover:shadow-md transition-all text-left"
                 >
-                  <span aria-hidden>{cat.emoji}</span>
-                  {cat.label}
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-muted border border-border flex items-center justify-center shrink-0">
+                    {getTickerLogo(call.ticker) ? (
+                      <img src={getTickerLogo(call.ticker)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-text-muted">{call.ticker[0]}</span>
+                    )}
+                  </div>
+                  <span className="mt-2 font-bold text-text text-sm uppercase tracking-tight">{call.ticker}</span>
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs">
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: '#7c3aed' }} aria-hidden />
+                    <span className="font-semibold text-[#7c3aed]">Live</span>
+                    <svg className="w-3.5 h-3.5 text-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    <span className="text-text font-medium">{call.listeners}</span>
+                  </div>
+                  <span className="mt-2 text-[11px] text-text-muted">{call.started}</span>
                 </button>
               ))}
             </div>
+          </section>
+
+          {/* Top News: horizontal carousel */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-3">Top News &gt;</h2>
             <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
-              {(TOP_NEWS_BY_CATEGORY[topNewsCategory] ?? TOP_NEWS_BY_CATEGORY.Technology).map((art, i) => (
+              {(TOP_NEWS_BY_CATEGORY.Technology ?? []).map((art, i) => (
                 <Link
-                  key={`${topNewsCategory}-${i}-${art.title}`}
+                  key={`news-${i}-${art.title}`}
                   to="/news"
                   className="flex shrink-0 w-[280px] flex-col rounded-xl border border-border bg-surface overflow-hidden hover:border-border-strong hover:shadow-md transition-all"
                 >
@@ -691,6 +732,62 @@ export default function Homepage2() {
                     <p className="text-xs text-text-muted mt-1">{art.source} • {art.time}</p>
                   </div>
                 </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Top Watchlist Adds: tight pill carousel */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Adds</h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {TOP_WATCHLIST_ADDITIONS.map((item) => (
+                <button
+                  key={`add-${item.ticker}`}
+                  type="button"
+                  onClick={() => navigate('/symbol')}
+                  className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-white dark:bg-surface px-3 py-1.5 hover:border-border-strong hover:shadow-sm transition-all"
+                >
+                  <div className="w-6 h-6 rounded-full overflow-hidden bg-surface-muted border border-border flex items-center justify-center shrink-0">
+                    {getTickerLogo(item.ticker) ? (
+                      <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-text-muted">{item.ticker[0]}</span>
+                    )}
+                  </div>
+                  <span className="font-semibold text-text text-sm uppercase tracking-tight">{item.ticker}</span>
+                  <span className={clsx('rounded-full px-2 py-0.5 text-xs font-bold', item.pctChange >= 0 ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger')}>
+                    {item.pctChange >= 0 ? '+' : ''}{item.pctChange}%
+                  </span>
+                  <span className="text-xs text-text-muted whitespace-nowrap">{item.adds} adds</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Top Watchlist Removals: tight pill carousel */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Removals</h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {TOP_WATCHLIST_REMOVALS.map((item) => (
+                <button
+                  key={`rem-${item.ticker}`}
+                  type="button"
+                  onClick={() => navigate('/symbol')}
+                  className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-white dark:bg-surface px-3 py-1.5 hover:border-border-strong hover:shadow-sm transition-all"
+                >
+                  <div className="w-6 h-6 rounded-full overflow-hidden bg-surface-muted border border-border flex items-center justify-center shrink-0">
+                    {getTickerLogo(item.ticker) ? (
+                      <img src={getTickerLogo(item.ticker)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-text-muted">{item.ticker[0]}</span>
+                    )}
+                  </div>
+                  <span className="font-semibold text-text text-sm uppercase tracking-tight">{item.ticker}</span>
+                  <span className={clsx('rounded-full px-2 py-0.5 text-xs font-bold', item.pctChange >= 0 ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger')}>
+                    {item.pctChange >= 0 ? '+' : ''}{item.pctChange}%
+                  </span>
+                  <span className="text-xs text-text-muted whitespace-nowrap">{item.removals} removals</span>
+                </button>
               ))}
             </div>
           </section>
