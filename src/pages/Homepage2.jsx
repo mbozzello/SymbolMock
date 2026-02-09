@@ -124,11 +124,57 @@ const MARKET_CARDS = [
   { symbol: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'BEARISH', topTopic: 'Volatility', topTopicIcon: 'bolt' },
 ]
 
+const TOP_NEWS_CATEGORIES = [
+  { id: 'Technology', label: 'Technology', emoji: '🤖' },
+  { id: 'Healthcare', label: 'Healthcare', emoji: '🏥' },
+  { id: 'Predictive', label: 'Predictive', emoji: '🔮' },
+  { id: 'Finance', label: 'Finance', emoji: '💰' },
+  { id: 'Energy', label: 'Energy', emoji: '⚡' },
+]
+
+const TOP_NEWS_BY_CATEGORY = {
+  Technology: [
+    { image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=280&h=160&fit=crop', ticker: 'AAPL', pctChange: 1.8, title: 'Apple Unveils New AI Features at WWDC', source: 'Alex Rivera', time: '2h ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=280&h=160&fit=crop', ticker: 'NVDA', pctChange: 4.2, title: 'NVIDIA Data Center Revenue Beats Estimates', source: 'Jon Morgan', time: '1 day ago' },
+    { image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=280&h=160&fit=crop', ticker: 'MSFT', pctChange: 0.9, title: 'Microsoft Cloud Growth Accelerates', source: 'Tom Bruni', time: '5h ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=280&h=160&fit=crop', ticker: 'GOOGL', pctChange: -0.5, title: 'Alphabet Ad Revenue In Line With Views', source: 'Michele Steele', time: '1 day ago' },
+    { image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=280&h=160&fit=crop', ticker: 'TSLA', pctChange: 2.1, title: 'Tesla FSD Update Rollout Expands', source: 'Michael Bolling', time: '3h ago' },
+  ],
+  Healthcare: [
+    { image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=280&h=160&fit=crop', ticker: 'JNJ', pctChange: 0.7, title: 'Johnson & Johnson Raises Full-Year Guidance', source: 'Alex Rivera', time: '4h ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=280&h=160&fit=crop', ticker: 'UNH', pctChange: -0.3, title: 'UnitedHealth Earnings Top Street Views', source: 'Jon Morgan', time: '1 day ago' },
+    { image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=280&h=160&fit=crop', ticker: 'PFE', pctChange: 1.2, title: 'Pfizer Vaccine Sales Beat in Q2', source: 'Tom Bruni', time: '6h ago' },
+    { image: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=280&h=160&fit=crop', ticker: 'ABBV', pctChange: 2.4, title: 'AbbVie Lifts Outlook on Immunology Strength', source: 'Michele Steele', time: '2 days ago' },
+    { image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=280&h=160&fit=crop', ticker: 'LLY', pctChange: 3.1, title: 'Eli Lilly GLP-1 Demand Drives Upgrade', source: 'Alex Rivera', time: '5h ago' },
+  ],
+  Predictive: [
+    { image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=280&h=160&fit=crop', ticker: 'PLTR', pctChange: 11.5, title: 'Palantir Beats on Revenue, Lifts Forecast', source: 'Alex Rivera', time: '1 day ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=280&h=160&fit=crop', ticker: 'AI', pctChange: -2.8, title: 'C3.ai Stock Volatile After Earnings', source: 'Jon Morgan', time: '3h ago' },
+    { image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=280&h=160&fit=crop', ticker: 'PATH', pctChange: 5.2, title: 'UiPath Automation Demand Strong', source: 'Tom Bruni', time: '4h ago' },
+    { image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=280&h=160&fit=crop', ticker: 'CRWD', pctChange: 1.9, title: 'CrowdStrike Subscriber Growth Beats', source: 'Michele Steele', time: '2 days ago' },
+    { image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=280&h=160&fit=crop', ticker: 'SNOW', pctChange: -1.4, title: 'Snowflake Guidance Underwhelms Street', source: 'Alex Rivera', time: '6h ago' },
+  ],
+  Finance: [
+    { image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=280&h=160&fit=crop', ticker: 'JPM', pctChange: 0.6, title: 'JPMorgan Net Interest Income Rises', source: 'Alex Rivera', time: '1 day ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=280&h=160&fit=crop', ticker: 'BAC', pctChange: -0.2, title: 'Bank of America Loan Growth Steady', source: 'Jon Morgan', time: '5h ago' },
+    { image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=280&h=160&fit=crop', ticker: 'GS', pctChange: 2.1, title: 'Goldman Trading Revenue Beats', source: 'Tom Bruni', time: '3h ago' },
+    { image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=280&h=160&fit=crop', ticker: 'MS', pctChange: 1.3, title: 'Morgan Stanley Wealth Management Strong', source: 'Michele Steele', time: '4h ago' },
+    { image: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=280&h=160&fit=crop', ticker: 'V', pctChange: 0.4, title: 'Visa Volume Growth In Line', source: 'Alex Rivera', time: '2 days ago' },
+  ],
+  Energy: [
+    { image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=280&h=160&fit=crop', ticker: 'XOM', pctChange: -0.8, title: 'Exxon Reports Lower Refining Margins', source: 'Alex Rivera', time: '1 day ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=280&h=160&fit=crop', ticker: 'CVX', pctChange: 1.2, title: 'Chevron Raises Buyback Guidance', source: 'Jon Morgan', time: '5h ago', video: true },
+    { image: 'https://images.unsplash.com/photo-1559302504-64aae0ca2a3d?w=280&h=160&fit=crop', ticker: 'OXY', pctChange: 3.4, title: 'Occidental Permian Output Beats', source: 'Tom Bruni', time: '6h ago' },
+    { image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=280&h=160&fit=crop', ticker: 'COP', pctChange: -0.5, title: 'ConocoPhillips Production Update', source: 'Michele Steele', time: '3h ago' },
+    { image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=280&h=160&fit=crop', ticker: 'SLB', pctChange: 2.0, title: 'Schlumberger International Growth', source: 'Alex Rivera', time: '2 days ago' },
+  ],
+}
+
 function SentimentGauge({ value, label, compact }) {
   const isBullish = label === 'BULLISH'
   const isBearish = label === 'BEARISH'
   const strokeColor = isBullish ? 'var(--color-success)' : isBearish ? 'var(--color-danger)' : '#f59e0b'
-  const size = compact ? 28 : 40
+  const size = compact ? 44 : 40
   const stroke = compact ? 2.5 : 3
   const r = (size - 4) / 2
   const circumference = 2 * Math.PI * r
@@ -140,9 +186,9 @@ function SentimentGauge({ value, label, compact }) {
           <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth={stroke} />
           <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={strokeColor} strokeWidth={stroke} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" />
         </svg>
-        <span className={clsx('absolute font-bold text-text', compact ? 'text-[9px]' : 'text-xs')}>{value}</span>
+        <span className={clsx('absolute font-bold text-text', compact ? 'text-sm' : 'text-xs')}>{value}</span>
       </div>
-      <span className={clsx('font-bold uppercase', compact ? 'text-[8px] mt-0' : 'text-[10px] mt-0.5')} style={{ color: strokeColor }}>{label}</span>
+      <span className={clsx('font-bold uppercase', compact ? 'text-xs mt-0' : 'text-[10px] mt-0.5')} style={{ color: strokeColor }}>{label}</span>
     </div>
   )
 }
@@ -175,6 +221,7 @@ export default function Homepage2() {
   const navigate = useNavigate()
   const [selectedTicker, setSelectedTicker] = useState(TRENDING_NOW[0].ticker)
   const [newPostCount, setNewPostCount] = useState(0)
+  const [topNewsCategory, setTopNewsCategory] = useState('Technology')
   const incrementIndexRef = useRef(0)
   const { getQuote } = useLiveQuotesContext()
   const { toggleWatch } = useWatchlist()
@@ -592,6 +639,61 @@ export default function Homepage2() {
           </div>
           </div>
           </div>
+
+          {/* Top News: category filters + horizontal carousel */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-3">Top News</h2>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {TOP_NEWS_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setTopNewsCategory(cat.id)}
+                  className={clsx(
+                    'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+                    topNewsCategory === cat.id
+                      ? 'bg-success text-white'
+                      : 'bg-surface-muted text-text-muted hover:bg-surface hover:text-text border border-border'
+                  )}
+                >
+                  <span aria-hidden>{cat.emoji}</span>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {(TOP_NEWS_BY_CATEGORY[topNewsCategory] ?? TOP_NEWS_BY_CATEGORY.Technology).map((art, i) => (
+                <Link
+                  key={`${topNewsCategory}-${i}-${art.title}`}
+                  to="/news"
+                  className="flex shrink-0 w-[280px] flex-col rounded-xl border border-border bg-surface overflow-hidden hover:border-border-strong hover:shadow-md transition-all"
+                >
+                  <div className="relative aspect-video w-full bg-surface-muted">
+                    <img src={art.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    {art.video && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                        <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+                          <svg className="w-6 h-6 text-text ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                    )}
+                    <span
+                      className={clsx(
+                        'absolute top-2 left-2 rounded-full px-2 py-0.5 text-xs font-bold text-white',
+                        (art.pctChange ?? 0) >= 0 ? 'bg-success' : 'bg-danger'
+                      )}
+                    >
+                      ${art.ticker} {(art.pctChange ?? 0) >= 0 ? '+' : ''}{(art.pctChange ?? 0)}%
+                    </span>
+                  </div>
+                  <div className="p-3 flex flex-col min-h-0">
+                    <h3 className="text-sm font-semibold text-text line-clamp-2 leading-snug">{art.title}</h3>
+                    <p className="text-xs text-text-muted mt-1">{art.source} • {art.time}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         </main>
       </div>
     </div>

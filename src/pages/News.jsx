@@ -197,7 +197,7 @@ const VOICES = [
   { name: 'Howard Lindzon', username: '@howardlindzon', avatar: '/avatars/howard-lindzon.png', url: 'https://stocktwits.com/howardlindzon' },
   { name: 'Michael Bolling', username: '@MickeyMarkets', avatar: '/avatars/michael-bolling.png' },
   { name: 'Michele Steele', username: '@steeletwits', avatar: '/avatars/michele-steele.png' },
-  { name: 'Ross Cameron', username: '@Warrior_0719', avatar: '/avatars/who-follow-4.png' },
+  { name: 'Ross Cameron', username: '@Warrior_0719', avatar: '/avatars/ross-cameron.png' },
   { name: 'Tim Sykes', username: '@timothysykes', avatar: '/avatars/top-voice-1.png' },
   { name: 'Danielle Shay', username: '@DanielleShay_', avatar: '/avatars/top-voice-2.png' },
 ]
