@@ -120,7 +120,7 @@ const MARKET_CARDS = [
   { symbol: 'SPY', price: 609.98, change: -5.23, pct: -0.85, sentiment: 62, sentimentLabel: 'BULLISH', topTopic: 'Metals Nosedive', topTopicIcon: 'medal' },
   { symbol: 'QQQ', price: 523.41, change: -6.12, pct: -1.16, sentiment: 58, sentimentLabel: 'BULLISH', topTopic: 'New Fed Chair', topTopicIcon: 'chair' },
   { symbol: 'BITCOIN', price: 97234.5, change: 1245.2, pct: 1.3, sentiment: 71, sentimentLabel: 'BULLISH', topTopic: 'ETF Flows', topTopicIcon: 'chart' },
-  { symbol: 'GOLD', price: 2654.8, change: -8.4, pct: -0.32, sentiment: 48, sentimentLabel: 'NEUTRAL', topTopic: 'Rate Cuts', topTopicIcon: 'scissors' },
+  { symbol: 'GLD', price: 2654.8, change: -8.4, pct: -0.32, sentiment: 48, sentimentLabel: 'NEUTRAL', topTopic: 'Rate Cuts', topTopicIcon: 'scissors' },
   { symbol: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'BEARISH', topTopic: 'Volatility', topTopicIcon: 'bolt' },
 ]
 
@@ -404,7 +404,14 @@ export default function Homepage2() {
                 key={card.symbol}
                 className="flex-1 min-w-[130px] rounded-lg border border-border bg-white dark:bg-surface px-2.5 py-2 flex flex-col"
               >
-                <div className="text-xs font-bold text-text">{card.symbol}</div>
+                <div className="flex items-center gap-1.5">
+                  {getTickerLogo(card.symbol) ? (
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-surface-muted border border-border flex items-center justify-center shrink-0">
+                      <img src={getTickerLogo(card.symbol)} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : null}
+                  <span className="text-xs font-bold text-text">{card.symbol}</span>
+                </div>
                 <div className="flex items-center justify-between gap-1.5 mt-0.5">
                   <div className="text-base font-bold text-text min-w-0">
                     {card.price >= 1000 ? card.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : card.price.toFixed(2)}

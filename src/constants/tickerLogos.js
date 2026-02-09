@@ -1,5 +1,9 @@
 // Maps ticker symbols to logo paths in public/images/logos/
 const LOGO_MAP = {
+  SPY: '/images/logos/spdr.png',
+  QQQ: '/images/logos/spdr.png',
+  GLD: '/images/logos/spdr.png',
+  VIX: '/images/logos/vix.png',
   AAPL: '/images/logos/apple.png',
   AMD: '/images/logos/amd.png',
   AMZN: '/images/logos/amzn.png',
@@ -18,6 +22,7 @@ const LOGO_MAP = {
   SLV: '/images/logos/slv.png',
   PLTR: '/images/logos/palantir.png',
   BTC: '/images/logos/btc.png',
+  BITCOIN: '/images/logos/btc.png',
   ETH: '/images/logos/eth.png',
   DOGE: '/images/logos/doge.png',
 }
