@@ -127,6 +127,12 @@ export default function Home() {
     if (t) setActiveFilter(t.label)
   }, [searchParams])
 
+  useEffect(() => {
+    if (searchParams.get('expandSummary') === '1' || searchParams.get('expandSummary') === 'true') {
+      setTrendingSummaryExpanded(true)
+    }
+  }, [searchParams])
+
   const topicsSectionRef = useRef(null)
   useEffect(() => {
     if (!topicSlug) return
@@ -147,7 +153,7 @@ export default function Home() {
     upVoters: SEED_AGREE_VOTERS.slice(0, 3),
     downVoters: SEED_DISAGREE_VOTERS.slice(0, 2),
   })
-  const [trendingSummaryExpanded, setTrendingSummaryExpanded] = useState(false)
+  const [trendingSummaryExpanded, setTrendingSummaryExpanded] = useState(() => searchParams.get('expandSummary') === '1' || searchParams.get('expandSummary') === 'true')
 
   const handlePost = (payload) => {
     const id = `user-post-${++postIdRef.current}`

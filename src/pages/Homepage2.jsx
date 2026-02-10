@@ -1023,7 +1023,7 @@ export default function Homepage2() {
                     {selectedItem.whyBlurb}
                   </p>
                 </div>
-                <button type="button" onClick={() => navigate('/symbol')} className="shrink-0 text-sm font-semibold text-primary hover:underline whitespace-nowrap" aria-label="View full summary">
+                <button type="button" onClick={() => navigate(`/symbol?ticker=${selectedTicker}&expandSummary=1`)} className="shrink-0 text-sm font-semibold text-primary hover:underline whitespace-nowrap" aria-label="View full summary">
                   View Full Summary →
                 </button>
               </div>
@@ -1251,7 +1251,7 @@ export default function Homepage2() {
                   <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
                   <p className="text-sm text-text-muted mt-1 line-clamp-2 pr-2" title={selectedItem.whyBlurb}>{selectedItem.whyBlurb}</p>
                 </div>
-                <button type="button" onClick={() => navigate('/symbol')} className="shrink-0 text-sm font-semibold text-primary hover:underline">View Full Summary →</button>
+                <button type="button" onClick={() => navigate(`/symbol?ticker=${selectedTicker}&expandSummary=1`)} className="shrink-0 text-sm font-semibold text-primary hover:underline">View Full Summary →</button>
               </div>
             )}
             </div>
@@ -1385,7 +1385,7 @@ export default function Homepage2() {
                   <>
                     <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
                     <p className="text-sm text-text-muted mt-1 leading-relaxed">{merged.whyBlurb}</p>
-                    <button type="button" onClick={() => navigate('/symbol')} className="mt-2 text-sm font-semibold text-primary hover:underline">
+                    <button type="button" onClick={() => navigate(`/symbol?ticker=${merged.ticker}&expandSummary=1`)} className="mt-2 text-sm font-semibold text-primary hover:underline">
                       View Full Summary →
                     </button>
                   </>
