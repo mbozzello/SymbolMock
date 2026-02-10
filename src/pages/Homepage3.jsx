@@ -983,7 +983,7 @@ export default function Homepage3() {
                           <span className={clsx('font-bold text-text-muted', isHome3 ? 'text-sm' : 'text-sm')}>{item.ticker[0]}</span>
                         )}
                       </div>
-                      {isLive && !isHome3 && (
+                      {isLive && (
                         <span
                           className="absolute left-1/2 -translate-x-1/2 -top-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase text-white whitespace-nowrap animate-live-pulse"
                           style={{ backgroundColor: '#7c3aed' }}
