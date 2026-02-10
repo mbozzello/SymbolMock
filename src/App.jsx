@@ -12,6 +12,7 @@ import Poll from './components/Poll.jsx'
 import MessagePostBox from './components/MessagePostBox.jsx'
 import Home from './pages/Home.jsx'
 import Homepage2 from './pages/Homepage2.jsx'
+import Homepage3 from './pages/Homepage3.jsx'
 import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
 import News from './pages/News.jsx'
@@ -743,8 +744,9 @@ export default function App() {
       <TickerTapeProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<Homepage2 />} />
+        <Route path="/home" element={<Homepage3 />} />
         <Route path="/home2" element={<Homepage2 />} />
+        <Route path="/home3" element={<Homepage2 />} />
         <Route path="/symbol" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
