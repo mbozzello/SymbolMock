@@ -80,7 +80,7 @@ const DEFAULT_TRENDING = [
   { symbol: 'META', change: 0.67 },
 ]
 
-export default function TickerTape() {
+export default function TickerTape({ symbols, static: isStatic }) {
   const { customTickers, clearCustomTickers } = useTickerTape()
   const { getQuote } = useLiveQuotesContext()
   const scrollingSymbols = customTickers && customTickers.length > 0 ? customTickers : DEFAULT_TRENDING
@@ -90,6 +90,18 @@ export default function TickerTape() {
   const getChange = (symbol, fallback) => {
     const q = getQuote(symbol)
     return q?.changePercent ?? fallback ?? 0
+  }
+
+  if (isStatic && symbols) {
+    return (
+      <div className="border-b border-border bg-background overflow-hidden shrink-0">
+        <div className="flex items-center gap-4 min-h-[40px] py-1.5 px-1">
+          {symbols.map((sym) => (
+            <TickerItem key={sym} symbol={sym} change={getChange(sym, 0)} />
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
