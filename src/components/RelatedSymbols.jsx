@@ -8,10 +8,10 @@ const RELATED = [
   { name: 'Spotify', ticker: 'SPOT', added: true },
 ]
 
-export default function RelatedSymbols() {
+export default function RelatedSymbols({ title = 'Related Symbols' }) {
   return (
     <div className="border-b border-border pb-4">
-      <h3 className="text-sm font-semibold text-text mb-3">Related Symbols</h3>
+      <h3 className="text-sm font-semibold text-text mb-3">{title}</h3>
       <ul className="space-y-2">
         {RELATED.map((item) => (
           <li key={item.ticker} className="flex items-center justify-between gap-2 py-1.5">

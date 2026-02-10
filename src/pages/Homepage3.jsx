@@ -782,7 +782,7 @@ export default function Homepage3() {
 
   const popularTopics = POPULAR_TOPICS[selectedTicker] ?? POPULAR_TOPICS.TSLA
   useEffect(() => {
-    setStreamFilter(0)
+    setStreamFilter(selectedTicker === 'AAPL' ? 'latest' : 0)
     setPrependedLatestMessages([])
   }, [selectedTicker])
 
@@ -1115,7 +1115,7 @@ export default function Homepage3() {
                   <button
                     key={item.ticker}
                     type="button"
-                    onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
+                    onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); if (item.ticker === 'AAPL') setStreamFilter('latest'); }}
                     className={clsx(
                       'relative flex flex-col items-center gap-1 shrink-0 transition-colors',
                       isHome3 ? 'px-4 py-3 min-w-[132px] border-r border-border' : 'px-4 py-3 text-base font-semibold border-r border-border min-w-[152px]',
@@ -1319,29 +1319,46 @@ export default function Homepage3() {
             >
               {/* AAPL: Live earnings call; others: Why it's trending */}
               {selectedTicker === 'AAPL' ? (
-              <div className="w-full flex items-center justify-between gap-3 px-4 pt-1.5 pb-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
+              <div className="w-full flex flex-col gap-2 px-4 pt-1.5 pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
                     <h3 className="text-base font-bold text-text">Q1 &apos;26 Earnings Call</h3>
                     <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" style={{ backgroundColor: '#7c3aed' }}>Live</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-text-muted">
-                    <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                    <span>2.1K Listeners</span>
-                    <span className="text-border">|</span>
-                    <span>Started 21m ago</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/symbol')}
+                    className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#7c3aed' }}
+                    aria-label="Join live earnings call"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    Join
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/symbol')}
-                  className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#7c3aed' }}
-                  aria-label="Join live earnings call"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                  Join
-                </button>
+                <div className="flex items-center gap-2 text-sm text-text-muted">
+                  <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  <span>2.1K Listeners</span>
+                  <span className="text-border">|</span>
+                  <span>Started 21m ago</span>
+                </div>
+                {/* Compact earnings snippet */}
+                <div className="rounded-lg border border-border bg-surface-muted/30 p-2.5 text-left">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <p className="text-sm font-semibold text-text">$AAPL Q1 &apos;26 Earnings Recap</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/symbol?ticker=AAPL&expandSummary=1')}
+                      className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text hover:bg-surface-muted transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      View full
+                    </button>
+                  </div>
+                  <p className="text-xs text-black font-medium mb-0">
+                    GAAP EPS of $0.33 up <span className="text-success">94.12% YoY</span> / Revenue of $177.09M up <span className="text-success">7.16% YoY</span>
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="w-full flex items-center justify-between gap-3 px-4 pt-1.5 pb-3">
@@ -1581,23 +1598,40 @@ export default function Homepage3() {
               }
             >
               {selectedTicker === 'AAPL' ? (
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
                     <h3 className="text-base font-bold text-text">Q1 &apos;26 Earnings Call</h3>
                     <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" style={{ backgroundColor: '#7c3aed' }}>Live</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-text-muted">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                    <span>2.1K Listeners</span>
-                    <span className="text-border">|</span>
-                    <span>Started 21m ago</span>
-                  </div>
+                  <button type="button" onClick={() => navigate('/symbol')} className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: '#7c3aed' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    Join
+                  </button>
                 </div>
-                <button type="button" onClick={() => navigate('/symbol')} className="shrink-0 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: '#7c3aed' }}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                  Join
-                </button>
+                <div className="flex items-center gap-2 text-sm text-text-muted">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  <span>2.1K Listeners</span>
+                  <span className="text-border">|</span>
+                  <span>Started 21m ago</span>
+                </div>
+                {/* Compact earnings snippet */}
+                <div className="rounded-lg border border-border bg-surface-muted/30 p-2.5 text-left">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <p className="text-sm font-semibold text-text">$AAPL Q1 &apos;26 Earnings Recap</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/symbol?ticker=AAPL&expandSummary=1')}
+                      className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text hover:bg-surface-muted transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      View full
+                    </button>
+                  </div>
+                  <p className="text-xs text-black font-medium mb-0">
+                    GAAP EPS of $0.33 up <span className="text-success">94.12% YoY</span> / Revenue of $177.09M up <span className="text-success">7.16% YoY</span>
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-between gap-3">
@@ -2021,7 +2055,7 @@ export default function Homepage3() {
           <aside className="w-[280px] shrink-0 hidden lg:block space-y-6 pl-0 pr-4 pt-4 pb-4">
             <LatestNews />
             <TopDiscussions />
-            <RelatedSymbols />
+            <RelatedSymbols title="Top Watchlist Additions" />
             <PredictionLeaderboard />
           </aside>
         )}
