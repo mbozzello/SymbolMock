@@ -494,6 +494,12 @@ const TRENDING_SYMBOLS = [
 const WATCHLIST_PREVIEW = [
   { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 889.42, change: 21.79 },
   { ticker: 'AAPL', name: 'Apple Inc.', price: 182.51, change: -1.5 },
+  { ticker: 'TSLA', name: 'Tesla, Inc.', price: 201.12, change: 6.46, pct: 3.21 },
+  { ticker: 'AMD', name: 'AMD', price: 156.43, change: 14.3, pct: 9.2 },
+  { ticker: 'MSFT', name: 'Microsoft', price: 348.90, change: 1.8, pct: 0.5 },
+  { ticker: 'GOOGL', name: 'Alphabet', price: 142.30, change: -0.5, pct: -0.35 },
+  { ticker: 'PLTR', name: 'Palantir', price: 28.45, change: 11.5, pct: 4.2 },
+  { ticker: 'GME', name: 'GameStop', price: 29.96, change: 2.1, pct: 7.5 },
 ]
 
 const MARKET_CARDS = [
@@ -748,7 +754,7 @@ export default function Homepage2() {
               Unlock Watchlist
             </h2>
             <p className="text-xs text-text-muted leading-relaxed mb-3">
-              Customize your watchlist - add symbols to see reactions and insights on your feed.
+              Track your stocks and get key price alerts and sentiment updates.
             </p>
             <div className="flex gap-2 mb-3">
               <button type="button" className="flex-1 py-2 rounded-lg border border-border text-xs font-medium text-text hover:bg-surface-muted">Quick add</button>
