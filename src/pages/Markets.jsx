@@ -281,7 +281,7 @@ export default function Markets() {
         toggleDarkMode={() => setDarkMode((p) => !p)}
       />
 
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[300px]">
         <TopNavigation darkMode={darkMode} toggleDarkMode={() => setDarkMode((p) => !p)} />
         <TickerTape />
 

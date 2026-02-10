@@ -1,15 +1,52 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
+import LeftSidebar from '../components/LeftSidebar.jsx'
 import LatestNews from '../components/LatestNews.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import TickerLinkedText from '../components/TickerLinkedText.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import { useBookmarks } from '../contexts/BookmarkContext.jsx'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
+
+/** Messages from people the user follows — for Following feed. Recommended = popular (any order); Latest = reverse chron */
+const FOLLOWING_FEED = [
+  { id: 'f1', user: 'AIBull', avatar: '/avatars/top-voice-1.png', body: 'Data center demand is insane. $NVDA guidance will crush again.', time: '2m', ts: 2, comments: 24, reposts: 8, likes: 142 },
+  { id: 'f2', user: 'TechTrader', avatar: '/avatars/top-voice-2.png', body: 'NVDA at $875 and still not expensive given the growth. Holding through earnings.', time: '5m', ts: 5, comments: 18, reposts: 5, likes: 89 },
+  { id: 'f3', user: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', body: '15.2K messages and 82% bullish. Crowd is right on this one.', time: '12m', ts: 12, comments: 9, reposts: 3, likes: 67 },
+  { id: 'f4', user: 'ChipWatcher', avatar: '/avatars/top-voice-3.png', body: 'Blackwell ramp is the real story. Anyone trimming here will regret it.', time: '8m', ts: 8, comments: 31, reposts: 12, likes: 203 },
+  { id: 'f5', user: 'MomentumKing', avatar: '/avatars/howard-lindzon.png', body: '$TSLA breaking out. FSD v12.5 rolling out to more users.', time: '3m', ts: 3, comments: 45, reposts: 12, likes: 312 },
+  { id: 'f6', user: 'CloudBuilder', avatar: '/avatars/who-follow-1.png', body: 'Every hyperscaler is doubling down. $NVDA is the only game in town for training.', time: '52m', ts: 52, comments: 21, reposts: 7, likes: 156 },
+  { id: 'f7', user: 'AppleLong', avatar: '/avatars/top-voice-1.png', body: 'Services growth accelerating. Margin story intact for $AAPL.', time: '1h', ts: 60, comments: 14, reposts: 4, likes: 98 },
+  { id: 'f8', user: 'DataCenterBull', avatar: '/avatars/top-voice-1.png', body: 'MI300 adoption accelerating. $NVDA and $AMD both benefiting from AI build-out.', time: '15m', ts: 15, comments: 14, reposts: 4, likes: 98 },
+  { id: 'f9', user: 'GrowthInvestor', avatar: '/avatars/top-voice-2.png', body: 'Earnings beat coming. Supply constraints are easing and demand is still strong.', time: '22m', ts: 22, comments: 7, reposts: 2, likes: 45 },
+  { id: 'f10', user: 'QuantMind', avatar: '/avatars/who-follow-2.png', body: 'Inference demand is the next wave. $NVDA well positioned.', time: '1h', ts: 60, comments: 13, reposts: 4, likes: 88 },
+  { id: 'f11', user: 'ChinaWatcher', avatar: '/avatars/top-voice-2.png', body: 'China data points improving. Stimulus working. $AAPL undervalued here.', time: '35m', ts: 35, comments: 19, reposts: 5, likes: 124 },
+  { id: 'f12', user: 'EcosystemBull', avatar: '/avatars/top-voice-3.png', body: 'Capital return story is strong. Buyback pace accelerating for $AAPL.', time: '48m', ts: 48, comments: 8, reposts: 2, likes: 54 },
+  { id: 'f13', user: 'HyperscaleFan', avatar: '/avatars/who-follow-3.png', body: 'MSFT, GOOGL, META all increasing AI spend. $NVDA is the enabler.', time: '1h 8m', ts: 68, comments: 16, reposts: 5, likes: 102 },
+  { id: 'f14', user: 'AIWatcher', avatar: '/avatars/who-follow-2.png', body: 'Apple Intelligence rollout could be a sleeper catalyst for upgrades.', time: '1h 22m', ts: 82, comments: 11, reposts: 3, likes: 76 },
+  { id: 'f15', user: 'BeatRaising', avatar: '/avatars/who-follow-2.png', body: 'History of under-promising. This quarter will be no different for $NVDA.', time: '2h 28m', ts: 148, comments: 22, reposts: 7, likes: 145 },
+]
+const FOLLOWING_RECOMMENDED = [...FOLLOWING_FEED].sort((a, b) => (b.likes + b.comments * 2) - (a.likes + a.comments * 2))
+const FOLLOWING_LATEST = [...FOLLOWING_FEED].sort((a, b) => a.ts - b.ts)
+
+/** Random social-style images to show under message body (like a real feed) */
+const FEED_IMAGES = [
+  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop',
+]
 
 const TRENDING_NOW = [
   { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 15.84, comments: '12.8K', sentiment: 75, rank: 1, followers: '1,050,370', whyBlurb: 'Cybertruck production ramp and full self-driving rollout are driving the conversation as investors weigh AI and robotaxi timelines against margin pressure, competition in China and Europe, and the path to volume growth—with delivery targets, battery cost curves, and regulatory updates also in focus.' },
@@ -697,19 +734,24 @@ export default function Homepage3() {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
   })
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedTicker, setSelectedTicker] = useState(TRENDING_NOW[0].ticker)
   const [newPostCount, setNewPostCount] = useState(0)
-  const [homeTab, setHomeTab] = useState('trending') // 'trending' | 'market-overview' — only used on /home
+  const [homeTab, setHomeTab] = useState('trending') // 'trending' | 'market-overview' | 'following'
+  const [followingFeedSort, setFollowingFeedSort] = useState('recommended') // 'recommended' | 'latest'
   const [streamFilter, setStreamFilter] = useState(0) // 0 = first topic (default on /home) | 'latest' | 1 | 2 | 3 (topic index)
   const [marketOverviewTrendingTicker, setMarketOverviewTrendingTicker] = useState(MARKET_OVERVIEW_TRENDING[0].ticker)
   const [latestStreamNewCount, setLatestStreamNewCount] = useState(0)
   const [prependedLatestMessages, setPrependedLatestMessages] = useState([])
+  const { isBookmarked, toggleBookmark } = useBookmarks()
   const incrementIndexRef = useRef(0)
   const latestIncrementIndexRef = useRef(0)
   const trendingCardsScrollRef = useRef(null)
   const { getQuote } = useLiveQuotesContext()
+  const { watchlist } = useWatchlist()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const isHome2 = location.pathname === '/home2'
   const isHome3 = location.pathname === '/home' || location.pathname === '/home3' // Homepage3 now renders on /home
@@ -773,10 +815,29 @@ export default function Homepage3() {
 
   return (
     <div className="min-h-screen bg-background text-text">
+      {isLoggedIn && (
+        <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-background px-4 py-3 lg:hidden">
+          <button onClick={() => setMobileNavOpen(true)} className="btn" aria-label="Open menu">☰</button>
+          <div className="font-semibold">Home</div>
+          <div className="h-9 w-9" />
+        </div>
+      )}
+      {isLoggedIn && (
+        <LeftSidebar
+          isOpen={mobileNavOpen}
+          onClose={() => setMobileNavOpen(false)}
+          watchlist={watchlist}
+          darkMode={darkMode}
+          toggleDarkMode={() => setDarkMode((p) => !p)}
+          leftPadding={50}
+        />
+      )}
+      <div className={clsx(!isHome2 && isLoggedIn && 'lg:pl-[350px]')}>
       <TopNavigation darkMode={darkMode} toggleDarkMode={() => setDarkMode((p) => !p)} />
 
-      <div className={clsx('flex max-w-[1400px] mx-auto', !isHome2 && 'pl-[50px]')}>
-        {/* Column 1: New to Stocktwits + Unlock Watchlist */}
+      <div className={clsx('flex max-w-[1400px] mx-auto', !isHome2 && !isLoggedIn && 'pl-[50px]')}>
+        {/* Column 1: New to Stocktwits + Unlock Watchlist — only when not logged in */}
+        {!isLoggedIn && (
         <aside className="hidden lg:flex w-[300px] shrink-0 flex-col border-r border-border p-4 gap-6">
           <section className="rounded-xl border border-border bg-surface-muted/30 p-4">
             <h2 className="text-sm font-bold text-text mb-2">New to Stocktwits?</h2>
@@ -784,7 +845,11 @@ export default function Homepage3() {
               Get access to real-time conversations, investor sentiment, price predictions and customized watchlists.
             </p>
             <div className="flex flex-col gap-2">
-              <button type="button" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-white dark:bg-surface hover:bg-surface-muted transition-colors text-left">
+              <button
+                type="button"
+                onClick={() => setIsLoggedIn(true)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-white dark:bg-surface hover:bg-surface-muted transition-colors text-left"
+              >
                 <img src="/avatars/user-avatar.png" alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-text">Continue as Michael</div>
@@ -845,10 +910,11 @@ export default function Homepage3() {
             </div>
           </section>
         </aside>
+        )}
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
         <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-6')}>
-        <main className={clsx('flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4', !isHome2 && homeTab === 'trending' && 'max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'max-w-[660px]')}>
+        <main className={clsx('flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
           <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
             {isHome2 ? (
@@ -886,12 +952,28 @@ export default function Homepage3() {
                 </button>
               </>
             )}
-            <span className="flex items-center gap-1.5 text-base font-bold text-text-muted" title="Sign up to unlock">
-              Following
-              <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-            </span>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => setHomeTab('following')}
+                className={clsx(
+                  'text-base font-bold pb-0.5 -mb-0.5 transition-colors',
+                  homeTab === 'following'
+                    ? 'text-black border-b-2 border-black'
+                    : 'text-text-muted border-b-2 border-transparent hover:text-text'
+                )}
+                style={homeTab === 'following' ? { borderBottomWidth: 2 } : {}}
+              >
+                Following
+              </button>
+            ) : (
+              <span className="flex items-center gap-1.5 text-base font-bold text-text-muted" title="Sign up to unlock">
+                Following
+                <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              </span>
+            )}
           </div>
-          {(isHome2 || (!isHome2 && homeTab === 'market-overview')) && (
+          {(isHome2 || (!isHome2 && homeTab === 'market-overview')) && homeTab !== 'following' && (
           /* Market cards — full width row (tight layout); prices/pct from live quotes when available */
           <div className="w-full flex gap-2 overflow-x-auto pb-1 shrink-0">
             {MARKET_CARDS.map((card) => {
@@ -936,6 +1018,79 @@ export default function Homepage3() {
               </div>
               )
             })}
+          </div>
+          )}
+
+          {/* Following feed: messages from people user follows — when logged in and homeTab === 'following' */}
+          {!isHome2 && homeTab === 'following' && (
+          <div className="shrink-0">
+            <div className="flex items-center gap-4 border-b border-border pb-2 mb-3">
+              <button
+                type="button"
+                onClick={() => setFollowingFeedSort('recommended')}
+                className={clsx(
+                  'text-sm font-semibold transition-colors',
+                  followingFeedSort === 'recommended' ? 'text-black border-b-2 border-black pb-0.5 -mb-0.5' : 'text-text-muted hover:text-text'
+                )}
+                style={followingFeedSort === 'recommended' ? { borderBottomWidth: 2 } : {}}
+              >
+                Recommended
+              </button>
+              <button
+                type="button"
+                onClick={() => setFollowingFeedSort('latest')}
+                className={clsx(
+                  'text-sm font-semibold transition-colors',
+                  followingFeedSort === 'latest' ? 'text-black border-b-2 border-black pb-0.5 -mb-0.5' : 'text-text-muted hover:text-text'
+                )}
+                style={followingFeedSort === 'latest' ? { borderBottomWidth: 2 } : {}}
+              >
+                Latest
+              </button>
+            </div>
+            <div className="divide-y divide-border">
+              {(followingFeedSort === 'recommended' ? FOLLOWING_RECOMMENDED : FOLLOWING_LATEST).map((msg, idx) => (
+                <div key={msg.id} className="flex gap-3 py-4">
+                  <img src={msg.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-text">{msg.user}</span>
+                      <span className="text-xs text-text-muted">{msg.time}</span>
+                    </div>
+                    <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
+                    {idx % 3 === 1 && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
+                        <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
+                      <div className="flex items-center gap-4">
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                          {msg.comments ?? 0}
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                          {msg.reposts ?? 0}
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                          {msg.likes ?? 0}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                        </button>
+                        <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                          <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           )}
 
@@ -1297,7 +1452,7 @@ export default function Homepage3() {
                 </button>
               )}
               <div className="flex-1 overflow-y-auto space-y-3 p-4 min-h-0">
-              {messages.map((msg) => {
+              {messages.map((msg, idx) => {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
                 <div key={msg.id} className="flex gap-3 p-3 rounded-lg bg-background border border-border">
@@ -1314,19 +1469,34 @@ export default function Homepage3() {
                       )}
                     </div>
                     <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
-                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        {msg.comments ?? 0}
-                      </button>
-                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        {msg.reposts ?? 0}
-                      </button>
-                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                        {msg.likes ?? 0}
-                      </button>
+                    {idx % 4 === 0 && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
+                        <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
+                      <div className="flex items-center gap-4">
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                          {msg.comments ?? 0}
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                          {msg.reposts ?? 0}
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                          {msg.likes ?? 0}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                        </button>
+                        <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                          <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1351,7 +1521,7 @@ export default function Homepage3() {
                   {newPostCount} New Post{newPostCount === 1 ? '' : 's'}
                 </button>
               )}
-              {messages.map((msg) => {
+              {messages.map((msg, idx) => {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
                 <div key={msg.id} className="flex gap-3 p-3 rounded-lg bg-background border border-border">
@@ -1368,19 +1538,34 @@ export default function Homepage3() {
                       )}
                     </div>
                     <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
-                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        {msg.comments ?? 0}
-                      </button>
-                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        {msg.reposts ?? 0}
-                      </button>
-                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                        {msg.likes ?? 0}
-                      </button>
+                    {idx % 4 === 0 && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
+                        <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
+                      <div className="flex items-center gap-4">
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                          {msg.comments ?? 0}
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                          {msg.reposts ?? 0}
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                          {msg.likes ?? 0}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                        </button>
+                        <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                          <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1479,7 +1664,7 @@ export default function Homepage3() {
               )
             })()}
             <div className="divide-y divide-border">
-              {messages.map((msg) => {
+              {messages.map((msg, idx) => {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
                   <article key={msg.id} className="flex gap-3 pt-4 pb-4 px-4">
@@ -1496,10 +1681,25 @@ export default function Homepage3() {
                         )}
                       </div>
                       <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={msg.body} /></p>
-                      <div className="flex items-center gap-3 mt-3 text-sm text-text-muted">
-                        <button type="button" className="flex items-center gap-1.5 hover:text-text"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>{msg.comments ?? 0}</button>
-                        <button type="button" className="flex items-center gap-1.5 hover:text-text"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>{msg.reposts ?? 0}</button>
-                        <button type="button" className="flex items-center gap-1.5 hover:text-text"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{msg.likes ?? 0}</button>
+                      {idx % 3 === 0 && (
+                        <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
+                          <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
+                        <div className="flex items-center gap-4">
+                          <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>{msg.comments ?? 0}</button>
+                          <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>{msg.reposts ?? 0}</button>
+                          <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{msg.likes ?? 0}</button>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                          </button>
+                          <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                            <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </article>
@@ -1512,7 +1712,7 @@ export default function Homepage3() {
           </div>
           )}
 
-          {(isHome2 || (!isHome2 && homeTab === 'market-overview')) && (
+          {(isHome2 || (!isHome2 && homeTab === 'market-overview')) && homeTab !== 'following' && (
           <>
           {/* Trending: pills + why it's trending (no stream) */}
           <section className="shrink-0">
@@ -1799,6 +1999,7 @@ export default function Homepage3() {
           </aside>
         )}
         </div>
+      </div>
       </div>
     </div>
   )

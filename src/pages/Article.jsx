@@ -53,7 +53,7 @@ export default function Article() {
         toggleDarkMode={toggleDarkMode}
       />
 
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[300px]">
         <TopNavigation darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <TickerTape />
 

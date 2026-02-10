@@ -128,7 +128,7 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
   return (
     <>
       {/* Desktop fixed sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[269px] lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[300px] lg:flex">
         {content}
       </aside>
 
@@ -136,7 +136,7 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-[269px] bg-background shadow-xl border-r border-border">
+          <div className="absolute inset-y-0 left-0 w-[300px] bg-background shadow-xl border-r border-border">
             {content}
           </div>
         </div>
@@ -427,7 +427,7 @@ export function Dashboard({ isUnregistered = false }) {
       />
 
       {/* Main content area shifted for fixed sidebar on lg+ */}
-      <main className="lg:pl-[269px] bg-background">
+      <main className="lg:pl-[300px] bg-background">
         <TopNavigation />
         <TickerTape />
         <div className="mx-auto max-w-[1200px] pt-2 px-4 pb-4">
@@ -629,7 +629,7 @@ function NewPage() {
         toggleDarkMode={toggleDarkMode}
       />
 
-      <main className="lg:pl-[269px] bg-background">
+      <main className="lg:pl-[300px] bg-background">
         <TopNavigation />
         <TickerTape />
         <div className="mx-auto max-w-[1200px] space-y-4 pt-2 px-4 pb-4">

@@ -279,9 +279,10 @@ export default function Home() {
         watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
+        leftPadding={50}
       />
 
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[350px]">
         <TopNavigation darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <TickerTape />
 
@@ -523,6 +524,9 @@ export default function Home() {
                     <span className="text-xs muted">{HOWARD_LINDZON_MESSAGE.time}</span>
                   </div>
                   <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={HOWARD_LINDZON_MESSAGE.body} /></p>
+                  <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
+                    <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=400&fit=crop" alt="" className="w-full aspect-video object-cover" />
+                  </div>
                   <div className="mt-3 rounded-xl border border-border bg-surface overflow-hidden max-w-md">
                     {/* Top section: symbol + sentiment */}
                     <div className="flex items-start justify-between gap-4 p-4 pb-2">

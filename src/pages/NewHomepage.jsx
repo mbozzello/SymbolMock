@@ -1232,7 +1232,7 @@ export default function Home() {
         toggleDarkMode={toggleDarkMode}
       />
 
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[300px]">
         <TopNavigation />
         <TickerTape />
         

@@ -343,7 +343,7 @@ export default function Search() {
         toggleDarkMode={toggleDarkMode}
       />
 
-      <main className="lg:pl-[269px]">
+      <main className="lg:pl-[300px]">
         <TopNavigation
           darkMode={darkMode}
           toggleDarkMode={toggleDarkMode}

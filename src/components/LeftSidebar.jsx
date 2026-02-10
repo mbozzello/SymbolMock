@@ -34,7 +34,7 @@ function MiniSparkline({ values = [], isUp }) {
   )
 }
 
-export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
+export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode, leftPadding = 0 }) {
   const { removeSymbol } = useWatchlist()
   const { getQuote } = useLiveQuotesContext()
 
@@ -160,14 +160,14 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[269px] lg:flex overflow-hidden">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[300px] lg:flex overflow-hidden" style={leftPadding ? { left: `${leftPadding}px` } : undefined}>
         {content}
       </aside>
 
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-[269px] bg-background shadow-xl border-r border-border">
+          <div className="absolute inset-y-0 left-0 w-[300px] bg-background shadow-xl border-r border-border">
             {content}
           </div>
         </div>
