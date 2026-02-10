@@ -15,6 +15,7 @@ import Homepage2 from './pages/Homepage2.jsx'
 import Homepage3 from './pages/Homepage3.jsx'
 import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
+import Notifications from './pages/Notifications.jsx'
 import News from './pages/News.jsx'
 import Article from './pages/Article.jsx'
 import Markets from './pages/Markets.jsx'
@@ -750,6 +751,7 @@ export default function App() {
         <Route path="/symbol" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/news" element={<News />} />
         <Route path="/article/:slug" element={<Article />} />
         <Route path="/markets" element={<Markets />} />
