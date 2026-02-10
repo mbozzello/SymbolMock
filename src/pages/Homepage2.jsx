@@ -17,17 +17,15 @@ const TRENDING_NOW = [
   { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -8.2, comments: '8.9K', sentiment: 45, rank: 3, followers: '892,500', whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability and whether wearables and software can offset hardware cyclicality.' },
   { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 14.3, comments: '9.2K', sentiment: 78, rank: 4, followers: '445,200', whyBlurb: 'MI300 adoption and data center share gains are in the spotlight with the stock riding momentum from AI build-out and better-than-feared PC and gaming trends.' },
   { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 9.7, comments: '6.1K', sentiment: 68, rank: 5, followers: '620,800', whyBlurb: 'AWS reacceleration and advertising growth have reignited interest as margins expand and the market reprices the stock on durable cloud and retail strength.' },
-]
-
-/** Top 10 trending for Market Overview section only (pills + why blurb, no stream) */
-const MARKET_OVERVIEW_TRENDING = [
-  ...TRENDING_NOW,
   { ticker: 'META', name: 'Meta', price: 412.50, pct: 4.2, comments: '5.2K', sentiment: 72, rank: 6, followers: '498,200', whyBlurb: 'Reality Labs spend and AI investment are in focus as the street weighs metaverse timing against strong ad demand and Threads growth.' },
   { ticker: 'MSFT', name: 'Microsoft', price: 348.90, pct: 1.8, comments: '4.8K', sentiment: 65, rank: 7, followers: '892,100', whyBlurb: 'Azure growth and Copilot monetization are driving the conversation as investors assess AI infrastructure spend and cloud market share.' },
   { ticker: 'GOOGL', name: 'Alphabet', price: 142.30, pct: -0.5, comments: '4.1K', sentiment: 58, rank: 8, followers: '712,400', whyBlurb: 'Search and YouTube ad trends, plus Gemini and cloud trajectory, are in focus as the street weighs regulatory overhang.' },
   { ticker: 'PLTR', name: 'Palantir', price: 28.45, pct: 11.5, comments: '6.5K', sentiment: 81, rank: 9, followers: '445,800', whyBlurb: 'AIP bootcamp pipeline and government demand are driving record volume as the street debates commercial adoption and valuation.' },
   { ticker: 'GME', name: 'GameStop', price: 29.96, pct: 2.1, comments: '8.2K', sentiment: 62, rank: 10, followers: '1,200,500', whyBlurb: 'Retail interest and turnaround execution are in focus as the community watches cost cuts, NFT pivot, and potential catalyst events.' },
 ]
+
+/** Top 10 trending for Market Overview section only (pills + why blurb, no stream) */
+const MARKET_OVERVIEW_TRENDING = [...TRENDING_NOW]
 
 /** Popular topic pills per symbol: { emoji, label } */
 const POPULAR_TOPICS = {
@@ -785,7 +783,7 @@ export default function Homepage2() {
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
         <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-6')}>
-        <main className={clsx('flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4', !isHome2 && homeTab === 'trending' && 'max-w-[660px]')}>
+        <main className={clsx('flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4', !isHome2 && homeTab === 'trending' && 'max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
           <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
             {isHome2 ? (
@@ -839,7 +837,7 @@ export default function Homepage2() {
               return (
               <div
                 key={card.symbol}
-                className="flex-1 min-w-[130px] rounded-lg border border-border bg-white dark:bg-surface px-2.5 py-2 flex flex-col"
+                className="w-[180px] shrink-0 rounded-lg border border-border bg-white dark:bg-surface px-2.5 py-2 flex flex-col"
               >
                 <div className="flex items-center gap-1.5">
                   {getTickerLogo(card.symbol) ? (
@@ -887,8 +885,9 @@ export default function Homepage2() {
             )}
           <div className="flex flex-col gap-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
             <div className="relative group flex w-full border-b border-border bg-surface-muted/30 overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }} ref={trendingCardsScrollRef}>
-              {TRENDING_NOW.map((s) => {
+              {TRENDING_NOW.map((s, idx) => {
                 const item = mergeQuote(s)
+                const rank = item.rank ?? idx + 1
                 const isSelected = selectedTicker === item.ticker
                 const isLive = item.ticker === 'AAPL'
                 const pctNum = typeof item.pct === 'number' ? item.pct : 0
@@ -898,13 +897,14 @@ export default function Homepage2() {
                     type="button"
                     onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
                     className={clsx(
-                      'flex flex-col items-center gap-1.5 px-4 py-3 text-base font-semibold transition-colors border-r border-border shrink-0 min-w-[152px]',
+                      'relative flex flex-col items-center gap-1.5 px-4 py-3 text-base font-semibold transition-colors border-r border-border shrink-0 min-w-[152px]',
                       isSelected && !isLive && 'bg-[rgba(254,215,170,0.5)] dark:bg-[rgba(254,215,170,0.25)] text-text border-b-2 border-b-amber-500 -mb-px',
                       isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] text-text border-b-2 border-b-[#7c3aed] -mb-px',
                       !isSelected && isLive && 'text-text-muted hover:bg-[rgba(221,214,254,0.15)]',
                       !isSelected && !isLive && 'text-text-muted hover:bg-surface-muted/50'
                     )}
                   >
+                    <span className="absolute left-2 top-2 text-base font-bold text-text-muted">#{rank}</span>
                     <div className="relative shrink-0">
                       <div className="w-14 h-14 rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0">
                         {getTickerLogo(item.ticker) ? (
