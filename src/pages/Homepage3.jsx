@@ -35,6 +35,8 @@ const FOLLOWING_FEED = [
 const FOLLOWING_RECOMMENDED = [...FOLLOWING_FEED].sort((a, b) => (b.likes + b.comments * 2) - (a.likes + a.comments * 2))
 const FOLLOWING_LATEST = [...FOLLOWING_FEED].sort((a, b) => a.ts - b.ts)
 
+const DEFAULT_AVATAR = '/avatars/user-avatar.png'
+
 /** Random social-style images to show under message body (like a real feed) */
 const FEED_IMAGES = [
   'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
@@ -1051,7 +1053,7 @@ export default function Homepage3() {
             <div className="divide-y divide-border">
               {(followingFeedSort === 'recommended' ? FOLLOWING_RECOMMENDED : FOLLOWING_LATEST).map((msg, idx) => (
                 <div key={msg.id} className="flex gap-3 py-4">
-                  <img src={msg.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <img src={msg.avatar || DEFAULT_AVATAR} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm text-text">{msg.user}</span>
@@ -1064,7 +1066,6 @@ export default function Homepage3() {
                       </div>
                     )}
                     <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
-                      <div className="flex items-center gap-4">
                         <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                           {msg.comments ?? 0}
@@ -1077,8 +1078,6 @@ export default function Homepage3() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                           {msg.likes ?? 0}
                         </button>
-                      </div>
-                      <div className="flex items-center gap-1">
                         <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
                         </button>
@@ -1086,7 +1085,6 @@ export default function Homepage3() {
                           <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
                         </button>
                       </div>
-                    </div>
                   </div>
                 </div>
               ))}
@@ -1456,7 +1454,7 @@ export default function Homepage3() {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
                 <div key={msg.id} className="flex gap-3 p-3 rounded-lg bg-background border border-border">
-                  <img src={msg.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                  <img src={msg.avatar || DEFAULT_AVATAR} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm text-text">{msg.user}</span>
@@ -1525,7 +1523,7 @@ export default function Homepage3() {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
                 <div key={msg.id} className="flex gap-3 p-3 rounded-lg bg-background border border-border">
-                  <img src={msg.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                  <img src={msg.avatar || DEFAULT_AVATAR} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm text-text">{msg.user}</span>
@@ -1544,28 +1542,24 @@ export default function Homepage3() {
                       </div>
                     )}
                     <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
-                      <div className="flex items-center gap-4">
-                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                          {msg.comments ?? 0}
-                        </button>
-                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                          {msg.reposts ?? 0}
-                        </button>
-                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                          {msg.likes ?? 0}
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                        </button>
-                        <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
-                          <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
-                        </button>
-                      </div>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        {msg.comments ?? 0}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        {msg.reposts ?? 0}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        {msg.likes ?? 0}
+                      </button>
+                      <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                      </button>
+                      <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                        <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1668,7 +1662,7 @@ export default function Homepage3() {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
                   <article key={msg.id} className="flex gap-3 pt-4 pb-4 px-4">
-                    <img src={msg.avatar} alt="" className="w-10 h-10 rounded-full object-cover border border-border shrink-0" />
+                    <img src={msg.avatar || DEFAULT_AVATAR} alt="" className="w-10 h-10 rounded-full object-cover border border-border shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-text">{msg.user}</span>
@@ -1687,19 +1681,15 @@ export default function Homepage3() {
                         </div>
                       )}
                       <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
-                        <div className="flex items-center gap-4">
-                          <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>{msg.comments ?? 0}</button>
-                          <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>{msg.reposts ?? 0}</button>
-                          <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{msg.likes ?? 0}</button>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                          </button>
-                          <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
-                            <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
-                          </button>
-                        </div>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>{msg.comments ?? 0}</button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>{msg.reposts ?? 0}</button>
+                        <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{msg.likes ?? 0}</button>
+                        <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                        </button>
+                        <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                          <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                        </button>
                       </div>
                     </div>
                   </article>
@@ -1755,13 +1745,42 @@ export default function Homepage3() {
               {(() => {
                 const item = MARKET_OVERVIEW_TRENDING.find((s) => s.ticker === marketOverviewTrendingTicker) ?? MARKET_OVERVIEW_TRENDING[0]
                 const merged = mergeQuote(item)
+                const ticker = merged.ticker
+                const topPost = (LOAD_IN_MESSAGES[ticker] ?? LOAD_IN_MESSAGES.TSLA)?.[0]
+                const topics = POPULAR_TOPICS[ticker] ?? POPULAR_TOPICS.TSLA
                 return (
                   <>
                     <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
                     <p className="text-sm text-text-muted mt-1 leading-relaxed">{merged.whyBlurb}</p>
-                    <button type="button" onClick={() => navigate(`/symbol?ticker=${merged.ticker}&expandSummary=1`)} className="mt-2 text-sm font-semibold text-primary hover:underline">
-                      View Full Summary →
-                    </button>
+
+                    <h3 className="text-sm font-bold text-text uppercase tracking-wide mt-4 mb-2">Top Post</h3>
+                    {topPost && (
+                      <div className="rounded-lg border border-border bg-background p-3 flex gap-3">
+                        <img src={topPost.avatar || DEFAULT_AVATAR} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-sm text-text">{topPost.user}</span>
+                            <span className="text-xs text-text-muted">{topPost.time}</span>
+                          </div>
+                          <p className="text-sm text-text mt-1 leading-snug"><TickerLinkedText text={topPost.body} /></p>
+                          <div className="flex items-center gap-3 mt-2 text-sm text-text-muted">
+                            <span className="flex items-center gap-1">{topPost.comments ?? 0} replies</span>
+                            <span className="flex items-center gap-1">{topPost.reposts ?? 0} reshares</span>
+                            <span className="flex items-center gap-1">{topPost.likes ?? 0} likes</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <h3 className="text-sm font-bold text-text uppercase tracking-wide mt-4 mb-2">Top Community Topics</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {topics.map((t) => (
+                        <span key={t.label} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-text">
+                          <span aria-hidden>{t.emoji}</span>
+                          {t.label}
+                        </span>
+                      ))}
+                    </div>
                   </>
                 )
               })()}
@@ -1850,7 +1869,7 @@ export default function Homepage3() {
                   onClick={() => navigate('/symbol')}
                   className="flex shrink-0 w-[140px] flex-col items-center rounded-xl border border-border bg-white dark:bg-surface p-4 hover:border-border-strong hover:shadow-md transition-all"
                 >
-                  <img src={p.avatar} alt="" className="w-12 h-12 rounded-full object-cover border border-border mb-3" />
+                  <img src={p.avatar || DEFAULT_AVATAR} alt="" className="w-12 h-12 rounded-full object-cover border border-border mb-3" />
                   <span className="text-sm font-bold text-text tabular-nums">#{p.rank}</span>
                   <span className="mt-1 text-sm font-medium text-text truncate w-full text-center" title={`@${p.handle}`}>@{p.handle}</span>
                   <span className="mt-2 text-sm font-bold text-success tabular-nums">+{p.value}%</span>
