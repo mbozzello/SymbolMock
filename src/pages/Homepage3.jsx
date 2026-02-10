@@ -1345,7 +1345,7 @@ export default function Homepage3() {
             ) : (
               <div className="w-full flex items-center justify-between gap-3 px-4 pt-1.5 pb-3">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
+                  <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why ${selectedTicker} Is Trending</h3>
                   <p className="text-sm text-text-muted mt-1 line-clamp-2 pr-2" title={selectedItem.whyBlurb}>
                     {selectedItem.whyBlurb}
                   </p>
@@ -1601,7 +1601,7 @@ export default function Homepage3() {
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
+                  <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why ${selectedTicker} Is Trending</h3>
                   <p className="text-sm text-text-muted mt-1 line-clamp-2 pr-2" title={selectedItem.whyBlurb}>{selectedItem.whyBlurb}</p>
                 </div>
                 <button type="button" onClick={() => navigate(`/symbol?ticker=${selectedTicker}&expandSummary=1`)} className="shrink-0 text-sm font-semibold text-primary hover:underline">View Full Summary →</button>
@@ -1750,7 +1750,7 @@ export default function Homepage3() {
                 const topics = POPULAR_TOPICS[ticker] ?? POPULAR_TOPICS.TSLA
                 return (
                   <>
-                    <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why It&apos;s Trending</h3>
+                    <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why ${ticker} Is Trending</h3>
                     <p className="text-sm text-text-muted mt-1 leading-relaxed">{merged.whyBlurb}</p>
 
                     <h3 className="text-sm font-bold text-text uppercase tracking-wide mt-4 mb-2">Top Post</h3>
