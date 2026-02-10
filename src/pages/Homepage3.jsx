@@ -683,7 +683,8 @@ function MiniSparkline({ values = [], isUp }) {
     const y = height - ((v - min) / range) * (height - 2)
     return `${x},${y}`
   }).join(' ')
-  const color = isUp !== false && values[values.length - 1] >= values[0] ? 'var(--color-success)' : 'var(--color-danger)'
+  const up = isUp !== undefined ? isUp : (values[values.length - 1] >= values[0])
+  const color = up ? 'var(--color-success)' : 'var(--color-danger)'
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="w-16 h-6 shrink-0">
       <polyline fill="none" stroke={color} strokeWidth="1.5" points={points} strokeLinecap="round" strokeLinejoin="round" />
@@ -762,7 +763,7 @@ export default function Homepage3() {
   }
   const selectedMerged = mergeQuote(selectedItem)
   const chartValues = selectedMerged.spark ?? SPARK_FALLBACK[selectedTicker] ?? [100, 101, 102, 101.5, 103, 102.5, 104, 105]
-  const chartIsUp = (chartValues[chartValues.length - 1] ?? 0) >= (chartValues[0] ?? 0)
+  const chartIsUp = (selectedMerged.pct ?? 0) >= 0
 
   const allMessages = STREAM_MESSAGES[selectedTicker] ?? STREAM_MESSAGES.NVDA
   const baseMessages = streamFilter === 'latest' ? allMessages : allMessages.filter((m) => (m.topicIndex ?? 0) === streamFilter)

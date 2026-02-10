@@ -30,7 +30,7 @@ function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
 
-function MiniSparkline({ values = [] }) {
+function MiniSparkline({ values = [], isUp }) {
   const width = 72
   const height = 28
   const padding = 2
@@ -42,12 +42,12 @@ function MiniSparkline({ values = [] }) {
     const y = padding + (1 - (v - min) / range) * (height - padding * 2)
     return `${x.toFixed(1)},${y.toFixed(1)}`
   })
-  const lastUp = values[values.length - 1] >= values[0]
+  const up = isUp !== undefined ? isUp : (values[values.length - 1] >= values[0])
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="w-20 h-7">
         <polyline
         fill="none"
-        stroke={lastUp ? 'var(--color-success)' : 'var(--color-danger)'}
+        stroke={up ? 'var(--color-success)' : 'var(--color-danger)'}
         strokeWidth="2"
         points={points.join(' ')}
         strokeLinejoin="round"
@@ -106,7 +106,7 @@ function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode }) {
                 </div>
                 <div className="truncate text-sm muted">{s.name}</div>
               </div>
-              <MiniSparkline values={s.spark} />
+              <MiniSparkline values={s.spark} isUp={s.change >= 0} />
             </div>
             <div className="mt-2 flex items-baseline justify-between">
               <div className="font-semibold">${s.price.toFixed(2)}</div>

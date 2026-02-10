@@ -25,7 +25,7 @@ function parseMsgVol(v) {
   return parseInt(s, 10) || 0
 }
 
-function MiniSparkline({ values = [], width = 144, height = 56, large = false }) {
+function MiniSparkline({ values = [], width = 144, height = 56, large = false, isUp }) {
   const padding = 2
   const sizeClass = large ? 'h-[84px] w-[216px]' : 'h-14 w-36'
   if (values.length < 2) {
@@ -39,7 +39,7 @@ function MiniSparkline({ values = [], width = 144, height = 56, large = false })
     const y = padding + (1 - (v - min) / range) * (height - padding * 2)
     return `${x.toFixed(1)},${y.toFixed(1)}`
   })
-  const lastUp = values[values.length - 1] >= values[0]
+  const up = isUp !== undefined ? isUp : (values[values.length - 1] >= values[0])
   const priorClose = values[0]
   const chartHeight = height - padding * 2
   const priorCloseY = padding + (1 - (priorClose - min) / range) * chartHeight
@@ -61,7 +61,7 @@ function MiniSparkline({ values = [], width = 144, height = 56, large = false })
       />
       <polyline
         fill="none"
-        stroke={lastUp ? 'var(--color-success)' : 'var(--color-danger)'}
+        stroke={up ? 'var(--color-success)' : 'var(--color-danger)'}
         strokeWidth="2.5"
         points={points.join(' ')}
         strokeLinejoin="round"
@@ -516,7 +516,7 @@ export default function CollapsibleStockHeader({
             </div>
 
             <div className="flex items-center gap-4 shrink-0">
-              <MiniSparkline values={sparkValues} large />
+              <MiniSparkline values={sparkValues} large isUp={isUp} />
               <div className="h-[116px] w-[116px] shrink-0 rounded-full bg-white overflow-hidden flex items-center justify-center">
                 <img src="/images/sentiment-meter.png?v=2" alt="72% Bullish" className="h-full w-full object-contain" />
               </div>
