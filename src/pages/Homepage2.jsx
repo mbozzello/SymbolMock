@@ -712,9 +712,9 @@ export default function Homepage2() {
     <div className="min-h-screen bg-background text-text">
       <TopNavigation darkMode={darkMode} toggleDarkMode={() => setDarkMode((p) => !p)} />
 
-      <div className="flex max-w-[1400px] mx-auto">
+      <div className={clsx('flex max-w-[1400px] mx-auto', !isHome2 && 'pl-[50px]')}>
         {/* Column 1: New to Stocktwits + Unlock Watchlist */}
-        <aside className="hidden lg:flex w-[269px] shrink-0 flex-col border-r border-border p-4 gap-6">
+        <aside className="hidden lg:flex w-[300px] shrink-0 flex-col border-r border-border p-4 gap-6">
           <section className="rounded-xl border border-border bg-surface-muted/30 p-4">
             <h2 className="text-sm font-bold text-text mb-2">New to Stocktwits?</h2>
             <p className="text-xs text-text-muted leading-relaxed mb-4">
@@ -811,13 +811,14 @@ export default function Homepage2() {
                   type="button"
                   onClick={() => setHomeTab('trending')}
                   className={clsx(
-                    'text-base font-bold pb-0.5 -mb-0.5 transition-colors',
+                    'text-base font-bold pb-0.5 -mb-0.5 transition-colors inline-flex items-center gap-1',
                     homeTab === 'trending'
                       ? 'text-black border-b-2 border-black'
                       : 'text-text-muted border-b-2 border-transparent hover:text-text'
                   )}
                   style={homeTab === 'trending' ? { borderBottomWidth: 2 } : {}}
                 >
+                  {homeTab === 'trending' && <span className="text-orange-500" aria-hidden>🔥</span>}
                   Trending
                 </button>
               </>
