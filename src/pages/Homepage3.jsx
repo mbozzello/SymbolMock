@@ -1751,7 +1751,13 @@ export default function Homepage3() {
                 return (
                   <>
                     <h3 className="text-sm font-bold text-text uppercase tracking-wide">Why ${ticker} Is Trending</h3>
-                    <p className="text-sm text-text-muted mt-1 leading-relaxed">{merged.whyBlurb}</p>
+                    <p className="text-sm text-text-muted mt-1 leading-relaxed">
+                      {merged.whyBlurb}
+                      {' '}
+                      <button type="button" onClick={() => navigate(`/symbol?ticker=${ticker}`)} className="text-sm font-medium text-black hover:underline inline">
+                        View Stream &rarr;
+                      </button>
+                    </p>
 
                     <h3 className="text-sm font-bold text-text uppercase tracking-wide mt-4 mb-2">Top Post</h3>
                     {topPost && (
