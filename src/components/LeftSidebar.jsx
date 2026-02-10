@@ -1,5 +1,6 @@
 import { getTickerLogo } from '../constants/tickerLogos'
 import { Link } from 'react-router-dom'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
@@ -35,8 +36,106 @@ function MiniSparkline({ values = [], isUp }) {
 }
 
 export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode, leftPadding = 0 }) {
-  const { removeSymbol } = useWatchlist()
+  const {
+    watchlists,
+    currentWatchlistId,
+    currentWatchlist,
+    setCurrentWatchlistId,
+    addWatchlist,
+    removeWatchlist,
+    renameWatchlist,
+    removeSymbol,
+    addSymbol,
+  } = useWatchlist()
   const { getQuote } = useLiveQuotesContext()
+  const [editingName, setEditingName] = useState(false)
+  const [editNameValue, setEditNameValue] = useState('')
+  const [addingSymbol, setAddingSymbol] = useState(false)
+  const [addTickerValue, setAddTickerValue] = useState('')
+  const [watchlistDropdownOpen, setWatchlistDropdownOpen] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [watchlistSort, setWatchlistSort] = useState('gain')
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const [dotsMenuOpen, setDotsMenuOpen] = useState(false)
+  const dotsMenuRef = useRef(null)
+  const [tableView, setTableView] = useState(true)
+  const [columns, setColumns] = useState({ last: true, change: true, changePct: true, volume: false, extendedHours: false })
+  const [symbolDisplay, setSymbolDisplay] = useState({ logo: true, mode: 'ticker' }) // mode: 'ticker' | 'description'
+  const editInputRef = useRef(null)
+  const addInputRef = useRef(null)
+  const dropdownRef = useRef(null)
+  const sortMenuRef = useRef(null)
+
+  useEffect(() => {
+    if (editingName && editInputRef.current) {
+      editInputRef.current.focus()
+      editInputRef.current.select()
+    }
+  }, [editingName])
+
+  useEffect(() => {
+    if (addingSymbol && addInputRef.current) addInputRef.current.focus()
+  }, [addingSymbol])
+
+  useEffect(() => {
+    if (!watchlistDropdownOpen) return
+    const close = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setWatchlistDropdownOpen(false)
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [watchlistDropdownOpen])
+
+  useEffect(() => {
+    if (!sortMenuOpen) return
+    const close = (e) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target)) setSortMenuOpen(false)
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [sortMenuOpen])
+
+  useEffect(() => {
+    if (!dotsMenuOpen) return
+    const close = (e) => {
+      if (dotsMenuRef.current && !dotsMenuRef.current.contains(e.target)) setDotsMenuOpen(false)
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [dotsMenuOpen])
+
+  const sortedWatchlist = useMemo(() => {
+    const list = [...watchlist]
+    if (watchlistSort === 'a-z') return list.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''))
+    if (watchlistSort === 'my-sort') return list
+    const withPct = list.map((s) => {
+      const q = getQuote(s.ticker)
+      const price = q?.price ?? s.price
+      const change = q?.change ?? s.change
+      const pct = q?.changePercent ?? (price && price !== 0 ? (change / price) * 100 : 0)
+      return { ...s, _pct: pct }
+    })
+    if (watchlistSort === 'gain') return withPct.sort((a, b) => (b._pct ?? 0) - (a._pct ?? 0))
+    if (watchlistSort === 'loss') return withPct.sort((a, b) => (a._pct ?? 0) - (b._pct ?? 0))
+    return list
+  }, [watchlist, watchlistSort, getQuote])
+
+  const handleSaveName = () => {
+    const trimmed = editNameValue.trim()
+    if (trimmed && currentWatchlistId) renameWatchlist(currentWatchlistId, trimmed)
+    setEditingName(false)
+    setEditNameValue('')
+  }
+
+  const handleAddSymbolSubmit = (e) => {
+    e?.preventDefault()
+    const t = addTickerValue.trim().toUpperCase()
+    if (t) {
+      addSymbol(t, t)
+      setAddTickerValue('')
+      setAddingSymbol(false)
+    }
+  }
 
   const content = (
     <div className="flex h-full w-full flex-col gap-4 bg-background p-4 border-r border-border">
@@ -103,19 +202,198 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
       </button>
 
 
-      <div className="mt-4 flex items-center justify-between gap-2 shrink-0">
-        <span className="text-sm font-semibold text-text">Watchlist</span>
-        <div className="flex items-center gap-1">
-          <select className="text-xs font-medium rounded border border-border bg-surface-muted text-text px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary">
-            <option>All</option>
-          </select>
-          <select className="text-xs font-medium rounded border border-border bg-surface-muted text-text px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary">
-            <option>A-Z</option>
-          </select>
+      <div className="mt-3 shrink-0">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="relative flex-1 min-w-0 flex items-center gap-1" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setWatchlistDropdownOpen((v) => !v); }}
+              className="flex items-center gap-1 text-sm font-semibold text-text bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer hover:opacity-80 min-w-0"
+              aria-label="Watchlist options"
+              aria-expanded={watchlistDropdownOpen}
+            >
+              <span className="truncate">{(currentWatchlist?.name?.trim()) || 'Watchlist'}</span>
+              <svg className={clsx('w-4 h-4 shrink-0 text-text-muted transition-transform', watchlistDropdownOpen && 'rotate-180')} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+            {watchlistDropdownOpen && (
+              <div className="absolute left-0 top-full mt-0.5 z-50 min-w-[160px] rounded-lg border border-border bg-background shadow-lg py-1">
+                {watchlists.map((w) => (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => { setCurrentWatchlistId(w.id); setWatchlistDropdownOpen(false); }}
+                    className={clsx('w-full text-left px-3 py-2 text-sm', w.id === currentWatchlistId ? 'bg-primary/10 text-primary font-medium' : 'text-text hover:bg-surface-muted')}
+                  >
+                    {w.name}
+                  </button>
+                ))}
+                <div className="border-t border-border my-1" />
+                <button
+                  type="button"
+                  onClick={() => { setEditingName(true); setEditNameValue(currentWatchlist?.name ?? ''); setWatchlistDropdownOpen(false); }}
+                  className="w-full text-left px-3 py-2 text-sm text-text hover:bg-surface-muted"
+                >
+                  Rename this list
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { addWatchlist(); setWatchlistDropdownOpen(false); setEditingName(true); setEditNameValue('New list'); }}
+                  className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-surface-muted"
+                >
+                  New list
+                </button>
+                {watchlists.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => { setWatchlistDropdownOpen(false); setConfirmDeleteOpen(true); }}
+                    className="w-full text-left px-3 py-2 text-sm text-danger hover:bg-surface-muted"
+                  >
+                    Delete list
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="relative shrink-0" ref={dotsMenuRef}>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setDotsMenuOpen((v) => !v); }}
+              className="p-1.5 rounded hover:bg-surface-muted text-text-muted hover:text-text transition-colors"
+              aria-label="Watchlist display options"
+              aria-expanded={dotsMenuOpen}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+            </button>
+            {dotsMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 w-[240px] rounded-lg border border-border bg-background shadow-lg p-3">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <span className="text-sm font-medium text-text">Table view</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={tableView}
+                    onClick={() => setTableView((v) => !v)}
+                    className={clsx('relative inline-flex h-6 w-10 shrink-0 rounded-full transition-colors', tableView ? 'bg-primary' : 'bg-surface-muted')}
+                  >
+                    <span className={clsx('inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition translate-y-0.5', tableView ? 'translate-x-5' : 'translate-x-0.5')} />
+                  </button>
+                </div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-text-muted mb-2">Customize columns</div>
+                <div className="space-y-1.5 mb-3">
+                  {[
+                    { key: 'last', label: 'Last' },
+                    { key: 'change', label: 'Change' },
+                    { key: 'changePct', label: 'Change %' },
+                    { key: 'volume', label: 'Volume' },
+                    { key: 'extendedHours', label: 'Extended Hours' },
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={!!columns[key]} onChange={() => setColumns((c) => ({ ...c, [key]: !c[key] }))} className="rounded border-border text-primary focus:ring-primary" />
+                      <span className="text-sm text-text">{label}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="border-t border-border pt-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-text-muted mb-2">Symbol display</div>
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={symbolDisplay.logo} onChange={() => setSymbolDisplay((s) => ({ ...s, logo: !s.logo }))} className="rounded border-border text-primary focus:ring-primary" />
+                      <span className="text-sm text-text">Logo</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'ticker'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'ticker' }))} className="border-border text-primary focus:ring-primary" />
+                      <span className="text-sm text-text">Ticker</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'description'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'description' }))} className="border-border text-primary focus:ring-primary" />
+                      <span className="text-sm text-text">Description</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        {editingName && (
+          <div className="flex items-center gap-2 mb-1.5">
+            <input
+              ref={editInputRef}
+              type="text"
+              value={editNameValue}
+              onChange={(e) => setEditNameValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') { setEditingName(false); setEditNameValue(''); } }}
+              onBlur={handleSaveName}
+              className="flex-1 text-sm font-medium rounded border border-border bg-background px-2 py-1.5 text-text focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="List name"
+            />
+          </div>
+        )}
+        {addingSymbol && (
+          <form onSubmit={handleAddSymbolSubmit} className="flex items-center gap-2 mb-1.5">
+            <input
+              ref={addInputRef}
+              type="text"
+              value={addTickerValue}
+              onChange={(e) => setAddTickerValue(e.target.value.toUpperCase())}
+              onKeyDown={(e) => { if (e.key === 'Escape') { setAddingSymbol(false); setAddTickerValue(''); } }}
+              placeholder="Ticker (e.g. AAPL)"
+              className="flex-1 text-sm rounded border border-border bg-background px-2 py-1.5 text-text focus:outline-none focus:ring-1 focus:ring-primary min-w-0"
+              maxLength={10}
+            />
+            <button type="submit" className="btn text-xs py-1.5 px-2 shrink-0">Add</button>
+            <button type="button" onClick={() => { setAddingSymbol(false); setAddTickerValue(''); }} className="text-text-muted hover:text-text p-1 shrink-0" aria-label="Cancel">×</button>
+          </form>
+        )}
+        <div className="relative flex items-center justify-between gap-2 mt-1 mb-0.5" ref={sortMenuRef}>
+          <button
+            type="button"
+            onClick={() => setAddingSymbol(true)}
+            className="p-1.5 rounded-full border border-border bg-surface-muted hover:bg-surface text-text font-bold text-lg leading-none flex items-center justify-center w-7 h-7 shrink-0"
+            aria-label="Add symbol to watchlist"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setSortMenuOpen((v) => !v); }}
+            className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-sm font-medium text-text hover:bg-surface-muted transition-colors"
+            aria-label="Sort watchlist"
+            aria-expanded={sortMenuOpen}
+          >
+            <span>{watchlistSort === 'gain' ? 'Gain' : watchlistSort === 'loss' ? 'Loss' : watchlistSort === 'a-z' ? 'A-Z' : 'My Sort'}</span>
+            <svg className={clsx('w-4 h-4 text-text-muted transition-transform', sortMenuOpen && 'rotate-180')} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          </button>
+          {sortMenuOpen && (
+            <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-border bg-background shadow-lg py-1">
+              <button type="button" onClick={() => { setWatchlistSort('a-z'); setSortMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface-muted text-left">
+                <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
+                A-Z
+              </button>
+              <button type="button" onClick={() => { setWatchlistSort('gain'); setSortMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface-muted text-left">
+                <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z" /></svg>
+                Last Price Gain
+              </button>
+              <button type="button" onClick={() => { setWatchlistSort('loss'); setSortMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface-muted text-left">
+                <svg className="w-4 h-4 text-danger" fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z" /></svg>
+                Last Price Loss
+              </button>
+              <button type="button" onClick={() => { setWatchlistSort('my-sort'); setSortMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface-muted text-left">
+                <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                My Sort
+              </button>
+              <div className="border-t border-border my-1" />
+              <button type="button" onClick={() => { setEditingName(true); setEditNameValue(currentWatchlist?.name ?? ''); setSortMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface-muted text-left">
+                <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                Edit Watchlist
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      <div className="flex-1 min-h-0 space-y-0 overflow-y-auto pr-1 mt-2">
-        {watchlist.map((s) => {
+      <div className="flex-1 min-h-0 space-y-0 overflow-y-auto pr-1 mt-1">
+        {sortedWatchlist.map((s) => {
           const q = getQuote(s.ticker)
           const price = q?.price ?? s.price
           const change = q?.change ?? s.change
@@ -124,28 +402,34 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
             <div key={s.ticker} className="group relative block py-2.5 border-b border-border last:border-b-0 hover:bg-surface-muted/50 transition-colors -mx-1 px-1 rounded">
               <Link to="/symbol" className="block pr-8">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted border border-border">
-                  {getTickerLogo(s.ticker) ? (
-                    <img src={getTickerLogo(s.ticker)} alt="" className="w-full h-full object-contain" />
-                  ) : (
-                    <span className="text-xs font-bold text-muted">{s.ticker[0]}</span>
-                  )}
-                </div>
+                {symbolDisplay.logo && (
+                  <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface-muted border border-border">
+                    {getTickerLogo(s.ticker) ? (
+                      <img src={getTickerLogo(s.ticker)} alt="" className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-xs font-bold text-muted">{s.ticker[0]}</span>
+                    )}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-sm">{s.ticker}</div>
-                  <div className="truncate text-xs muted">{s.name}</div>
+                  <div className="font-semibold text-sm">{symbolDisplay.mode === 'ticker' ? s.ticker : s.name}</div>
+                  {symbolDisplay.mode === 'ticker' && <div className="truncate text-xs muted">{s.name}</div>}
                 </div>
-              </div>
-              <div className="mt-1.5 flex items-baseline justify-between pl-10">
-                <span className="font-semibold text-sm">${typeof price === 'number' ? price.toFixed(2) : '--'}</span>
-                <span className={clsx('text-xs font-medium flex items-center gap-0.5', change >= 0 ? 'text-success' : 'text-danger')}>
-                  {change >= 0 ? (
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
-                  ) : (
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                <div className="shrink-0 text-right flex flex-col items-end gap-0.5">
+                  {columns.last && <span className="font-semibold text-sm">${typeof price === 'number' ? price.toFixed(2) : '--'}</span>}
+                  {(columns.change || columns.changePct) && (
+                    <span className={clsx('text-xs font-medium flex items-center gap-0.5', change >= 0 ? 'text-success' : 'text-danger')}>
+                      {change >= 0 ? (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 14l5-5 5 5H7z" /></svg>
+                      ) : (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M7 10l5 5 5-5H7z" /></svg>
+                      )}
+                      {columns.change && `$${Math.abs(change ?? 0).toFixed(2)}`}
+                      {columns.change && columns.changePct && ' '}
+                      {columns.changePct && `(${pct >= 0 ? '' : '-'}${Math.abs(pct).toFixed(2)}%)`}
+                    </span>
                   )}
-                  ${Math.abs(change ?? 0).toFixed(2)} ({pct >= 0 ? '' : '-'}{Math.abs(pct).toFixed(2)}%)
-                </span>
+                </div>
               </div>
               </Link>
               <button type="button" onClick={() => removeSymbol(s.ticker)} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-surface-muted opacity-0 group-hover:opacity-100 transition-opacity" aria-label={`Remove ${s.ticker} from watchlist`}>
@@ -169,6 +453,27 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
           <div className="absolute inset-y-0 left-0 w-[300px] bg-background shadow-xl border-r border-border">
             {content}
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-modal="true" role="alertdialog" aria-labelledby="confirm-delete-title">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDeleteOpen(false)} />
+          <div className="relative bg-background rounded-lg border border-border shadow-lg p-4 max-w-sm w-full">
+            <p id="confirm-delete-title" className="text-sm font-medium text-text mb-4">Are you sure you want to delete this list?</p>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setConfirmDeleteOpen(false)} className="px-3 py-1.5 text-sm font-medium rounded border border-border bg-surface hover:bg-surface-muted">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { if (currentWatchlistId) removeWatchlist(currentWatchlistId); setConfirmDeleteOpen(false); }}
+                className="px-3 py-1.5 text-sm font-medium rounded text-white bg-danger hover:opacity-90"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

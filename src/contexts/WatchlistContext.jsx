@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
 
-const STORAGE_KEY = 'symbolmock-watchlist'
+const STORAGE_KEY = 'symbolmock-watchlists'
+const CURRENT_ID_KEY = 'symbolmock-watchlist-current'
 
-const DEFAULT_WATCHLIST = [
+const DEFAULT_SYMBOLS = [
   { ticker: 'TSLA', name: 'Tesla, Inc.' },
   { ticker: 'AAPL', name: 'Apple Inc' },
   { ticker: 'ABNB', name: 'Airbnb' },
@@ -16,49 +17,144 @@ const DEFAULT_WATCHLIST = [
   { ticker: 'LULU', name: 'Lululemon' },
 ]
 
+function generateId() {
+  return `wl-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+const LEGACY_STORAGE_KEY = 'symbolmock-watchlist'
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    const currentRaw = localStorage.getItem(CURRENT_ID_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].symbols) {
+        const currentId = currentRaw && parsed.some((w) => w.id === currentRaw) ? currentRaw : parsed[0].id
+        return { watchlists: parsed, currentId }
+      }
+    }
+    // Migrate legacy single watchlist
+    const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY)
+    if (legacyRaw) {
+      const legacy = JSON.parse(legacyRaw)
+      if (Array.isArray(legacy) && legacy.length > 0) {
+        const symbols = legacy.every((s) => s && s.ticker) ? legacy : []
+        if (symbols.length > 0) {
+          const migrated = [{ id: 'default', name: 'Watchlist', symbols }]
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
+            localStorage.setItem(CURRENT_ID_KEY, 'default')
+            localStorage.removeItem(LEGACY_STORAGE_KEY)
+          } catch (_) {}
+          return { watchlists: migrated, currentId: 'default' }
+        }
+      }
+    }
+  } catch (_) {}
+  return {
+    watchlists: [{ id: 'default', name: 'Watchlist', symbols: DEFAULT_SYMBOLS }],
+    currentId: 'default',
+  }
+}
+
 const WatchlistContext = createContext(null)
 
 export function WatchlistProvider({ children }) {
-  const [watchlist, setWatchlist] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed
-      }
-    } catch (_) {}
-    return DEFAULT_WATCHLIST
-  })
+  const [{ watchlists, currentId }, setState] = useState(loadFromStorage)
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(watchlist))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(watchlists))
+      localStorage.setItem(CURRENT_ID_KEY, currentId)
     } catch (_) {}
-  }, [watchlist])
+  }, [watchlists, currentId])
+
+  const currentWatchlist = useMemo(
+    () => watchlists.find((w) => w.id === currentId) ?? watchlists[0],
+    [watchlists, currentId]
+  )
+  const watchlist = useMemo(() => currentWatchlist?.symbols ?? [], [currentWatchlist])
+  const allTickers = useMemo(
+    () => [...new Set(watchlists.flatMap((w) => w.symbols.map((s) => s.ticker)))],
+    [watchlists]
+  )
+
+  const setCurrentWatchlistId = useCallback((id) => {
+    setState((prev) => ({
+      ...prev,
+      watchlists: prev.watchlists,
+      currentId: prev.watchlists.some((w) => w.id === id) ? id : prev.currentId,
+    }))
+  }, [])
+
+  const addWatchlist = useCallback((name = 'New list') => {
+    const id = generateId()
+    setState((prev) => ({
+      ...prev,
+      watchlists: [...prev.watchlists, { id, name, symbols: [] }],
+      currentId: id,
+    }))
+    return id
+  }, [])
+
+  const removeWatchlist = useCallback((id) => {
+    setState((prev) => {
+      const next = prev.watchlists.filter((w) => w.id !== id)
+      if (next.length === 0) return prev
+      const nextCurrent = prev.currentId === id ? next[0].id : prev.currentId
+      return { watchlists: next, currentId: nextCurrent }
+    })
+  }, [])
+
+  const renameWatchlist = useCallback((id, name) => {
+    const trimmed = (name || '').trim() || 'Watchlist'
+    setState((prev) => ({
+      ...prev,
+      watchlists: prev.watchlists.map((w) => (w.id === id ? { ...w, name: trimmed } : w)),
+    }))
+  }, [])
 
   const addSymbol = useCallback((ticker, name) => {
     const t = (ticker || '').toUpperCase().trim()
     const n = name || t
     if (!t) return
-    setWatchlist((prev) => {
-      const without = prev.filter((s) => s.ticker !== t)
-      return [{ ticker: t, name: n }, ...without]
+    setState((prev) => {
+      const list = prev.watchlists.find((w) => w.id === prev.currentId)
+      if (!list) return prev
+      const without = list.symbols.filter((s) => s.ticker !== t)
+      const updated = { ...list, symbols: [{ ticker: t, name: n }, ...without] }
+      return {
+        ...prev,
+        watchlists: prev.watchlists.map((w) => (w.id === prev.currentId ? updated : w)),
+      }
     })
   }, [])
 
   const removeSymbol = useCallback((ticker) => {
     const t = (ticker || '').toUpperCase().trim()
     if (!t) return
-    setWatchlist((prev) => prev.filter((s) => s.ticker !== t))
+    setState((prev) => ({
+      ...prev,
+      watchlists: prev.watchlists.map((w) =>
+        w.id === prev.currentId ? { ...w, symbols: w.symbols.filter((s) => s.ticker !== t) } : w
+      ),
+    }))
   }, [])
 
   const toggleWatch = useCallback((ticker, name) => {
     const t = (ticker || '').toUpperCase().trim()
     if (!t) return
-    setWatchlist((prev) => {
-      const idx = prev.findIndex((s) => s.ticker === t)
-      if (idx >= 0) return prev.filter((s) => s.ticker !== t)
-      return [{ ticker: t, name: name || t }, ...prev]
+    setState((prev) => {
+      const list = prev.watchlists.find((w) => w.id === prev.currentId)
+      if (!list) return prev
+      const idx = list.symbols.findIndex((s) => s.ticker === t)
+      const symbols = idx >= 0 ? list.symbols.filter((s) => s.ticker !== t) : [{ ticker: t, name: name || t }, ...list.symbols]
+      const updated = { ...list, symbols }
+      return {
+        ...prev,
+        watchlists: prev.watchlists.map((w) => (w.id === prev.currentId ? updated : w)),
+      }
     })
   }, [])
 
@@ -67,7 +163,22 @@ export function WatchlistProvider({ children }) {
     [watchlist]
   )
 
-  const value = { watchlist, addSymbol, removeSymbol, toggleWatch, isWatched }
+  const value = {
+    watchlist,
+    watchlists,
+    currentWatchlistId: currentId,
+    currentWatchlist,
+    setCurrentWatchlistId,
+    addWatchlist,
+    removeWatchlist,
+    renameWatchlist,
+    addSymbol,
+    removeSymbol,
+    toggleWatch,
+    isWatched,
+    allTickers,
+  }
+
   return (
     <WatchlistContext.Provider value={value}>
       {children}

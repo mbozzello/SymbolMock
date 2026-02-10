@@ -12,9 +12,8 @@ const BASE_SYMBOLS = [
 ]
 
 export function LiveQuotesProvider({ children }) {
-  const { watchlist } = useWatchlist()
-  const watchlistTickers = watchlist.map((s) => s.ticker)
-  const allSymbols = [...new Set([...BASE_SYMBOLS, ...watchlistTickers])]
+  const { allTickers } = useWatchlist()
+  const allSymbols = [...new Set([...BASE_SYMBOLS, ...allTickers])]
   const { quotes, loading, error, refetch } = useFakeQuotes(allSymbols)
 
   const value = useMemo(() => ({
