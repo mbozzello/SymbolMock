@@ -1773,9 +1773,9 @@ export default function Homepage3() {
                     )}
 
                     <h3 className="text-sm font-bold text-text uppercase tracking-wide mt-4 mb-2">Top Community Topics</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {topics.map((t) => (
-                        <span key={t.label} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-text">
+                    <div className="flex flex-nowrap gap-2 overflow-hidden">
+                      {(topics.length <= 3 ? topics : topics.slice(0, 3)).map((t) => (
+                        <span key={t.label} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-text shrink-0">
                           <span aria-hidden>{t.emoji}</span>
                           {t.label}
                         </span>
