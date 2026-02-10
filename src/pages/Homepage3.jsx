@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import LatestNews from '../components/LatestNews.jsx'
+import TopDiscussions from '../components/TopDiscussions.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
@@ -2019,6 +2020,7 @@ export default function Homepage3() {
         {!isHome2 && (
           <aside className="w-[280px] shrink-0 hidden lg:block space-y-6 pl-0 pr-4 pt-4 pb-4">
             <LatestNews />
+            <TopDiscussions />
             <RelatedSymbols />
             <PredictionLeaderboard />
           </aside>
