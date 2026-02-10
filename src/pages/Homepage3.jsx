@@ -969,7 +969,7 @@ export default function Homepage3() {
                       isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] text-text',
                       !isSelected && isLive && 'text-text-muted hover:bg-[rgba(221,214,254,0.15)]',
                       !isSelected && !isLive && (isHome3 ? 'text-text-muted hover:bg-surface-muted/50' : 'text-text-muted hover:bg-surface-muted/50'),
-                      isHome3 && isSelected && 'border-b-2 border-b-success -mb-px',
+                      isHome3 && isSelected && 'border-b-2 border-b-black -mb-px',
                       !isHome3 && isSelected && 'border-b-2 -mb-px',
                       !isHome3 && isSelected && !isLive && 'border-b-amber-500',
                       !isHome3 && isSelected && isLive && 'border-b-[#7c3aed]'
