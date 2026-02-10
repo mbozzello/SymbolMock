@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import TickerLinkedText from '../components/TickerLinkedText.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
@@ -310,7 +311,7 @@ export default function Homepage2() {
   const mergeQuote = (staticItem) => {
     const q = getQuote(staticItem.ticker)
     if (!q) return staticItem
-    return { ...staticItem, price: q.price, pct: q.changePercent ?? staticItem.pct }
+    return { ...staticItem, price: q.price, change: q.change ?? staticItem.change, pct: q.changePercent ?? staticItem.pct }
   }
 
   const messages = (STREAM_MESSAGES[selectedTicker] ?? STREAM_MESSAGES.NVDA).slice(0, 4)
@@ -407,9 +408,14 @@ export default function Homepage2() {
               <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             </span>
           </div>
-          {/* Market cards — full width row (tight layout) */}
+          {/* Market cards — full width row (tight layout); prices/pct from live quotes when available */}
           <div className="w-full flex gap-2 overflow-x-auto pb-1 shrink-0">
-            {MARKET_CARDS.map((card) => (
+            {MARKET_CARDS.map((card) => {
+              const q = getQuote(card.symbol)
+              const price = q?.price ?? card.price
+              const change = q?.change ?? card.change
+              const pct = q?.changePercent ?? card.pct
+              return (
               <div
                 key={card.symbol}
                 className="flex-1 min-w-[130px] rounded-lg border border-border bg-white dark:bg-surface px-2.5 py-2 flex flex-col"
@@ -423,13 +429,13 @@ export default function Homepage2() {
                   <span className="text-xs font-bold text-text">{card.symbol}</span>
                 </div>
                 <div className="flex items-center justify-between gap-1.5 mt-0.5">
-                  <div className="text-base font-bold text-text min-w-0">
-                    {card.price >= 1000 ? card.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : card.price.toFixed(2)}
+                  <div className="text-base font-bold text-text min-w-0 tabular-nums">
+                    {price >= 1000 ? price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : price.toFixed(2)}
                   </div>
                   <SentimentGauge value={card.sentiment} label={card.sentimentLabel} compact />
                 </div>
-                <div className={clsx('text-[11px] font-semibold', card.pct >= 0 ? 'text-success' : 'text-danger')}>
-                  ({card.change >= 0 ? '+' : ''}{card.change.toFixed(2)}) {card.pct >= 0 ? '+' : ''}{card.pct.toFixed(2)}%
+                <div className={clsx('text-[11px] font-semibold tabular-nums', pct >= 0 ? 'text-success' : 'text-danger')}>
+                  ({change >= 0 ? '+' : ''}{change.toFixed(2)}) {pct >= 0 ? '+' : ''}{pct.toFixed(2)}%
                 </div>
                 <div className="mt-1.5 pt-1.5 border-t border-border">
                   <div className="text-[8px] font-semibold uppercase tracking-wide text-text-muted mb-0.5">Community Discussing</div>
@@ -444,7 +450,8 @@ export default function Homepage2() {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Trending: header above, then symbol tabs + content for more horizontal space */}
@@ -494,7 +501,15 @@ export default function Homepage2() {
                       <span className="text-[11px] font-semibold text-text-muted leading-tight">#{item.rank ?? 1}</span>
                     </div>
                     <div className="flex flex-col items-start">
-                      <span>${item.ticker}</span>
+                      <span
+                        role="link"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); navigate('/symbol'); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); navigate('/symbol'); } }}
+                        className="font-semibold text-primary hover:underline cursor-pointer focus:outline-none focus:underline"
+                      >
+                        ${item.ticker}
+                      </span>
                       <span className="text-text-muted font-normal text-sm">
                         ${typeof item.price === 'number' ? item.price.toFixed(2) : '--'}
                       </span>
@@ -672,7 +687,7 @@ export default function Homepage2() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-text mt-0.5 leading-snug">{msg.body}</p>
+                    <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
                       <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -734,7 +749,9 @@ export default function Homepage2() {
           <section className="shrink-0">
             <h2 className="text-lg font-bold text-text mb-3">Top News &gt;</h2>
             <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
-              {(TOP_NEWS_BY_CATEGORY.Technology ?? []).map((art, i) => (
+              {(TOP_NEWS_BY_CATEGORY.Technology ?? []).map((art, i) => {
+                const newsPct = getQuote(art.ticker)?.changePercent ?? art.pctChange ?? 0
+                return (
                 <Link
                   key={`news-${i}-${art.title}`}
                   to="/news"
@@ -751,11 +768,11 @@ export default function Homepage2() {
                     )}
                     <span
                       className={clsx(
-                        'absolute top-2 left-2 rounded-full px-2 py-0.5 text-xs font-bold text-white',
-                        (art.pctChange ?? 0) >= 0 ? 'bg-success' : 'bg-danger'
+                        'absolute top-2 left-2 rounded-full px-2 py-0.5 text-xs font-bold text-white tabular-nums',
+                        newsPct >= 0 ? 'bg-success' : 'bg-danger'
                       )}
                     >
-                      ${art.ticker} {(art.pctChange ?? 0) >= 0 ? '+' : ''}{(art.pctChange ?? 0)}%
+                      ${art.ticker} {newsPct >= 0 ? '+' : ''}{typeof newsPct === 'number' ? newsPct.toFixed(1) : newsPct}%
                     </span>
                   </div>
                   <div className="p-3 flex flex-col min-h-0">
@@ -763,7 +780,8 @@ export default function Homepage2() {
                     <p className="text-xs text-text-muted mt-1">{art.source} • {art.time}</p>
                   </div>
                 </Link>
-              ))}
+                )
+              })}
             </div>
           </section>
 
@@ -787,11 +805,13 @@ export default function Homepage2() {
             </div>
           </section>
 
-          {/* Top Watchlist Adds: tight pill carousel */}
+          {/* Top Watchlist Adds: tight pill carousel; pct from live quotes when available */}
           <section className="shrink-0">
             <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Adds &gt;</h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
-              {TOP_WATCHLIST_ADDITIONS.map((item) => (
+              {TOP_WATCHLIST_ADDITIONS.map((item) => {
+                const addPct = getQuote(item.ticker)?.changePercent ?? item.pctChange
+                return (
                 <button
                   key={`add-${item.ticker}`}
                   type="button"
@@ -806,20 +826,23 @@ export default function Homepage2() {
                     )}
                   </div>
                   <span className="font-semibold text-text text-sm uppercase tracking-tight">{item.ticker}</span>
-                  <span className={clsx('rounded-full px-2 py-0.5 text-xs font-bold', item.pctChange >= 0 ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger')}>
-                    {item.pctChange >= 0 ? '+' : ''}{item.pctChange}%
+                  <span className={clsx('rounded-full px-2 py-0.5 text-xs font-bold tabular-nums', addPct >= 0 ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger')}>
+                    {addPct >= 0 ? '+' : ''}{typeof addPct === 'number' ? addPct.toFixed(1) : addPct}%
                   </span>
                   <span className="text-xs text-text-muted whitespace-nowrap">{item.adds} adds</span>
                 </button>
-              ))}
+                )
+              })}
             </div>
           </section>
 
-          {/* Top Watchlist Removals: tight pill carousel */}
+          {/* Top Watchlist Removals: tight pill carousel; pct from live quotes when available */}
           <section className="shrink-0">
             <h2 className="text-lg font-bold text-text mb-2">Top Watchlist Removals &gt;</h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
-              {TOP_WATCHLIST_REMOVALS.map((item) => (
+              {TOP_WATCHLIST_REMOVALS.map((item) => {
+                const remPct = getQuote(item.ticker)?.changePercent ?? item.pctChange
+                return (
                 <button
                   key={`rem-${item.ticker}`}
                   type="button"
@@ -834,12 +857,13 @@ export default function Homepage2() {
                     )}
                   </div>
                   <span className="font-semibold text-text text-sm uppercase tracking-tight">{item.ticker}</span>
-                  <span className={clsx('rounded-full px-2 py-0.5 text-xs font-bold', item.pctChange >= 0 ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger')}>
-                    {item.pctChange >= 0 ? '+' : ''}{item.pctChange}%
+                  <span className={clsx('rounded-full px-2 py-0.5 text-xs font-bold tabular-nums', remPct >= 0 ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger')}>
+                    {remPct >= 0 ? '+' : ''}{typeof remPct === 'number' ? remPct.toFixed(1) : remPct}%
                   </span>
                   <span className="text-xs text-text-muted whitespace-nowrap">{item.removals} removals</span>
                 </button>
-              ))}
+                )
+              })}
             </div>
           </section>
 

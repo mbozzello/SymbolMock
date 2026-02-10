@@ -12,6 +12,7 @@ import { useBookmarks } from '../contexts/BookmarkContext.jsx'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import TickerLinkedText from '../components/TickerLinkedText.jsx'
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
 }
@@ -92,25 +93,29 @@ export default function Home() {
   const { toggleBookmark, isBookmarked } = useBookmarks()
   const { watchlist } = useWatchlist()
   const { getQuote } = useLiveQuotesContext()
+  const [searchParams] = useSearchParams()
+  const tickerFromUrl = (searchParams.get('ticker') || 'TSLA').toUpperCase().trim()
+  const topicSlug = searchParams.get('topic')
 
   const symbol = useMemo(() => {
-    const q = getQuote('TSLA')
-    if (!q) return DEFAULT_SYMBOL
+    const q = getQuote(tickerFromUrl)
+    if (!q) return { ...DEFAULT_SYMBOL, ticker: tickerFromUrl, name: `${tickerFromUrl} Inc` }
     return {
       ...DEFAULT_SYMBOL,
+      ticker: tickerFromUrl,
+      name: `${tickerFromUrl} Inc`,
       price: q.price ?? DEFAULT_SYMBOL.price,
       change: q.change ?? DEFAULT_SYMBOL.change,
       changePct: q.changePercent ?? DEFAULT_SYMBOL.changePct,
       chartValues: q.spark?.length ? q.spark : DEFAULT_SYMBOL.chartValues,
     }
-  }, [getQuote])
+  }, [getQuote, tickerFromUrl])
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
   })
-  const [searchParams] = useSearchParams()
-  const topicSlug = searchParams.get('topic')
   const [activeFilter, setActiveFilter] = useState(() => {
     const t = SYMBOL_TOPICS.find((x) => x.slug === topicSlug)
     return t ? t.label : 'All'
@@ -361,7 +366,7 @@ export default function Home() {
                       <span className="font-semibold text-sm">{post.username}</span>
                       <span className="text-xs muted">{post.time}</span>
                     </div>
-                    <p className="mt-1 text-sm text-text leading-snug">{post.body}</p>
+                    <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={post.body} /></p>
                     {post.hasReaction && post.debate && (
                       <DebateBox
                         postId={post.id}
@@ -442,7 +447,7 @@ export default function Home() {
                     <span className="text-xs muted">{FIRST_FEED_MESSAGE.time}</span>
                   </div>
                   <p className="mt-1 text-sm text-text leading-snug">
-                    {FIRST_FEED_MESSAGE.body}
+                    <TickerLinkedText text={FIRST_FEED_MESSAGE.body} />
                   </p>
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     <div className="aspect-video rounded-lg overflow-hidden bg-surface-muted border border-border">
@@ -511,7 +516,7 @@ export default function Home() {
                     </Link>
                     <span className="text-xs muted">{HOWARD_LINDZON_MESSAGE.time}</span>
                   </div>
-                  <p className="mt-1 text-sm text-text leading-snug">{HOWARD_LINDZON_MESSAGE.body}</p>
+                  <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={HOWARD_LINDZON_MESSAGE.body} /></p>
                   <div className="mt-3 rounded-xl border border-border bg-surface overflow-hidden max-w-md">
                     {/* Top section: symbol + sentiment */}
                     <div className="flex items-start justify-between gap-4 p-4 pb-2">

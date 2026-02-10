@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import TickerLinkedText from '../components/TickerLinkedText.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 
 function clsx(...values) {
@@ -468,7 +469,7 @@ export default function Homepage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-text mt-0.5 leading-snug">{msg.body}</p>
+                    <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
                       <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>

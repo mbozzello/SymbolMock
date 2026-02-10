@@ -1,4 +1,5 @@
 import React from 'react'
+import TickerLinkedText from './TickerLinkedText.jsx'
 
 function FeaturedTake({ post }) {
   if (!post) {
@@ -22,7 +23,7 @@ function FeaturedTake({ post }) {
             <span className="font-semibold">{post.user}</span>
             <span className="text-xs muted">{post.time}</span>
           </div>
-          <div className="mt-1 text-sm line-clamp-3">{post.body}</div>
+          <div className="mt-1 text-sm line-clamp-3"><TickerLinkedText text={post.body} /></div>
           <div className="mt-2 flex gap-3 text-xs muted">
             <span className="flex items-center gap-1">💬 {post.comments}</span>
             <span className="flex items-center gap-1">👍 {post.likes}</span>

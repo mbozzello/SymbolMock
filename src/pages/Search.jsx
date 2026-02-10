@@ -8,6 +8,7 @@ import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
+import TickerLinkedText from '../components/TickerLinkedText.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -657,7 +658,7 @@ export default function Search() {
                           <span className="font-semibold text-sm text-text">{msg.username}</span>
                           <span className="text-xs text-text-muted">{msg.time}</span>
                         </div>
-                        <p className="mt-0.5 text-sm text-text leading-snug whitespace-pre-wrap">{msg.body}</p>
+                        <p className="mt-0.5 text-sm text-text leading-snug whitespace-pre-wrap"><TickerLinkedText text={msg.body} /></p>
                         <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
                           <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

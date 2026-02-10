@@ -6,6 +6,7 @@ import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
+import TickerLinkedText from '../components/TickerLinkedText.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
@@ -890,7 +891,7 @@ export default function Profile({ isOwnProfile = false }) {
                             {entry.time}
                           </span>
                         </div>
-                        <p className="mt-1 text-sm text-text leading-snug whitespace-pre-wrap">{entry.body}</p>
+                        <p className="mt-1 text-sm text-text leading-snug whitespace-pre-wrap"><TickerLinkedText text={entry.body} /></p>
                       </div>
                     </div>
                   </article>
@@ -923,7 +924,7 @@ export default function Profile({ isOwnProfile = false }) {
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="18" r="1.5" /></svg>
                         </button>
                       </div>
-                      <p className="mt-1 text-sm text-text leading-snug whitespace-pre-wrap">{post.body}</p>
+                      <p className="mt-1 text-sm text-text leading-snug whitespace-pre-wrap"><TickerLinkedText text={post.body} /></p>
                       {post.hasImage && (
                         <div className="mt-3 rounded-xl overflow-hidden border border-border bg-surface-muted">
                           <img src={post.imageUrl} alt="" className="w-full aspect-video object-cover" />

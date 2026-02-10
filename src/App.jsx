@@ -23,6 +23,7 @@ import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
 import { LiveQuotesProvider, useLiveQuotesContext } from './contexts/LiveQuotesContext.jsx'
 import { WatchlistProvider, useWatchlist } from './contexts/WatchlistContext.jsx'
+import TickerLinkedText from './components/TickerLinkedText.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -153,7 +154,7 @@ function Post({ post, isUnregistered }) {
             <div className="font-semibold">{post.user}</div>
             <div className="text-xs muted">{post.time}</div>
           </div>
-          <div className="mt-1 whitespace-pre-wrap">{post.body}</div>
+          <div className="mt-1 whitespace-pre-wrap">{typeof post.body === 'string' ? <TickerLinkedText text={post.body} /> : post.body}</div>
           <div
             className={clsx(
               'mt-3 flex gap-4 text-sm muted',
