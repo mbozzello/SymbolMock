@@ -58,7 +58,6 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [dotsMenuOpen, setDotsMenuOpen] = useState(false)
   const dotsMenuRef = useRef(null)
-  const [tableView, setTableView] = useState(true)
   const [columns, setColumns] = useState({ last: true, change: true, changePct: true, volume: false, extendedHours: false })
   const [symbolDisplay, setSymbolDisplay] = useState({ logo: true, mode: 'ticker' }) // mode: 'ticker' | 'description'
   const editInputRef = useRef(null)
@@ -267,20 +266,12 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
             </button>
             {dotsMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 z-50 w-[240px] rounded-lg border border-border bg-background shadow-lg p-3">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <span className="text-sm font-medium text-text">Table view</span>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={tableView}
-                    onClick={() => setTableView((v) => !v)}
-                    className={clsx('relative inline-flex h-6 w-10 shrink-0 rounded-full transition-colors', tableView ? 'bg-primary' : 'bg-surface-muted')}
-                  >
-                    <span className={clsx('inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition translate-y-0.5', tableView ? 'translate-x-5' : 'translate-x-0.5')} />
-                  </button>
-                </div>
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-text-muted mb-2">Customize columns</div>
+              <div
+                className="absolute right-0 top-full mt-1 z-[100] w-[240px] rounded-lg border border-border bg-background shadow-xl p-3"
+                onClick={(e) => e.stopPropagation()}
+                role="menu"
+              >
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-text-muted mb-2">CUSTOMIZE COLUMNS</div>
                 <div className="space-y-1.5 mb-3">
                   {[
                     { key: 'last', label: 'Last' },
@@ -290,24 +281,24 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
                     { key: 'extendedHours', label: 'Extended Hours' },
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={!!columns[key]} onChange={() => setColumns((c) => ({ ...c, [key]: !c[key] }))} className="rounded border-border text-primary focus:ring-primary" />
+                      <input type="checkbox" checked={!!columns[key]} onChange={() => setColumns((c) => ({ ...c, [key]: !c[key] }))} className="rounded border-border text-primary focus:ring-primary" onClick={(e) => e.stopPropagation()} />
                       <span className="text-sm text-text">{label}</span>
                     </label>
                   ))}
                 </div>
                 <div className="border-t border-border pt-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-text-muted mb-2">Symbol display</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-text-muted mb-2">SYMBOL DISPLAY</div>
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={symbolDisplay.logo} onChange={() => setSymbolDisplay((s) => ({ ...s, logo: !s.logo }))} className="rounded border-border text-primary focus:ring-primary" />
+                      <input type="checkbox" checked={symbolDisplay.logo} onChange={() => setSymbolDisplay((s) => ({ ...s, logo: !s.logo }))} className="rounded border-border text-primary focus:ring-primary" onClick={(e) => e.stopPropagation()} />
                       <span className="text-sm text-text">Logo</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'ticker'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'ticker' }))} className="border-border text-primary focus:ring-primary" />
+                      <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'ticker'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'ticker' }))} className="border-border text-primary focus:ring-primary rounded-full" onClick={(e) => e.stopPropagation()} />
                       <span className="text-sm text-text">Ticker</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'description'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'description' }))} className="border-border text-primary focus:ring-primary" />
+                      <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'description'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'description' }))} className="border-border text-primary focus:ring-primary rounded-full" onClick={(e) => e.stopPropagation()} />
                       <span className="text-sm text-text">Description</span>
                     </label>
                   </div>
@@ -347,14 +338,17 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
           </form>
         )}
         <div className="relative flex items-center justify-between gap-2 mt-1 mb-0.5" ref={sortMenuRef}>
-          <button
-            type="button"
-            onClick={() => setAddingSymbol(true)}
-            className="p-1.5 rounded-full border border-border bg-surface-muted hover:bg-surface text-text font-bold text-lg leading-none flex items-center justify-center w-7 h-7 shrink-0"
-            aria-label="Add symbol to watchlist"
-          >
-            +
-          </button>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-text">Symbol</span>
+            <button
+              type="button"
+              onClick={() => setAddingSymbol(true)}
+              className="p-1.5 rounded-full border border-border bg-surface-muted hover:bg-surface text-text font-bold text-lg leading-none flex items-center justify-center w-7 h-7 shrink-0"
+              aria-label="Add symbol to watchlist"
+            >
+              +
+            </button>
+          </div>
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSortMenuOpen((v) => !v); }}
