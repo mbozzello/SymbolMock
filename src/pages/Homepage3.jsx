@@ -1105,7 +1105,7 @@ export default function Homepage3() {
             <div className={clsx('relative group flex w-full overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent', !isHome3 && 'border-b border-border bg-surface-muted/30')} style={{ scrollbarWidth: 'thin' }} ref={trendingCardsScrollRef}>
               {TRENDING_NOW.map((s, idx) => {
                 const item = mergeQuote(s)
-                const rank = item.rank ?? idx + 1
+                const rank = idx + 1
                 const isSelected = selectedTicker === item.ticker
                 const isLive = item.ticker === 'AAPL'
                 const pctNum = typeof item.pct === 'number' ? item.pct : 0
@@ -1116,8 +1116,8 @@ export default function Homepage3() {
                     type="button"
                     onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
                     className={clsx(
-                      'flex flex-col items-center gap-1 shrink-0 transition-colors',
-                      isHome3 ? 'px-4 py-3 min-w-[132px] border-r border-border' : 'relative px-4 py-3 text-base font-semibold border-r border-border min-w-[152px]',
+                      'relative flex flex-col items-center gap-1 shrink-0 transition-colors',
+                      isHome3 ? 'px-4 py-3 min-w-[132px] border-r border-border' : 'px-4 py-3 text-base font-semibold border-r border-border min-w-[152px]',
                       isSelected && !isLive && 'bg-[rgba(254,215,170,0.5)] dark:bg-[rgba(254,215,170,0.25)] text-text',
                       isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] text-text',
                       !isSelected && isLive && 'text-text-muted hover:bg-[rgba(221,214,254,0.15)]',
@@ -1128,7 +1128,7 @@ export default function Homepage3() {
                       !isHome3 && isSelected && isLive && 'border-b-[#7c3aed]'
                     )}
                   >
-                    {!isHome3 && <span className="absolute left-2 top-2 text-base font-bold text-text-muted">#{rank}</span>}
+                    <span className="absolute left-2 top-2 text-base font-bold text-text-muted">#{rank}</span>
                     <div className={clsx('relative shrink-0', isHome3 ? 'w-20 h-20' : 'w-14 h-14')}>
                       <div className={clsx('rounded-full overflow-hidden bg-surface border border-border flex items-center justify-center shrink-0', isHome3 ? 'w-20 h-20' : 'w-14 h-14')}>
                         {getTickerLogo(item.ticker) ? (
