@@ -1017,7 +1017,7 @@ export default function Homepage2() {
                     <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
                       {popularTopics.map((t, i) => {
                         const slug = t.label.toLowerCase().replace(/\s+/g, '-')
-                        const pillClass = 'inline-flex items-center gap-1.5 rounded-full border border-border bg-white dark:bg-surface px-3 py-1 text-xs font-medium text-text shrink-0'
+                        const pillClass = 'inline-flex items-center gap-2 rounded-full border border-border bg-white dark:bg-surface px-3 py-1.5 text-xs font-medium text-text shrink-0'
                         if (selectedTicker === 'TSLA') {
                           return (
                             <Link
@@ -1025,14 +1025,14 @@ export default function Homepage2() {
                               to={`/symbol?topic=${slug}`}
                               className={clsx(pillClass, 'hover:border-border-strong hover:bg-surface-muted transition-colors')}
                             >
-                              <span aria-hidden>{t.emoji}</span>
+                              <span className="text-sm" aria-hidden>{t.emoji}</span>
                               {t.label}
                             </Link>
                           )
                         }
                         return (
                           <span key={i} className={pillClass}>
-                            <span aria-hidden>{t.emoji}</span>
+                            <span className="text-sm" aria-hidden>{t.emoji}</span>
                             {t.label}
                           </span>
                         )
@@ -1055,7 +1055,7 @@ export default function Homepage2() {
                     <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
                       {popularTopics.map((t, i) => {
                         const slug = t.label.toLowerCase().replace(/\s+/g, '-')
-                        const pillClass = 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium shrink-0 transition-colors'
+                        const pillClass = 'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shrink-0 transition-colors'
                         const isSelected = streamFilter === i
                         return selectedTicker === 'TSLA' ? (
                           <Link
@@ -1063,7 +1063,7 @@ export default function Homepage2() {
                             to={`/symbol?topic=${slug}`}
                             className={clsx(pillClass, isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-white dark:bg-surface text-text hover:border-border-strong hover:bg-surface-muted')}
                           >
-                            <span aria-hidden>{t.emoji}</span>
+                            <span className="text-sm" aria-hidden>{t.emoji}</span>
                             {t.label}
                           </Link>
                         ) : (
@@ -1073,7 +1073,7 @@ export default function Homepage2() {
                             onClick={() => setStreamFilter(i)}
                             className={clsx(pillClass, isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-white dark:bg-surface text-text hover:border-border-strong hover:bg-surface-muted')}
                           >
-                            <span aria-hidden>{t.emoji}</span>
+                            <span className="text-sm" aria-hidden>{t.emoji}</span>
                             {t.label}
                           </button>
                         )
@@ -1236,7 +1236,7 @@ export default function Homepage2() {
                 type="button"
                 onClick={() => setStreamFilter('latest')}
                 className={clsx(
-                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium shrink-0 transition-colors',
+                  'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shrink-0 transition-colors',
                   streamFilter === 'latest' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-white dark:bg-surface text-text hover:border-border-strong'
                 )}
               >
@@ -1245,10 +1245,10 @@ export default function Homepage2() {
               </button>
               {popularTopics.map((t, i) => {
                 const isSelected = streamFilter === i
-                const pillClass = 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium shrink-0 transition-colors'
+                const pillClass = 'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shrink-0 transition-colors'
                 return (
                   <button key={i} type="button" onClick={() => setStreamFilter(i)} className={clsx(pillClass, isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-white dark:bg-surface text-text hover:border-border-strong')}>
-                    <span aria-hidden>{t.emoji}</span>
+                    <span className="text-sm" aria-hidden>{t.emoji}</span>
                     {t.label}
                   </button>
                 )
