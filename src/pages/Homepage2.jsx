@@ -664,6 +664,7 @@ export default function Homepage2() {
   const [prependedLatestMessages, setPrependedLatestMessages] = useState([])
   const incrementIndexRef = useRef(0)
   const latestIncrementIndexRef = useRef(0)
+  const trendingCardsScrollRef = useRef(null)
   const { getQuote } = useLiveQuotesContext()
 
   const isHome2 = location.pathname === '/home2'
@@ -784,7 +785,7 @@ export default function Homepage2() {
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
         <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-6')}>
-        <main className="flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4">
+        <main className={clsx('flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4', !isHome2 && homeTab === 'trending' && 'max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
           <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
             {isHome2 ? (
@@ -884,7 +885,7 @@ export default function Homepage2() {
             </h2>
             )}
           <div className="flex flex-col gap-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
-            <div className="flex w-full border-b border-border bg-surface-muted/30">
+            <div className="relative group flex w-full border-b border-border bg-surface-muted/30 overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }} ref={trendingCardsScrollRef}>
               {TRENDING_NOW.map((s) => {
                 const item = mergeQuote(s)
                 const isSelected = selectedTicker === item.ticker
@@ -896,8 +897,8 @@ export default function Homepage2() {
                     type="button"
                     onClick={() => { setSelectedTicker(item.ticker); setNewPostCount(0); }}
                     className={clsx(
-                      'flex flex-col items-center gap-1.5 px-3 py-3 text-base font-semibold transition-colors border-r border-border last:border-r-0 min-w-0 flex-1 basis-0',
-                      isSelected && !isLive && 'bg-amber-50 dark:bg-amber-950/30 text-text border-b-2 border-b-amber-500 -mb-px',
+                      'flex flex-col items-center gap-1.5 px-4 py-3 text-base font-semibold transition-colors border-r border-border shrink-0 min-w-[152px]',
+                      isSelected && !isLive && 'bg-[rgba(254,215,170,0.5)] dark:bg-[rgba(254,215,170,0.25)] text-text border-b-2 border-b-amber-500 -mb-px',
                       isSelected && isLive && 'bg-[rgba(221,214,254,0.25)] text-text border-b-2 border-b-[#7c3aed] -mb-px',
                       !isSelected && isLive && 'text-text-muted hover:bg-[rgba(221,214,254,0.15)]',
                       !isSelected && !isLive && 'text-text-muted hover:bg-surface-muted/50'
@@ -925,14 +926,14 @@ export default function Homepage2() {
                       tabIndex={0}
                       onClick={(e) => { e.stopPropagation(); navigate('/symbol'); }}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); navigate('/symbol'); } }}
-                      className="font-semibold text-primary hover:underline cursor-pointer focus:outline-none focus:underline text-sm"
+                      className="font-semibold text-primary hover:underline cursor-pointer focus:outline-none focus:underline text-base"
                     >
                       ${item.ticker}
                     </span>
-                    <span className="text-text-muted text-xs tabular-nums">
+                    <span className="text-text-muted text-sm tabular-nums">
                       ${typeof item.price === 'number' ? item.price.toFixed(2) : '--'}
                     </span>
-                    <span className={clsx('text-xs font-semibold tabular-nums', pctNum >= 0 ? 'text-success' : 'text-danger')}>
+                    <span className={clsx('text-sm font-semibold tabular-nums', pctNum >= 0 ? 'text-success' : 'text-danger')}>
                       {pctNum >= 0 ? '+' : ''}{pctNum.toFixed(1)}%
                     </span>
                     <div className="flex flex-col items-center">
@@ -941,9 +942,31 @@ export default function Homepage2() {
                         {item.sentiment ?? 50}% bullish
                       </span>
                     </div>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => { e.stopPropagation(); navigate('/symbol'); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); navigate('/symbol'); } }}
+                      className="mt-1.5 inline-flex items-center justify-center rounded-md border border-primary bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                    >
+                      Watch
+                    </span>
                   </button>
                 )
               })}
+              <button
+                type="button"
+                onClick={() => {
+                  const el = trendingCardsScrollRef.current
+                  if (el) el.scrollBy({ left: 152, behavior: 'smooth' })
+                }}
+                className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-end pr-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto"
+                aria-label="Scroll to next"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/80 text-white shadow-lg">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </span>
+              </button>
             </div>
 
             {/* Content: Why it's trending + Popular Topics + messages. On /home2: fixed container. On /home: full stream like /symbol */}
