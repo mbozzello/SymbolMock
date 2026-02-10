@@ -943,15 +943,22 @@ export default function Homepage2() {
                         {item.sentiment ?? 50}% bullish
                       </span>
                     </div>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => { e.stopPropagation(); navigate('/symbol'); }}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); navigate('/symbol'); } }}
-                      className="mt-1.5 inline-flex items-center justify-center rounded-md border border-primary bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 cursor-pointer transition-colors"
-                    >
-                      Watch
-                    </span>
+                    <div className="flex items-center justify-center gap-2 text-[11px] text-text-muted tabular-nums">
+                      <svg className="w-3.5 h-3.5 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                      <span>{item.followers ?? '—'}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); navigate('/symbol'); }}
+                        className="w-6 h-6 rounded-full border border-primary bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors shrink-0"
+                        aria-label="Add to watchlist"
+                      >
+                        <span className="text-sm font-bold leading-none">+</span>
+                      </button>
+                    </div>
                   </button>
                 )
               })}
