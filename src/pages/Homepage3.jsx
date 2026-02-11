@@ -917,8 +917,8 @@ export default function Homepage3() {
         )}
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
-        <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-6')}>
-        <main className={clsx('flex-1 min-w-0 flex flex-col p-4 lg:p-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'max-w-[660px]')}>
+        <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-3')}>
+        <main className={clsx('flex-1 min-w-0 flex flex-col pr-2 py-4 lg:pr-3 lg:py-6 gap-4', homeTab === 'trending' && !isHome2 ? 'pl-0 lg:pl-0' : 'pl-4 lg:pl-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
           <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
             {isHome2 ? (
@@ -1250,7 +1250,7 @@ export default function Homepage3() {
               Trending &gt;
             </h2>
             )}
-          <div className="flex flex-col gap-0 rounded-2xl border border-border overflow-hidden bg-surface-muted/10">
+          <div className="flex flex-col gap-0 rounded-r-2xl border-y border-r border-border overflow-hidden bg-surface-muted/10">
             <div className={clsx('relative group flex w-full overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent', !isHome3 && 'border-b border-border bg-surface-muted/30')} style={{ scrollbarWidth: 'thin' }} ref={trendingCardsScrollRef}>
               {TRENDING_NOW.map((s, idx) => {
                 const item = mergeQuote(s)
@@ -2226,7 +2226,7 @@ export default function Homepage3() {
         </main>
 
         {!isHome2 && (
-          <aside className="w-[280px] shrink-0 hidden lg:block space-y-6 pl-0 pr-4 pt-4 pb-4">
+          <aside className="w-[300px] max-w-[300px] shrink-0 hidden lg:block space-y-6 pl-2 pr-3 pt-4 pb-4">
             <LatestNews />
             <TopDiscussions />
             <RelatedSymbols title="Top Watchlist Additions" />

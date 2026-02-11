@@ -287,9 +287,9 @@ export default function Home() {
         <TopNavigation darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <TickerTape />
 
-        <div className="max-w-[1200px] mx-auto px-4 py-4 flex gap-6">
+        <div className="max-w-[1200px] mx-auto px-4 py-4 flex gap-3">
           {/* Main feed column */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 max-w-[660px]">
             <SymbolHeaderAbovePostBox symbol={symbol} />
             {/* Trending box — expandable summary above post box */}
             <button
@@ -759,7 +759,7 @@ export default function Home() {
           </div>
 
           {/* Right sidebar */}
-          <aside className="w-[280px] shrink-0 hidden lg:block space-y-6">
+          <aside className="w-[300px] max-w-[300px] shrink-0 hidden lg:block space-y-6 pl-4 pr-4 pt-4">
             <LatestNews />
 
             {/* Video Ad Unit */}
