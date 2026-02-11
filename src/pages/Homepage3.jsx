@@ -842,8 +842,8 @@ export default function Homepage3() {
       <div className={clsx('flex max-w-[1400px] mx-auto', !isHome2 && !isLoggedIn && 'pl-[50px]')}>
         {/* Column 1: New to Stocktwits + Unlock Watchlist — only when not logged in */}
         {!isLoggedIn && (
-        <aside className="hidden lg:flex w-[300px] shrink-0 flex-col border-r border-border p-4 gap-6">
-          <section className="rounded-xl border border-border bg-surface-muted/30 p-4">
+        <aside className="hidden lg:flex w-[300px] shrink-0 flex-col border-r border-border p-4 gap-0">
+          <section className="pb-5">
             <h2 className="text-sm font-bold text-text mb-2">New to Stocktwits?</h2>
             <p className="text-xs text-text-muted leading-relaxed mb-4">
               Get access to real-time conversations, investor sentiment, price predictions and customized watchlists.
@@ -876,7 +876,7 @@ export default function Homepage3() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-border bg-surface-muted/30 p-4">
+          <section className="pt-5 border-t border-border">
             <h2 className="text-sm font-bold text-text mb-2 flex items-center gap-1.5">
               <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
               Unlock Watchlist
@@ -918,9 +918,9 @@ export default function Homepage3() {
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
         <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-0')}>
-        <main className={clsx('flex-1 min-w-0 flex flex-col pl-4 pr-0 py-4 lg:pl-4 lg:pr-0 lg:py-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
+        <main className={clsx('flex-1 min-w-0 flex flex-col pl-0 pr-0 py-4 lg:pl-0 lg:pr-0 lg:py-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
-          <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
+          <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0 pl-4">
             {isHome2 ? (
               <span className="text-base font-bold text-black border-b-2 border-black pb-0.5 -mb-0.5" style={{ borderBottomWidth: 2 }}>
                 Market Overview

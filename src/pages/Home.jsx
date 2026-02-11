@@ -287,9 +287,9 @@ export default function Home() {
         <TopNavigation darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <TickerTape />
 
-        <div className="max-w-[1200px] mx-auto px-4 py-4 flex gap-0">
+        <div className="max-w-[1200px] mx-auto pl-0 pr-0 py-4 flex gap-0">
           {/* Main feed column */}
-          <div className="flex-1 min-w-0 max-w-[660px]">
+          <div className="flex-1 min-w-0 max-w-[660px] pl-0 pr-0">
             <SymbolHeaderAbovePostBox symbol={symbol} />
             {/* Trending box — expandable summary above post box */}
             <button
