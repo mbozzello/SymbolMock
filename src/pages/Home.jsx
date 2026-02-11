@@ -688,13 +688,215 @@ export default function Home() {
                 </div>
               </div>
             </article>
+
+            {/* Additional feed messages */}
+            {[
+              { id: 'feed-extra-1', username: 'ChartMaster', avatar: '/avatars/top-voice-1.png', time: '5m', body: 'The $TSLA weekly chart is forming a massive cup and handle. If we break above 320 with volume, next stop is 380. Loading calls.', sentiment: 'bullish', comments: 42, reposts: 15, likes: 187 },
+              { id: 'feed-extra-2', username: 'OptionsFlow', avatar: '/avatars/top-voice-2.png', time: '8m', body: 'Massive unusual options activity on $TSLA — 50K call contracts swept at the 350 strike expiring next Friday. Someone knows something.', sentiment: 'bullish', comments: 67, reposts: 31, likes: 312 },
+              { id: 'feed-extra-3', username: 'BearishTruth', avatar: '/avatars/top-voice-3.png', time: '12m', body: '$TSLA margins are compressing and competition is accelerating. The EV market is getting crowded. I\'m short here with a stop at 330.', sentiment: 'bearish', comments: 89, reposts: 12, likes: 76 },
+              { id: 'feed-extra-4', username: 'TechAnalysis', avatar: '/avatars/who-follow-1.png', time: '15m', body: 'RSI divergence on the 4H for $TSLA. Price making higher highs but RSI making lower highs. Classic warning sign. Tread carefully.', comments: 28, reposts: 9, likes: 134 },
+              { id: 'feed-extra-5', username: 'MomentumKing', avatar: '/avatars/who-follow-2.png', time: '18m', body: 'Just added more $TSLA on this dip. The robotaxi narrative is still intact and FSD v13 numbers are incredible. This is a 500+ stock by year end.', sentiment: 'bullish', comments: 53, reposts: 22, likes: 245 },
+              { id: 'feed-extra-6', username: 'ValueHunter', avatar: '/avatars/who-follow-3.png', time: '22m', body: 'At current multiples $TSLA is priced for perfection. Any miss on deliveries and this drops 15% overnight. Risk/reward doesn\'t make sense here.', sentiment: 'bearish', comments: 34, reposts: 7, likes: 98 },
+              { id: 'feed-extra-7', username: 'EarningsWatch', avatar: '/avatars/who-follow-4.png', time: '28m', body: 'Reminder: $TSLA reports next week. Whisper numbers are above consensus. If energy storage revenue surprises, watch for a gap up.', comments: 19, reposts: 11, likes: 156 },
+              { id: 'feed-extra-8', username: 'SwingTraderPro', avatar: '/avatars/top-voice-1.png', time: '32m', body: 'Closed my $TSLA swing trade from last week. Entered at 285, out at 312. +9.5% in 4 days. Now waiting for a pullback to re-enter.', sentiment: 'bullish', comments: 45, reposts: 18, likes: 267 },
+              { id: 'feed-extra-9', username: 'MacroView', avatar: '/avatars/top-voice-2.png', time: '38m', body: 'Fed pause is bullish for growth names like $TSLA. If rates stay steady through Q2, tech rallies hard. Position accordingly.', comments: 31, reposts: 14, likes: 189 },
+              { id: 'feed-extra-10', username: 'RetailTrader42', avatar: '/avatars/top-voice-3.png', time: '41m', body: 'Been holding $TSLA since 180. Not selling a single share until we see robotaxi revenue. This is a generational hold.', sentiment: 'bullish', comments: 72, reposts: 25, likes: 341 },
+              { id: 'feed-extra-11', username: 'ShortSqueeze', avatar: '/avatars/who-follow-1.png', time: '45m', body: '$TSLA short interest is creeping back up to 4.2%. Not GME levels but enough to fuel a squeeze if we get a catalyst.', comments: 26, reposts: 8, likes: 112 },
+              { id: 'feed-extra-12', username: 'DividendKing', avatar: '/avatars/who-follow-2.png', time: '52m', body: 'I know $TSLA doesn\'t pay dividends but if Elon ever announces a buyback program this stock goes to the moon instantly.', comments: 38, reposts: 6, likes: 87 },
+              { id: 'feed-extra-13', username: 'CatalystAlert', avatar: '/avatars/who-follow-3.png', time: '58m', body: 'The $TSLA Cybertruck ramp is ahead of schedule per supplier checks. Q2 deliveries could surprise to the upside.', sentiment: 'bullish', comments: 51, reposts: 20, likes: 223 },
+              { id: 'feed-extra-14', username: 'QuantTrader', avatar: '/avatars/who-follow-4.png', time: '1h', body: 'My model shows $TSLA fair value at 295 based on DCF with 25% revenue growth. At 312 it\'s slightly overvalued. Neutral here.', comments: 15, reposts: 4, likes: 67 },
+              { id: 'feed-extra-15', username: 'EnergyBull', avatar: '/avatars/top-voice-1.png', time: '1h 5m', body: 'People sleep on $TSLA energy storage. Megapack deployments doubled YoY and margins are 30%+. This segment alone is worth 100B.', sentiment: 'bullish', comments: 44, reposts: 16, likes: 198 },
+              { id: 'feed-extra-16', username: 'SentimentPro', avatar: '/avatars/top-voice-2.png', time: '1h 12m', body: '$TSLA community sentiment just hit 88% bullish — highest in 3 months. Historically this level precedes a 5-8% move within 2 weeks.', comments: 23, reposts: 10, likes: 145 },
+              { id: 'feed-extra-17', username: 'GammaSqueeze', avatar: '/avatars/top-voice-3.png', time: '1h 20m', body: 'Dealers are short gamma on $TSLA above 315. If we push through, market makers have to buy to hedge. Could accelerate quickly.', comments: 37, reposts: 13, likes: 176 },
+              { id: 'feed-extra-18', username: 'FundTracker', avatar: '/avatars/who-follow-1.png', time: '1h 28m', body: 'Cathie Wood bought another 200K shares of $TSLA yesterday through ARKK. She\'s been consistently adding on weakness.', comments: 61, reposts: 28, likes: 289 },
+            ].map((msg) => (
+              <article key={msg.id} className="border-b border-border pb-4">
+                <div className="flex items-start gap-3 pt-4">
+                  <img src={msg.avatar} alt="" className="w-10 h-10 rounded-full object-cover border border-border shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-text">{msg.username}</span>
+                      <span className="text-xs muted">{msg.time}</span>
+                      {msg.sentiment && (
+                        <span className={clsx(
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold',
+                          msg.sentiment === 'bullish' ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger'
+                        )}>
+                          {msg.sentiment === 'bullish' ? '▲ Bullish' : '▼ Bearish'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={msg.body} /></p>
+                    <div className="flex items-center justify-between w-full mt-3 text-sm muted">
+                      <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        {msg.comments}
+                      </button>
+                      <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        {msg.reposts}
+                      </button>
+                      <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        {msg.likes}
+                      </button>
+                      <button className="p-1 hover:text-text transition-colors" aria-label="Share">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleBookmark(msg)}
+                        className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')}
+                        aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}
+                      >
+                        <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
 
           {/* Right sidebar */}
           <aside className="w-[280px] shrink-0 hidden lg:block space-y-6">
             <LatestNews />
+
+            {/* Video Ad Unit */}
+            <div className="rounded-xl overflow-hidden border border-border bg-surface">
+              <div className="relative">
+                <img src="/images/ad-bloomberg-video.png" alt="Bloomberg video" className="w-full aspect-video object-cover" />
+                {/* Play button overlay */}
+                <button type="button" className="absolute inset-0 flex items-center justify-center group" aria-label="Play video">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                  </div>
+                </button>
+              </div>
+              <div className="flex items-center justify-center gap-3 py-2 text-xs text-text-muted">
+                <span>Advertisement</span>
+                <span className="text-border">|</span>
+                <button type="button" className="hover:text-text transition-colors">Remove Ads</button>
+              </div>
+            </div>
+
             <RelatedSymbols />
+
+            {/* Display Ad Unit */}
+            <div className="rounded-xl overflow-hidden border border-border bg-surface">
+              <img src="/images/ad-fidelity-schwab.png" alt="Fidelity advertisement" className="w-full object-cover" />
+              <div className="flex items-center justify-center gap-3 py-2 text-xs text-text-muted">
+                <span>Advertisement</span>
+                <span className="text-border">|</span>
+                <button type="button" className="hover:text-text transition-colors">Remove Ads</button>
+              </div>
+            </div>
+
             <PredictionLeaderboard />
+
+            {/* Who To Follow */}
+            <div className="pb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-text">Who To Follow</h3>
+                <button type="button" className="text-text-muted hover:text-text transition-colors" aria-label="See more">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+              <ul className="divide-y divide-border">
+                {[
+                  { name: 'BullishBanana', handle: 'Bullishbanana', avatar: '/avatars/who-follow-1.png' },
+                  { name: 'Fidelity', handle: 'FidelityInvestments', avatar: '/avatars/who-follow-2.png', ad: true },
+                  { name: 'StonkWizard', handle: 'StonkWizard', avatar: '/avatars/who-follow-3.png' },
+                  { name: 'DiamondDegen', handle: 'DiamondDegend', avatar: '/avatars/who-follow-4.png' },
+                ].map((person) => (
+                  <li key={person.handle} className="flex items-center justify-between gap-3 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img src={person.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0 bg-surface-muted" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-bold text-text truncate">{person.name}</span>
+                          {person.ad && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-text-muted bg-surface-muted border border-border leading-none">Ad</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-text-muted truncate">@{person.handle}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                        person.ad
+                          ? 'border-border bg-surface hover:bg-surface-muted text-text'
+                          : 'border-border bg-surface hover:bg-surface-muted text-text'
+                      }`}
+                    >
+                      {person.ad ? 'Learn More' : 'Follow'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Footer */}
+            <footer className="pt-4 border-t border-border space-y-5">
+              {/* Social Icons */}
+              <div className="flex items-center gap-4">
+                <a href="#" className="text-text hover:text-text-muted transition-colors" aria-label="X (Twitter)">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="#" className="text-text hover:text-text-muted transition-colors" aria-label="Instagram">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C16.67.014 16.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+                <a href="#" className="text-text hover:text-text-muted transition-colors" aria-label="Facebook">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="#" className="text-text hover:text-text-muted transition-colors" aria-label="YouTube">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" className="text-text hover:text-text-muted transition-colors" aria-label="RSS">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248-1.796 0-3.252-1.454-3.252-3.248 0-1.794 1.456-3.248 3.252-3.248 1.795.001 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.71-7.118-15.758-15.839-15.82zm0-8.18v4.819c12.951.115 23.418 10.636 23.497 23.581h4.503c-.115-15.616-12.798-28.282-28-28.4z"/></svg>
+                </a>
+              </div>
+
+              {/* Links Grid */}
+              <div className="grid grid-cols-3 gap-y-2 text-xs">
+                <a href="#" className="text-text-muted hover:text-text transition-colors">About</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Help</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Enterprise</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Best Practices</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Privacy</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Advertise</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Careers</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Rules</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">APIs</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Disclaimer</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Terms</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Widgets</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Shop</a>
+                <a href="#" className="text-text-muted hover:text-text transition-colors">Disclosures</a>
+              </div>
+
+              <a href="#" className="block text-xs text-text-muted hover:text-text transition-colors">About Newsroom</a>
+
+              {/* App Store Badges */}
+              <div className="flex items-center gap-2">
+                <a href="#" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black text-white text-[10px]" aria-label="Download on the App Store">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                  <div className="leading-tight"><div className="text-[8px] opacity-70">Download on the</div><div className="font-semibold text-xs -mt-0.5">App Store</div></div>
+                </a>
+                <a href="#" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black text-white text-[10px]" aria-label="Get it on Google Play">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594z"/><path fill="#34A853" d="M1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.04.427.112.619l11.14-11.087z"/><path fill="#FBBC04" d="M14.584 12.023l3.515 3.493-15.74 8.912a1.49 1.49 0 0 1-1.022.052l13.247-12.457z"/><path fill="#EA4335" d="M14.584 12.023L1.337.924A1.49 1.49 0 0 1 2.359.876l15.74 8.854z"/></svg>
+                  <div className="leading-tight"><div className="text-[8px] opacity-70">GET IT ON</div><div className="font-semibold text-xs -mt-0.5">Google Play</div></div>
+                </a>
+              </div>
+
+              {/* Legal Text */}
+              <div className="space-y-3 text-[10px] text-text-muted leading-relaxed">
+                <p>&copy;2025 StockTwits, Inc. All rights reserved.<br />Market Data by Xignite and BATS BZX Real-Time Price Earnings<br />Call Data by Quartr. Crypto data provided by Coingecko.</p>
+                <p>Stocktwits, Inc. (&ldquo;Stocktwits&rdquo;) is not a securities broker-dealer, investment adviser, or any other type of financial professional. No content on the Stocktwits platform should be considered an offer, solicitation of an offer, or advice to buy or sell securities or any other type of investment or financial product.</p>
+                <p>By using the Stocktwits platform, you understand and agree that Stocktwits does not provide investment advice.</p>
+              </div>
+            </footer>
           </aside>
         </div>
       </main>

@@ -27,7 +27,9 @@ function parseMsgVol(v) {
 
 function MiniSparkline({ values = [], width = 144, height = 56, large = false, isUp }) {
   const padding = 2
-  const sizeClass = large ? 'h-[84px] w-[216px]' : 'h-14 w-36'
+  const sizeClass = large ? 'h-[130px] w-full max-w-[420px]' : 'h-14 w-36'
+  const svgW = large ? 420 : width
+  const svgH = large ? 130 : height
   if (values.length < 2) {
     return <div className={clsx('rounded bg-surface-muted border border-border', sizeClass)} />
   }
@@ -35,34 +37,50 @@ function MiniSparkline({ values = [], width = 144, height = 56, large = false, i
   const max = Math.max(...values)
   const range = Math.max(1, max - min)
   const points = values.map((v, i) => {
-    const x = padding + (i / (values.length - 1)) * (width - padding * 2)
-    const y = padding + (1 - (v - min) / range) * (height - padding * 2)
+    const x = padding + (i / (values.length - 1)) * (svgW - padding * 2)
+    const y = padding + (1 - (v - min) / range) * (svgH - padding * 2)
     return `${x.toFixed(1)},${y.toFixed(1)}`
   })
   const up = isUp !== undefined ? isUp : (values[values.length - 1] >= values[0])
   const priorClose = values[0]
-  const chartHeight = height - padding * 2
+  const chartHeight = svgH - padding * 2
   const priorCloseY = padding + (1 - (priorClose - min) / range) * chartHeight
   const lineY = priorCloseY - 0.25 * chartHeight // shift up ~25%
   const [lastX, lastY] = points[points.length - 1].split(',').map(Number)
+  const areaPoints = `${points.join(' ')} ${svgW - padding},${svgH - padding} ${padding},${svgH - padding}`
+  const gradId = `miniSparkGrad-${up ? 'up' : 'dn'}`
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className={sizeClass}>
+    <svg viewBox={`0 0 ${svgW} ${svgH}`} className={sizeClass}>
+      {large && (
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={up ? 'var(--color-success)' : 'var(--color-danger)'} stopOpacity="0.25" />
+            <stop offset="100%" stopColor={up ? 'var(--color-success)' : 'var(--color-danger)'} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+      )}
       {/* Yesterday's close: light grey dashed line */}
       <line
         x1={padding}
         y1={lineY}
-        x2={width - padding}
+        x2={svgW - padding}
         y2={lineY}
         stroke="#94a3b8"
         strokeWidth="1"
         strokeDasharray="4 2"
         strokeLinecap="round"
-        opacity="0.9"
+        opacity="0.6"
       />
+      {large && (
+        <polygon
+          fill={`url(#${gradId})`}
+          points={areaPoints}
+        />
+      )}
       <polyline
         fill="none"
         stroke={up ? 'var(--color-success)' : 'var(--color-danger)'}
-        strokeWidth="2.5"
+        strokeWidth={large ? '2.5' : '2.5'}
         points={points.join(' ')}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -70,8 +88,8 @@ function MiniSparkline({ values = [], width = 144, height = 56, large = false, i
       <circle
         cx={lastX}
         cy={lastY}
-        r="5"
-        fill="#86efac"
+        r={large ? 4 : 5}
+        fill={up ? '#86efac' : '#fca5a5'}
         className="animate-pulse"
       />
     </svg>
@@ -178,7 +196,7 @@ function ChartSparkline({ values = [], isUp = true }) {
   const gradientId = isUp ? 'chartGradientUp' : 'chartGradientDown'
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-52 w-full md:h-64 rounded-md border border-border" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-64 w-full md:h-80 rounded-md border border-border" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="chartGradientUp" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="var(--color-success)" stopOpacity="0.3" />
@@ -411,8 +429,8 @@ export default function CollapsibleStockHeader({
         </div>
         
         <div className="flex w-full flex-col gap-3 relative z-10">
-          <div className="flex w-full items-center justify-between gap-4">
-            <div className="flex flex-1 items-center gap-3 min-w-0">
+          <div className="flex w-full items-start justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 shrink-0" style={{ maxWidth: '55%' }}>
               {/* Symbol Logo */}
               <div className="flex-shrink-0">
                 <img 
@@ -515,19 +533,8 @@ export default function CollapsibleStockHeader({
               </div>
             </div>
 
-            <div className="flex items-center gap-4 shrink-0">
+            <div className="flex-1 flex items-center justify-end min-w-0">
               <MiniSparkline values={sparkValues} large isUp={isUp} />
-              <div className="h-[116px] w-[116px] shrink-0 rounded-full bg-white overflow-hidden flex items-center justify-center">
-                <img src="/images/sentiment-meter.png?v=2" alt="72% Bullish" className="h-full w-full object-contain" />
-              </div>
-              {/* Message Volume Meter */}
-              <div className="h-[116px] w-[116px] shrink-0 rounded-full bg-white overflow-hidden flex flex-col items-center justify-center border border-border">
-                <VolumeGauge score={99} size={80} strokeWidth={6} color="var(--color-success)" className="h-20 w-20" />
-                <div className="text-[10px] font-bold text-text mt-1 text-center leading-tight">
-                  <div>Extremely</div>
-                  <div>High</div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -609,7 +616,8 @@ export default function CollapsibleStockHeader({
           !open && 'border-t-0'
         )}
       >
-        <div className="grid gap-4 pt-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="flex flex-col gap-4 pt-4">
+          {/* Chart — full width, taller */}
           <div className="space-y-3">
             <ChartSparkline values={chartValues} isUp={isUp} />
             <div className="flex flex-wrap gap-2">
@@ -619,7 +627,8 @@ export default function CollapsibleStockHeader({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2">
+          {/* Stats row — below chart */}
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
             {stats.map((stat) => (
               <div key={stat.label} className="rounded-md border border-border p-1.5 sm:p-2">
                 <div className="text-[9px] uppercase tracking-wide muted font-semibold">{stat.label}</div>
