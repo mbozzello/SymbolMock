@@ -587,6 +587,67 @@ const TOP_WATCHLIST_REMOVALS = [
   { ticker: 'AAPL', pctChange: 1.8, removals: 87 },
 ]
 
+/** Who to Follow (Market Overview mini-carousel) */
+const WTF_CATEGORIES_HOME = ['Trending', 'Day Trader', 'Options', 'Crypto', 'Swing', 'Macro', 'Value']
+const WTF_PEOPLE_HOME = {
+  Trending: [
+    { handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits', verified: true, followers: '376.2K' },
+    { handle: 'rosscameron', name: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. $10M+ verified profits.', verified: true, followers: '128.5K' },
+    { handle: 'FinanceBuzz', name: 'Finance Buzz', avatar: '/avatars/who-follow-3.png', bio: 'Breaking down complex market events simply.', verified: true, followers: '112.4K' },
+    { handle: 'MarketVibes', name: 'Market Vibes', avatar: '/avatars/who-follow-4.png', bio: 'Daily market recaps and pre-market analysis.', verified: false, followers: '89.7K' },
+    { handle: 'StreetSmarts', name: 'Street Smarts', avatar: '/avatars/ross-cameron.png', bio: 'Making finance fun. Viral market explainers.', verified: true, followers: '324.1K' },
+    { handle: 'CryptoKing', name: 'Crypto King', avatar: '/avatars/top-voice-1.png', bio: 'Full-time crypto trader since 2017.', verified: false, followers: '52.8K' },
+  ],
+  'Day Trader': [
+    { handle: 'rosscameron', name: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. Day trading educator.', verified: true, followers: '128.5K' },
+    { handle: 'ScalpKing', name: 'Scalp King', avatar: '/avatars/top-voice-3.png', bio: 'ES and NQ futures scalper. 200+ trades/week.', verified: false, followers: '34.8K' },
+    { handle: 'TapeReader', name: 'Tape Reader', avatar: '/avatars/top-voice-1.png', bio: 'Order flow, time & sales, Level 2 depth.', verified: false, followers: '22.1K' },
+    { handle: 'PreMarketPro', name: 'Pre-Market Pro', avatar: '/avatars/michael-bolling.png', bio: 'Gap scanners and news catalysts daily.', verified: false, followers: '31.4K' },
+    { handle: 'GapTrader', name: 'Gap Trader', avatar: '/avatars/who-follow-2.png', bio: 'Gap-and-go specialist. Small caps with volume.', verified: false, followers: '19.2K' },
+    { handle: 'FuturesEdge', name: 'Futures Edge', avatar: '/avatars/top-voice-2.png', bio: 'ES, NQ, and CL futures full-time since 2016.', verified: false, followers: '28.9K' },
+  ],
+  Options: [
+    { handle: 'OptionsFlow', name: 'Options Flow', avatar: '/avatars/top-voice-1.png', bio: 'Real-time unusual options activity tracking.', verified: false, followers: '67.1K' },
+    { handle: 'ThetaGang', name: 'Theta Gang', avatar: '/avatars/who-follow-2.png', bio: 'Premium selling specialist. Time decay is my edge.', verified: false, followers: '41.2K' },
+    { handle: 'GammaExposure', name: 'Gamma Exposure', avatar: '/avatars/top-voice-3.png', bio: 'Tracking dealer gamma positioning daily.', verified: false, followers: '35.4K' },
+    { handle: '0DTEWarrior', name: '0DTE Warrior', avatar: '/avatars/who-follow-4.png', bio: 'Zero-days-to-expiration options specialist.', verified: false, followers: '47.2K' },
+    { handle: 'SpreadTrader', name: 'Spread Trader', avatar: '/avatars/ross-cameron.png', bio: 'Credit spreads, debit spreads, and butterflies.', verified: false, followers: '29.3K' },
+    { handle: 'VolSurface', name: 'Vol Surface', avatar: '/avatars/michele-steele.png', bio: 'Volatility trader and former market maker.', verified: false, followers: '13.7K' },
+  ],
+  Crypto: [
+    { handle: 'CryptoKing', name: 'Crypto King', avatar: '/avatars/top-voice-1.png', bio: 'Full-time crypto trader since 2017. DeFi & L1s.', verified: false, followers: '52.8K' },
+    { handle: 'BTCMaxi', name: 'BTC Maxi', avatar: '/avatars/top-voice-1.png', bio: 'Bitcoin-only conviction. Halving cycles.', verified: false, followers: '73.6K' },
+    { handle: 'DeFiDegen', name: 'DeFi Degen', avatar: '/avatars/top-voice-3.png', bio: 'Yield farming and on-chain analysis.', verified: false, followers: '38.5K' },
+    { handle: 'OnChainAlpha', name: 'On-Chain Alpha', avatar: '/avatars/who-follow-4.png', bio: 'Whale wallets and exchange flows.', verified: false, followers: '26.1K' },
+    { handle: 'AltSeason', name: 'Alt Season', avatar: '/avatars/howard-lindzon.png', bio: 'Altcoin specialist. Finding the next 10x.', verified: false, followers: '44.9K' },
+    { handle: 'MemeCoiner', name: 'Meme Coiner', avatar: '/avatars/who-follow-4.png', bio: 'DOGE, SHIB, and the next viral token.', verified: false, followers: '56.3K' },
+  ],
+  Swing: [
+    { handle: 'MomentumKing', name: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Relative strength and volume breakouts.', verified: false, followers: '31.6K' },
+    { handle: 'SwingSetups', name: 'Swing Setups', avatar: '/avatars/top-voice-1.png', bio: 'Multi-day holds based on weekly charts.', verified: false, followers: '22.8K' },
+    { handle: 'TrendRider', name: 'Trend Rider', avatar: '/avatars/ross-cameron.png', bio: 'Riding trends. 12-year track record.', verified: false, followers: '19.5K' },
+    { handle: 'BreakoutHunter', name: 'Breakout Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Cup & handle, bull flags, tight consolidations.', verified: false, followers: '17.3K' },
+    { handle: 'PullbackKing', name: 'Pullback King', avatar: '/avatars/who-follow-4.png', bio: 'Buying pullbacks in uptrends. Fibonacci levels.', verified: false, followers: '18.3K' },
+    { handle: 'PatternTrader', name: 'Pattern Trader', avatar: '/avatars/who-follow-3.png', bio: 'Classical chart patterns. Textbook entries.', verified: false, followers: '28.6K' },
+  ],
+  Macro: [
+    { handle: 'MacroMaven', name: 'Macro Maven', avatar: '/avatars/who-follow-4.png', bio: 'Global macro strategist. Former institutional PM.', verified: false, followers: '22.4K' },
+    { handle: 'FedWatcher', name: 'Fed Watcher', avatar: '/avatars/top-voice-2.png', bio: 'Interest rate forecasting since 2010.', verified: false, followers: '35.6K' },
+    { handle: 'GeopoliticsNow', name: 'Geopolitics Now', avatar: '/avatars/top-voice-3.png', bio: 'How geopolitics moves markets.', verified: false, followers: '45.8K' },
+    { handle: 'ChiefEconomist', name: 'Chief Economist', avatar: '/avatars/top-voice-2.png', bio: 'Former Fed economist. Data releases decoded.', verified: true, followers: '52.4K' },
+    { handle: 'InflationWatch', name: 'Inflation Watch', avatar: '/avatars/who-follow-3.png', bio: 'CPI, PPI, PCE — every inflation data point.', verified: false, followers: '33.1K' },
+    { handle: 'BondVigilante', name: 'Bond Vigilante', avatar: '/avatars/michele-steele.png', bio: 'Fixed income. Auctions and credit spreads.', verified: false, followers: '26.9K' },
+  ],
+  Value: [
+    { handle: 'MarginOfSafety', name: 'Margin of Safety', avatar: '/avatars/top-voice-1.png', bio: 'Buffett-style value investing. Moats & management.', verified: false, followers: '42.3K' },
+    { handle: 'DividendKing', name: 'Dividend King', avatar: '/avatars/michael-bolling.png', bio: '25-year DRIP portfolio. Yield + growth.', verified: false, followers: '33.7K' },
+    { handle: 'ValueHunter', name: 'Value Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Deep value & contrarian plays. CFA charterholder.', verified: false, followers: '14.9K' },
+    { handle: 'FCFocus', name: 'Free Cash Flow Focus', avatar: '/avatars/top-voice-2.png', bio: 'Undervalued compounders with sustainable FCF.', verified: false, followers: '18.2K' },
+    { handle: 'DividendGrowth', name: 'Dividend Growth', avatar: '/avatars/ross-cameron.png', bio: 'Companies raising dividends 10+ years straight.', verified: false, followers: '38.9K' },
+    { handle: 'QualityCompound', name: 'Quality Compounder', avatar: '/avatars/michele-steele.png', bio: 'High ROIC, capital-light businesses.', verified: false, followers: '22.5K' },
+  ],
+}
+
 /** Top Discussions: top polls (choices only, no winning %) */
 const TOP_DISCUSSIONS_POLLS = [
   { id: 6, question: 'Which mega-cap has the best risk/reward here?', choices: ['$AAPL', '$MSFT', '$NVDA', '$GOOGL'], votes: '8.2k', timeLabel: '2d left', published: 'Feb 09, 2026 · 8:00 AM', comments: 203 },
@@ -595,6 +656,22 @@ const TOP_DISCUSSIONS_POLLS = [
   { id: 3, question: 'Are you buying the dip on any of these beaten down growth stocks?', choices: ['$HOOD', '$APP', '$PLTR', '$RKLB'], votes: '1.7k', timeLabel: 'Ended 1d ago', published: 'Feb 08, 2026 · 9:00 AM', comments: 156 },
   { id: 4, question: 'Where does crypto go from here?', choices: ['Recovery and trend continuation', 'Sideways consolidation', 'Lower lows ahead', 'Volatile chop before direction'], votes: '11.5k', timeLabel: 'Ended 1d ago', published: 'Feb 07, 2026 · 4:45 PM', comments: 428 },
   { id: 5, question: 'What do you expect from $RDDT earnings on Thursday?', choices: ['Beat EPS and revenue', 'Beat EPS, miss revenue', 'Miss EPS, beat revenue', 'Miss EPS and revenue'], votes: '3k', timeLabel: 'Ended 4d ago', published: 'Feb 06, 2026 · 11:20 AM', comments: 67 },
+]
+
+/** Top Topics (Market Overview mini-carousel) */
+const TOP_TOPICS_HOME = [
+  { id: 'datacenter', emoji: '🖥️', label: 'Data Center Demand', count: '52.3K', tickers: ['NVDA', 'AMD', 'AVGO', 'MSFT'], color: '#6366f1' },
+  { id: 'aicapex', emoji: '📈', label: 'AI Capex', count: '44.6K', tickers: ['NVDA', 'MSFT', 'GOOGL', 'META'], color: '#06b6d4' },
+  { id: 'robotaxi', emoji: '🤖', label: 'Robotaxi Dreams', count: '41.2K', tickers: ['TSLA', 'NVDA', 'GOOGL'], color: '#22c55e' },
+  { id: 'blackwell', emoji: '🔮', label: 'Blackwell Ramp', count: '38.1K', tickers: ['NVDA', 'AMD'], color: '#8b5cf6' },
+  { id: 'earningsbeat', emoji: '⚡', label: 'Earnings Beat', count: '35.2K', tickers: ['NVDA', 'AAPL', 'AMZN', 'TSLA'], color: '#f59e0b' },
+  { id: 'aws', emoji: '☁️', label: 'AWS Reacceleration', count: '31.5K', tickers: ['AMZN', 'MSFT', 'GOOGL'], color: '#f97316' },
+  { id: 'merging', emoji: '🚀', label: 'Merging Ambitions', count: '28.4K', tickers: ['TSLA'], color: '#ef4444' },
+  { id: 'mi300', emoji: '🔷', label: 'MI300 Adoption', count: '26.8K', tickers: ['AMD', 'NVDA'], color: '#3b82f6' },
+  { id: 'services', emoji: '📱', label: 'Services Growth', count: '22.5K', tickers: ['AAPL', 'GOOGL', 'MSFT'], color: '#a855f7' },
+  { id: 'dcshare', emoji: '🏢', label: 'Data Center Share', count: '20.1K', tickers: ['AMD', 'NVDA', 'INTC'], color: '#6d28d9' },
+  { id: 'volatilerange', emoji: '📊', label: 'Volatile Range', count: '19.6K', tickers: ['TSLA', 'GME', 'AMD'], color: '#fb923c' },
+  { id: 'china', emoji: '🌏', label: 'China Sales', count: '18.2K', tickers: ['AAPL', 'AMZN', 'TSLA'], color: '#ec4899' },
 ]
 
 /** Prediction Leaderboard: top 10, one card per person */
@@ -756,6 +833,7 @@ export default function Homepage3() {
   const { getQuote } = useLiveQuotesContext()
   const { watchlist } = useWatchlist()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [wtfHomeCat, setWtfHomeCat] = useState('Trending')
 
   const isHome2 = location.pathname === '/home2'
   const isHome3 = location.pathname === '/home' || location.pathname === '/home3' // Homepage3 now renders on /home
@@ -2073,6 +2151,38 @@ export default function Homepage3() {
             </div>
           </section>
 
+          {/* Top Topics carousel */}
+          <section className="shrink-0">
+            <h2 className="text-lg font-bold text-text mb-3" style={{ cursor: 'pointer' }} onClick={() => navigate('/markets', { state: { section: 'topics' } })}>Top Topics &gt;</h2>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {TOP_TOPICS_HOME.map((topic) => (
+                <button
+                  key={topic.id}
+                  type="button"
+                  onClick={() => navigate('/markets', { state: { section: 'topics' } })}
+                  className="flex shrink-0 w-[200px] flex-col rounded-xl border border-border bg-white dark:bg-surface p-3 text-left hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg leading-none">{topic.emoji}</span>
+                    <span className="text-xs font-bold text-text truncate">{topic.label}</span>
+                  </div>
+                  <span className="text-[10px] text-text-muted mb-2">{topic.count} messages</span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {topic.tickers.slice(0, 4).map((t) => {
+                      const logo = getTickerLogo(t)
+                      return (
+                        <span key={t} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-surface-muted text-[10px] font-medium text-text">
+                          {logo && <img src={logo} alt="" className="w-3 h-3 rounded object-cover" />}
+                          ${t}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* Prediction Leaderboard: top 10, one card per person */}
           <section className="shrink-0">
             <h2 className="text-lg font-bold text-text mb-3">Prediction Leaderboard &gt;</h2>
@@ -2157,7 +2267,7 @@ export default function Homepage3() {
 
           {/* Top Discussions: poll carousel (choices + votes, no %) */}
           <section className="shrink-0">
-            <h2 className="text-lg font-bold text-text mb-3">Top Discussions &gt;</h2>
+            <h2 className="text-lg font-bold text-text mb-3" style={{ cursor: 'pointer' }} onClick={() => navigate('/markets', { state: { section: 'topics' } })}>Top Discussions &gt;</h2>
             <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
               {TOP_DISCUSSIONS_POLLS.map((poll) => (
                 <div
@@ -2220,6 +2330,62 @@ export default function Homepage3() {
                 </div>
               ))}
             </div>
+          </section>
+
+          {/* Who to Follow carousel */}
+          <section className="shrink-0">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-text" style={{ cursor: 'pointer' }} onClick={() => navigate('/markets', { state: { section: 'whoToFollow' } })}>Who to Follow &gt;</h2>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {WTF_CATEGORIES_HOME.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setWtfHomeCat(cat)}
+                  className={clsx(
+                    'px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition-colors border',
+                    wtfHomeCat === cat
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-surface-muted text-text border-border hover:bg-surface'
+                  )}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+              {(WTF_PEOPLE_HOME[wtfHomeCat] || []).map((person) => (
+                <div
+                  key={person.handle}
+                  className="flex shrink-0 w-[180px] flex-col items-center rounded-xl border border-border bg-white dark:bg-surface p-3 text-center"
+                >
+                  <img src={person.avatar} alt="" className="w-12 h-12 rounded-full object-cover mb-2 bg-surface-muted" />
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <span className="text-xs font-bold text-text truncate max-w-[130px]">{person.name}</span>
+                    {person.verified && (
+                      <svg className="w-3.5 h-3.5 text-primary shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-text-muted mb-1">@{person.handle}</span>
+                  <p className="text-[10px] text-text-muted leading-tight line-clamp-2 mb-2 min-h-[26px]">{person.bio}</p>
+                  <span className="text-[10px] text-text-muted mb-2">{person.followers} followers</span>
+                  <button
+                    type="button"
+                    className="w-full py-1.5 rounded-full text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                  >
+                    Follow
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/markets', { state: { section: 'whoToFollow', category: wtfHomeCat === 'Trending' ? null : wtfHomeCat } })}
+              className="mt-2 text-xs font-semibold text-primary hover:underline"
+            >
+              See more in Social Tools &gt;
+            </button>
           </section>
           </>
           )}
