@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
@@ -632,13 +633,32 @@ const WHO_TO_FOLLOW = [
   { handle: 'FedWatcher', displayName: 'Fed Watcher', avatar: '/avatars/top-voice-2.png', bio: 'Tracking every Fed meeting, dot plot, and speech. Interest rate forecasting since 2010.', verified: false, followers: '35.6K', topTickers: ['TLT', 'SHY', 'SPY'], category: 'Macro' },
   { handle: 'GlobalFlows', displayName: 'Global Flows', avatar: '/avatars/who-follow-1.png', bio: 'Capital flows, EM vs DM, and currency dynamics. Connecting the dots across global markets.', verified: false, followers: '19.8K', topTickers: ['EEM', 'FXI', 'UUP'], category: 'Macro' },
   { handle: 'CommodityPulse', displayName: 'Commodity Pulse', avatar: '/avatars/ross-cameron.png', bio: 'Oil, gold, copper, and ags. Supply-demand fundamentals and geopolitical risk analysis.', verified: false, followers: '14.2K', topTickers: ['GLD', 'USO', 'COPX'], category: 'Macro' },
+  // Equities
+  { handle: 'howardlindzon', displayName: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits. Managing Partner of Social Leverage. Equities-focused investor.', verified: true, followers: '376.2K', topTickers: ['TSLA', 'HOOD', 'SHOP'], category: 'Equities' },
+  { handle: 'EquityEdge', displayName: 'Equity Edge', avatar: '/avatars/top-voice-1.png', bio: 'Long-only equity portfolio manager. Large-cap quality compounders with durable moats.', verified: false, followers: '28.3K', topTickers: ['MSFT', 'AAPL', 'V'], category: 'Equities' },
+  { handle: 'StockPickerPro', displayName: 'Stock Picker Pro', avatar: '/avatars/top-voice-3.png', bio: 'Bottom-up stock selection. 10+ years of beating the S&P. Earnings & catalysts.', verified: false, followers: '45.1K', topTickers: ['GOOGL', 'AMZN', 'META'], category: 'Equities' },
+  { handle: 'BlueChipTrader', displayName: 'Blue Chip Trader', avatar: '/avatars/michael-bolling.png', bio: 'Large-cap equities, sector rotation, and relative strength. Institutional approach for retail.', verified: false, followers: '19.7K', topTickers: ['SPY', 'QQQ', 'DIA'], category: 'Equities' },
+  // Private Companies
+  { handle: 'VentureViews', displayName: 'Venture Views', avatar: '/avatars/who-follow-3.png', bio: 'Tracking private markets, pre-IPO companies, and venture capital trends. Former VC associate.', verified: false, followers: '31.2K', topTickers: ['COIN', 'PLTR', 'RBLX'], category: 'Private Companies' },
+  { handle: 'PreIPOAlpha', displayName: 'Pre-IPO Alpha', avatar: '/avatars/top-voice-2.png', bio: 'Secondary market specialist. Analyzing private company valuations before they go public.', verified: false, followers: '22.5K', topTickers: ['HOOD', 'SNOW', 'DASH'], category: 'Private Companies' },
+  { handle: 'StartupScout', displayName: 'Startup Scout', avatar: '/avatars/ross-cameron.png', bio: 'Angel investor in 40+ startups. Sharing deal flow insights and private market analysis.', verified: true, followers: '17.8K', topTickers: ['ABNB', 'SQ', 'SHOP'], category: 'Private Companies' },
+  // Momentum
+  { handle: 'MomentumKing', displayName: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Swing trading momentum setups. Focus on relative strength and volume breakouts.', verified: false, followers: '31.6K', topTickers: ['TSLA', 'PLTR', 'MSTR'], category: 'Momentum' },
+  { handle: 'RelStrength', displayName: 'Relative Strength', avatar: '/avatars/top-voice-1.png', bio: 'Momentum factor investing. RS rankings, sector rotation, and trend-following systems.', verified: false, followers: '25.4K', topTickers: ['NVDA', 'META', 'AVGO'], category: 'Momentum' },
+  { handle: 'BreakoutHunter', displayName: 'Breakout Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Cup & handle, bull flags, and tight consolidations. Scanning for the next move daily.', verified: false, followers: '17.3K', topTickers: ['AMD', 'TSLA', 'COIN'], category: 'Momentum' },
+  { handle: 'VolumeSpike', displayName: 'Volume Spike', avatar: '/avatars/michele-steele.png', bio: 'High-volume momentum plays. When volume talks, I listen. Intraday to multi-day holds.', verified: false, followers: '14.6K', topTickers: ['TSLA', 'SPY', 'SOFI'], category: 'Momentum' },
+  // Intermediate
+  { handle: 'TradeSchool', displayName: 'Trade School', avatar: '/avatars/howard-lindzon.png', bio: 'Helping intermediate traders level up. Risk management, position sizing, and market psychology.', verified: true, followers: '58.3K', topTickers: ['SPY', 'QQQ', 'AAPL'], category: 'Intermediate' },
+  { handle: 'ChartClass', displayName: 'Chart Class', avatar: '/avatars/top-voice-2.png', bio: 'Technical analysis education for traders who know the basics. Advanced patterns & setups.', verified: false, followers: '33.9K', topTickers: ['TSLA', 'NVDA', 'AMZN'], category: 'Intermediate' },
+  { handle: 'OptionsEdu', displayName: 'Options Education', avatar: '/avatars/who-follow-4.png', bio: 'Moving beyond covered calls. Spreads, Greeks, and real portfolio examples for growing traders.', verified: false, followers: '21.7K', topTickers: ['SPY', 'AAPL', 'MSFT'], category: 'Intermediate' },
+  { handle: 'RiskFirst', displayName: 'Risk First', avatar: '/avatars/ross-cameron.png', bio: 'Position sizing, stop-loss strategy, and portfolio management. Protecting capital comes first.', verified: false, followers: '16.1K', topTickers: ['SPY', 'VIX', 'TLT'], category: 'Intermediate' },
 ]
 
-const WHO_TO_FOLLOW_CATEGORIES = ['All', 'Influencer', 'Day Trader', 'Analyst', 'Sector Expert', 'Options Trader', 'Crypto', 'Swing Trader', 'Value Investor', 'Macro']
+const WHO_TO_FOLLOW_CATEGORIES = ['All', 'Influencer', 'Day Trader', 'Analyst', 'Sector Expert', 'Options Trader', 'Crypto', 'Swing Trader', 'Value Investor', 'Macro', 'Equities', 'Private Companies', 'Momentum', 'Intermediate']
 
-function WhoToFollow() {
+function WhoToFollow({ initialCategory }) {
   const [followedHandles, setFollowedHandles] = useState(new Set())
-  const [categoryFilter, setCategoryFilter] = useState('All')
+  const [categoryFilter, setCategoryFilter] = useState(initialCategory || 'All')
 
   const toggleFollow = (handle) => {
     setFollowedHandles((prev) => {
@@ -968,6 +988,7 @@ function SentimentIndexChart() {
 }
 
 export default function Markets() {
+  const location = useLocation()
   const { applyCustomTickers, clearCustomTickers, customTickers } = useTickerTape()
   const { getQuote } = useLiveQuotesContext()
   const { watchlist } = useWatchlist()
@@ -976,7 +997,8 @@ export default function Markets() {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : false
   })
-  const [activeSection, setActiveSection] = useState('socialScreener')
+  const [activeSection, setActiveSection] = useState(() => location.state?.section || 'socialScreener')
+  const [whoToFollowInitialCategory, setWhoToFollowInitialCategory] = useState(() => location.state?.category || null)
   const [symbolFilter, setSymbolFilter] = useState('')
   const [assetFilter, setAssetFilter] = useState('All')
   const [activeSort, setActiveSort] = useState('trending')
@@ -1518,7 +1540,7 @@ export default function Markets() {
           )}
 
           {activeSection === 'whoToFollow' && (
-            <WhoToFollow />
+            <WhoToFollow initialCategory={whoToFollowInitialCategory} />
           )}
 
           {activeSection === 'sentimentIndex' && (

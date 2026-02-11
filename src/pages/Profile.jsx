@@ -646,22 +646,26 @@ export default function Profile({ isOwnProfile = false }) {
                   <>
                     <span className="text-xs font-medium text-text-muted">Strategy:</span>
                     {profile.tags.slice(1).map((tag) => (
-                      <span
+                      <button
                         key={tag}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border"
+                        type="button"
+                        onClick={() => navigate('/markets', { state: { section: 'whoToFollow', category: tag } })}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border hover:bg-primary hover:text-white hover:border-primary transition-colors cursor-pointer"
                       >
                         {tag}
-                      </span>
+                      </button>
                     ))}
                   </>
                 ) : (
                   profile.tags.map((tag) => (
-                    <span
+                    <button
                       key={tag}
-                      className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border"
+                      type="button"
+                      onClick={() => navigate('/markets', { state: { section: 'whoToFollow', category: tag } })}
+                      className="px-3 py-1 rounded-full text-xs font-medium bg-surface-muted text-text border border-border hover:bg-primary hover:text-white hover:border-primary transition-colors cursor-pointer"
                     >
                       {tag}
-                    </span>
+                    </button>
                   ))
                 )}
               </div>
