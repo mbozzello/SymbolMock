@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import TopNavigation from '../components/TopNavigation.jsx'
 import LeftSidebar from '../components/LeftSidebar.jsx'
@@ -744,6 +744,7 @@ export default function Homepage3() {
   const [newPostCount, setNewPostCount] = useState(0)
   const [homeTab, setHomeTab] = useState('trending') // 'trending' | 'market-overview' | 'following'
   const [followingFeedSort, setFollowingFeedSort] = useState('recommended') // 'recommended' | 'latest'
+  const [wtfCat, setWtfCat] = useState('All') // Who to Follow category filter (logged-out following tab)
   const [streamFilter, setStreamFilter] = useState(0) // 0 = first topic (default on /home) | 'latest' | 1 | 2 | 3 (topic index)
   const [marketOverviewTrendingTicker, setMarketOverviewTrendingTicker] = useState(MARKET_OVERVIEW_TRENDING[0].ticker)
   const [latestStreamNewCount, setLatestStreamNewCount] = useState(0)
@@ -1050,53 +1051,120 @@ export default function Homepage3() {
                 <span className="text-xs text-text-muted">It only takes 30 seconds</span>
               </div>
             </div>
-            {/* Who to follow grid */}
-            <div>
-              <h3 className="text-sm font-bold text-text uppercase tracking-wide mb-3">Who to Follow</h3>
-              <div className="space-y-3">
-                {[
-                  { handle: 'howardlindzon', displayName: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits. Managing Partner of Social Leverage. Angel investor in Robinhood, Etoro, Koyfin.', verified: true, followers: '376.2K', tickers: ['TSLA', 'BTC', 'HOOD'] },
-                  { handle: 'rosscameron', displayName: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. Day trading educator with $10M+ in verified profits.', verified: true, followers: '128.5K', tickers: ['SPY', 'AMD', 'NVDA'] },
-                  { handle: 'Steeletwits', displayName: 'Michele Steele', avatar: '/avatars/michele-steele.png', bio: 'Head of Content @Stocktwits. Former ESPN reporter covering the intersection of sports & finance.', verified: true, followers: '42.1K', tickers: ['DKNG', 'DIS'] },
-                  { handle: 'michaelbolling', displayName: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', bio: 'VP of Content @Stocktwits. Covering markets, macro, and momentum. Formerly @FoxBusiness.', verified: true, followers: '85.3K', tickers: ['AAPL', 'MSFT', 'QQQ'] },
-                  { handle: 'AIBull', displayName: 'AI Bull', avatar: '/avatars/top-voice-1.png', bio: 'Full-time AI/semiconductor analyst. Long $NVDA since $12. Data center thesis > hype.', verified: false, followers: '18.7K', tickers: ['NVDA', 'AMD'] },
-                  { handle: 'CryptoKing', displayName: 'Crypto King', avatar: '/avatars/who-follow-1.png', bio: 'Full-time crypto trader since 2017. DeFi, Layer 1s, and macro.', verified: false, followers: '52.8K', tickers: ['BTC', 'ETH', 'SOL'] },
-                  { handle: 'MomentumKing', displayName: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Swing trading momentum setups. Relative strength and volume breakouts.', verified: false, followers: '31.6K', tickers: ['TSLA', 'PLTR'] },
-                  { handle: 'MacroMaven', displayName: 'Macro Maven', avatar: '/avatars/who-follow-4.png', bio: 'Global macro strategist. Bonds, currencies, commodities. Former institutional PM.', verified: false, followers: '22.4K', tickers: ['GLD', 'TLT'] },
-                ].map((user) => (
-                  <div key={user.handle} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-surface hover:shadow-sm transition-shadow">
-                    <img src={user.avatar} alt="" className="w-11 h-11 rounded-full object-cover border border-border shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm text-text truncate">{user.displayName}</span>
-                        {user.verified && (
-                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-400 shrink-0" aria-label="Verified">
-                            <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                          </span>
+            {/* Who to follow with category carousel */}
+            {(() => {
+              const WHO_FOLLOW_DATA = [
+                // Influencer
+                { handle: 'howardlindzon', displayName: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits. Managing Partner of Social Leverage. Angel investor in Robinhood, Etoro, Koyfin.', verified: true, followers: '376.2K', tickers: ['TSLA', 'BTC', 'HOOD'], category: 'Influencer' },
+                { handle: 'Steeletwits', displayName: 'Michele Steele', avatar: '/avatars/michele-steele.png', bio: 'Head of Content @Stocktwits. Former ESPN reporter covering the intersection of sports & finance.', verified: true, followers: '42.1K', tickers: ['DKNG', 'DIS'], category: 'Influencer' },
+                { handle: 'FinanceBuzz', displayName: 'Finance Buzz', avatar: '/avatars/who-follow-3.png', bio: 'Breaking down complex market events into simple takes. 500K+ community across platforms.', verified: true, followers: '112.4K', tickers: ['SPY', 'TSLA', 'AAPL'], category: 'Influencer' },
+                { handle: 'MarketVibes', displayName: 'Market Vibes', avatar: '/avatars/who-follow-4.png', bio: 'Daily market recaps and pre-market analysis. Making Wall Street accessible for everyone.', verified: false, followers: '89.7K', tickers: ['QQQ', 'NVDA', 'AMZN'], category: 'Influencer' },
+                // Day Trader
+                { handle: 'rosscameron', displayName: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. Day trading educator with $10M+ in verified profits.', verified: true, followers: '128.5K', tickers: ['SPY', 'AMD', 'NVDA'], category: 'Day Trader' },
+                { handle: 'ScalpKing', displayName: 'Scalp King', avatar: '/avatars/top-voice-3.png', bio: 'ES and NQ futures scalper. 200+ trades/week. Sharing real-time entries in the chat.', verified: false, followers: '34.8K', tickers: ['SPY', 'QQQ'], category: 'Day Trader' },
+                { handle: 'GapTrader', displayName: 'Gap Trader', avatar: '/avatars/who-follow-2.png', bio: 'Gap-and-go specialist. Small caps with volume. Pre-market scanner addict.', verified: false, followers: '19.2K', tickers: ['AMC', 'GME'], category: 'Day Trader' },
+                { handle: 'LevelToLevel', displayName: 'Level to Level', avatar: '/avatars/who-follow-1.png', bio: 'Price action trader. No indicators, just levels. 8 years full-time.', verified: false, followers: '27.5K', tickers: ['TSLA', 'AAPL'], category: 'Day Trader' },
+                // Analyst
+                { handle: 'michaelbolling', displayName: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', bio: 'VP of Content @Stocktwits. Covering markets, macro, and momentum. Formerly @FoxBusiness.', verified: true, followers: '85.3K', tickers: ['AAPL', 'MSFT', 'QQQ'], category: 'Analyst' },
+                { handle: 'EarningsEdge', displayName: 'Earnings Edge', avatar: '/avatars/top-voice-2.png', bio: 'Deep-dive earnings analysis. Breaking down 10-Ks so you don\'t have to. Former sell-side.', verified: false, followers: '38.1K', tickers: ['AMZN', 'GOOGL'], category: 'Analyst' },
+                { handle: 'StreetResearch', displayName: 'Street Research', avatar: '/avatars/who-follow-4.png', bio: 'Independent equity research. Institutional-quality analysis for retail traders.', verified: false, followers: '21.6K', tickers: ['PLTR', 'CRWD'], category: 'Analyst' },
+                { handle: 'DataDrivenAlpha', displayName: 'Data Driven Alpha', avatar: '/avatars/ross-cameron.png', bio: 'Quantitative analysis meets fundamental research. Let the numbers tell the story.', verified: false, followers: '15.3K', tickers: ['NVDA', 'AVGO'], category: 'Analyst' },
+                // Sector Expert
+                { handle: 'AIBull', displayName: 'AI Bull', avatar: '/avatars/top-voice-1.png', bio: 'Full-time AI/semiconductor analyst. Long $NVDA since $12. Data center thesis > hype.', verified: false, followers: '18.7K', tickers: ['NVDA', 'AMD'], category: 'Sector Expert' },
+                { handle: 'ChipWatcher', displayName: 'Chip Watcher', avatar: '/avatars/top-voice-3.png', bio: 'Semiconductor supply chain analyst. Tracking wafer starts, CoWoS, and AI chip demand.', verified: false, followers: '11.2K', tickers: ['NVDA', 'TSM', 'ASML'], category: 'Sector Expert' },
+                { handle: 'BiotechAlpha', displayName: 'Biotech Alpha', avatar: '/avatars/who-follow-3.png', bio: 'PhD in molecular biology. Translating clinical trial data into trade ideas since 2014.', verified: false, followers: '29.4K', tickers: ['XBI', 'MRNA', 'LLY'], category: 'Sector Expert' },
+                { handle: 'EnergyInsider', displayName: 'Energy Insider', avatar: '/avatars/michael-bolling.png', bio: 'Former oil & gas engineer turned energy sector trader. Crude, nat gas, uranium.', verified: false, followers: '16.8K', tickers: ['XLE', 'OXY'], category: 'Sector Expert' },
+                // Options Trader
+                { handle: 'TechTrader', displayName: 'Tech Trader', avatar: '/avatars/top-voice-2.png', bio: 'Options flow & technicals on mega-cap tech. 15+ years in the game. Risk management first.', verified: false, followers: '24.3K', tickers: ['AAPL', 'GOOGL', 'META'], category: 'Options Trader' },
+                { handle: 'OptionsFlow', displayName: 'Options Flow', avatar: '/avatars/top-voice-1.png', bio: 'Real-time unusual options activity. Tracking smart money bets across 4,000+ names.', verified: false, followers: '67.1K', tickers: ['SPY', 'QQQ', 'TSLA'], category: 'Options Trader' },
+                { handle: 'ThetaGang', displayName: 'Theta Gang', avatar: '/avatars/who-follow-2.png', bio: 'Premium selling specialist. Wheel strategy, iron condors, and covered calls.', verified: false, followers: '41.2K', tickers: ['AAPL', 'MSFT'], category: 'Options Trader' },
+                { handle: 'VolSurface', displayName: 'Vol Surface', avatar: '/avatars/michele-steele.png', bio: 'Volatility trader and former market maker. IV skew, term structure, and gamma scalping.', verified: false, followers: '13.7K', tickers: ['VIX', 'SPX'], category: 'Options Trader' },
+                // Crypto
+                { handle: 'CryptoKing', displayName: 'Crypto King', avatar: '/avatars/who-follow-1.png', bio: 'Full-time crypto trader since 2017. DeFi, Layer 1s, and macro.', verified: false, followers: '52.8K', tickers: ['BTC', 'ETH', 'SOL'], category: 'Crypto' },
+                { handle: 'DeFiDegen', displayName: 'DeFi Degen', avatar: '/avatars/top-voice-3.png', bio: 'Yield farming, liquidity pools, and on-chain analysis. Finding alpha in DeFi since 2020.', verified: false, followers: '38.5K', tickers: ['ETH', 'AAVE'], category: 'Crypto' },
+                { handle: 'OnChainAlpha', displayName: 'On-Chain Alpha', avatar: '/avatars/who-follow-4.png', bio: 'Blockchain data analyst. Whale wallets, exchange flows, and network metrics.', verified: false, followers: '26.1K', tickers: ['BTC', 'SOL'], category: 'Crypto' },
+                { handle: 'AltSeason', displayName: 'Alt Season', avatar: '/avatars/howard-lindzon.png', bio: 'Altcoin specialist. Finding the next 10x before CT. Early in SOL, AVAX, and INJ.', verified: false, followers: '44.9K', tickers: ['SOL', 'AVAX', 'SUI'], category: 'Crypto' },
+                // Swing Trader
+                { handle: 'MomentumKing', displayName: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Swing trading momentum setups. Relative strength and volume breakouts.', verified: false, followers: '31.6K', tickers: ['TSLA', 'PLTR'], category: 'Swing Trader' },
+                { handle: 'SwingSetups', displayName: 'Swing Setups', avatar: '/avatars/top-voice-1.png', bio: 'Multi-day holds based on weekly charts and sector rotation. Patience > prediction.', verified: false, followers: '22.8K', tickers: ['AMZN', 'NFLX'], category: 'Swing Trader' },
+                { handle: 'TrendRider', displayName: 'Trend Rider', avatar: '/avatars/ross-cameron.png', bio: 'Riding trends until they bend. Moving averages and market structure. 12-year track record.', verified: false, followers: '19.5K', tickers: ['SPY', 'NVDA'], category: 'Swing Trader' },
+                { handle: 'BreakoutHunter', displayName: 'Breakout Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Cup & handle, bull flags, and tight consolidations. Scanning for the next move daily.', verified: false, followers: '17.3K', tickers: ['AMD', 'COIN'], category: 'Swing Trader' },
+                // Value Investor
+                { handle: 'ValueHunter', displayName: 'Value Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Deep value & contrarian plays. Buying what everyone else is selling. CFA charterholder.', verified: false, followers: '14.9K', tickers: ['BRK.B', 'JPM', 'BAC'], category: 'Value Investor' },
+                { handle: 'DividendKing', displayName: 'Dividend King', avatar: '/avatars/michael-bolling.png', bio: 'Building passive income one dividend at a time. 25-year DRIP portfolio. Yield + growth.', verified: false, followers: '33.7K', tickers: ['O', 'JNJ', 'KO'], category: 'Value Investor' },
+                { handle: 'BookValueBets', displayName: 'Book Value Bets', avatar: '/avatars/who-follow-4.png', bio: 'Graham and Dodd disciple. Margin of safety or no deal. Tracking insider buys weekly.', verified: false, followers: '11.4K', tickers: ['BRK.B', 'MKL'], category: 'Value Investor' },
+                { handle: 'FCFocus', displayName: 'Free Cash Flow Focus', avatar: '/avatars/top-voice-2.png', bio: 'Cash flow is king. Finding undervalued compounders with sustainable FCF yield.', verified: false, followers: '18.2K', tickers: ['GOOGL', 'AAPL'], category: 'Value Investor' },
+                // Macro
+                { handle: 'MacroMaven', displayName: 'Macro Maven', avatar: '/avatars/who-follow-4.png', bio: 'Global macro strategist. Bonds, currencies, commodities. Former institutional PM.', verified: false, followers: '22.4K', tickers: ['GLD', 'TLT'], category: 'Macro' },
+                { handle: 'FedWatcher', displayName: 'Fed Watcher', avatar: '/avatars/top-voice-2.png', bio: 'Tracking every Fed meeting, dot plot, and speech. Interest rate forecasting since 2010.', verified: false, followers: '35.6K', tickers: ['TLT', 'SPY'], category: 'Macro' },
+                { handle: 'GlobalFlows', displayName: 'Global Flows', avatar: '/avatars/who-follow-1.png', bio: 'Capital flows, EM vs DM, and currency dynamics. Connecting the dots across global markets.', verified: false, followers: '19.8K', tickers: ['EEM', 'FXI'], category: 'Macro' },
+                { handle: 'CommodityPulse', displayName: 'Commodity Pulse', avatar: '/avatars/ross-cameron.png', bio: 'Oil, gold, copper, and ags. Supply-demand fundamentals and geopolitical risk analysis.', verified: false, followers: '14.2K', tickers: ['GLD', 'USO'], category: 'Macro' },
+              ]
+              const CATEGORIES = ['All', 'Influencer', 'Day Trader', 'Analyst', 'Sector Expert', 'Options Trader', 'Crypto', 'Swing Trader', 'Value Investor', 'Macro']
+              const filtered = wtfCat === 'All' ? WHO_FOLLOW_DATA : WHO_FOLLOW_DATA.filter((u) => u.category === wtfCat)
+              return (
+                <div>
+                  <h3 className="text-sm font-bold text-text uppercase tracking-wide mb-3">Who to Follow</h3>
+                  {/* Category carousel */}
+                  <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 mb-3 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollbarWidth: 'thin' }}>
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setWtfCat(cat)}
+                        className={clsx(
+                          'px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-colors border whitespace-nowrap',
+                          wtfCat === cat
+                            ? 'bg-primary text-white border-primary'
+                            : 'bg-surface-muted text-text border-border hover:bg-surface'
                         )}
-                        <span className="text-xs text-text-muted">@{user.handle}</span>
-                      </div>
-                      <p className="text-xs text-text-muted mt-0.5 line-clamp-1">{user.bio}</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[10px] text-text-muted">{user.followers} followers</span>
-                        <span className="text-text-muted">·</span>
-                        <div className="flex gap-1">
-                          {user.tickers.map((t) => (
-                            <span key={t} className="text-[10px] font-semibold text-primary">${t}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <Link
-                      to="/onboarding"
-                      className="shrink-0 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity mt-0.5"
-                    >
-                      Follow
-                    </Link>
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                  {/* User cards */}
+                  <div className="space-y-3">
+                    {filtered.map((user) => (
+                      <div key={user.handle} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-surface hover:shadow-sm transition-shadow">
+                        <img src={user.avatar} alt="" className="w-11 h-11 rounded-full object-cover border border-border shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-sm text-text truncate">{user.displayName}</span>
+                            {user.verified && (
+                              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-400 shrink-0" aria-label="Verified">
+                                <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                              </span>
+                            )}
+                            <span className="text-xs text-text-muted">@{user.handle}</span>
+                          </div>
+                          <p className="text-xs text-text-muted mt-0.5 line-clamp-1">{user.bio}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-[10px] font-medium text-text-muted px-1.5 py-0.5 rounded bg-surface-muted border border-border">{user.category}</span>
+                            <span className="text-[10px] text-text-muted">{user.followers} followers</span>
+                            <span className="text-text-muted">·</span>
+                            <div className="flex gap-1">
+                              {user.tickers.map((t) => (
+                                <span key={t} className="text-[10px] font-semibold text-primary">${t}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <Link
+                          to="/onboarding"
+                          className="shrink-0 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity mt-0.5"
+                        >
+                          Follow
+                        </Link>
+                      </div>
+                    ))}
+                    {filtered.length === 0 && (
+                      <p className="text-sm text-text-muted text-center py-6">No users in this category yet.</p>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
             {/* Bottom CTA */}
             <div className="text-center pt-2 pb-4">
               <Link to="/onboarding" className="text-sm font-semibold text-primary hover:underline">
@@ -1776,7 +1844,32 @@ export default function Homepage3() {
               {messages.map((msg, idx) => {
                 const topic = popularTopics[msg.topicIndex ?? 0]
                 return (
-                  <article key={msg.id} className="flex gap-3 pt-4 pb-4 px-4">
+                  <Fragment key={msg.id}>
+                    {/* In-stream CTA after the 5th message for logged-out users */}
+                    {idx === 5 && !isLoggedIn && (
+                      <div className="px-4 py-5">
+                        <div className="rounded-xl bg-gradient-to-r from-primary/10 via-blue-500/5 to-purple-500/10 border border-primary/20 p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold text-text">Get the full picture on every symbol</p>
+                              <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                                Real-time sentiment, community predictions, price targets, and live earnings coverage — all on one page. Join the conversation and see what 10M+ traders are saying.
+                              </p>
+                              <Link to="/onboarding" className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-full bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity">
+                                Sign Up Free
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  <article className="flex gap-3 pt-4 pb-4 px-4">
                     <img src={msg.avatar || DEFAULT_AVATAR} alt="" className="w-10 h-10 rounded-full object-cover border border-border shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -1808,6 +1901,7 @@ export default function Homepage3() {
                       </div>
                     </div>
                   </article>
+                  </Fragment>
                 )
               })}
             </div>
