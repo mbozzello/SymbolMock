@@ -37,7 +37,7 @@ const HOWARD_PROFILE = {
   followingCount: '2.2k',
   followersCount: '376.2k',
   watchlistCount: 253,
-  hasEdgeBadge: true,
+  hasEdgeBadge: false,
   sentiment: {
     '30d': { pct: 75, direction: 'bullish', label: 'Extremely Bullish' },
     '90d': { pct: 45, direction: 'bearish', label: 'Bearish' },
@@ -151,35 +151,10 @@ function InfoIcon({ className = 'w-4 h-4' }) {
 function ConsolidatedPredictionBox({ price, market, username, isOwnProfile, isHidden, onToggleVisibility }) {
   const canToggle = isOwnProfile && username === 'howardlindzon'
 
-  const headerRow = (
-    <div className="flex items-center justify-between mb-2">
-      <div className="flex items-center gap-2">
-        <svg className="w-4 h-4 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M2 17l5-5 5 5M12 17l5-5 5 5" />
-          <path d="M12 2v8M9 6l3-3 3 3" />
-        </svg>
-        <span className="text-sm font-semibold text-white">Elite Trader</span>
-      </div>
-      <div className="flex items-center gap-1.5">
-        {canToggle && (
-          <button
-            type="button"
-            onClick={onToggleVisibility}
-            className="p-1 rounded text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label={isHidden ? 'Show prediction stats' : 'Hide prediction stats'}
-          >
-            {isHidden ? <EyeClosedIcon /> : <EyeOpenIcon />}
-          </button>
-        )}
-        <span className="p-1 text-white/80" aria-hidden><InfoIcon /></span>
-      </div>
-    </div>
-  )
-
   if (isHidden) {
     if (!canToggle) return null
     return (
-      <div className="mt-3 rounded-xl px-3 py-2.5 w-[76%] flex items-center justify-between" style={{ backgroundColor: '#31274F' }}>
+      <div className="mt-3 rounded-xl px-3 py-2.5 flex items-center justify-between" style={{ backgroundColor: '#31274F' }}>
         <span className="text-xs text-white/70">Prediction stats hidden</span>
         <button
           type="button"
@@ -195,22 +170,41 @@ function ConsolidatedPredictionBox({ price, market, username, isOwnProfile, isHi
   }
 
   return (
-    <div className="mt-3 rounded-xl px-3 py-2.5 w-[76%]" style={{ backgroundColor: '#31274F' }}>
-      {headerRow}
-      <div className="space-y-2 text-[11px] text-white/90">
-        {price && (
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Price Targets</span>
-            <span>#{price.rank}/{price.total?.toLocaleString() ?? '—'} · <span className="text-green-500 font-medium">+{price.roi}%</span> · {price.winRate}% win · 🔥{price.streak}</span>
+    <div className="mt-3 rounded-lg px-3 py-2 w-full space-y-1.5" style={{ background: 'linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)' }}>
+      {price && (
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-medium text-[#3b1f7e]">Price Prediction Rank</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-black text-[#3b1f7e]">#{price.rank}</span>
+            <span className="text-[10px] text-[#3b1f7e]/50">/ {price.total?.toLocaleString()}</span>
+            <span className="text-[11px] font-semibold text-green-700 ml-1">{price.winRate}% win rate</span>
+            <span className="text-[11px] text-[#3b1f7e]/40 ml-0.5">›</span>
           </div>
-        )}
-        {market && (
-          <div className="flex items-center justify-between">
-            <span className="text-white/70">Market Events</span>
-            <span>#{market.rank}/{market.total?.toLocaleString() ?? '—'} · <span className="text-green-500 font-medium">+{market.roi}%</span> · {market.winRate}% win · 🔥{market.streak}</span>
+        </div>
+      )}
+      {market && (
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-medium text-[#3b1f7e]">Market Prediction Rank</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-black text-[#3b1f7e]">#{market.rank}</span>
+            <span className="text-[10px] text-[#3b1f7e]/50">/ {market.total?.toLocaleString()}</span>
+            <span className="text-[11px] font-semibold text-green-700 ml-1">{market.winRate}% win rate</span>
+            <span className="text-[11px] text-[#3b1f7e]/40 ml-0.5">›</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+      {canToggle && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onToggleVisibility}
+            className="p-0.5 rounded text-[#3b1f7e]/40 hover:text-[#3b1f7e] hover:bg-white/30 transition-colors"
+            aria-label="Hide prediction stats"
+          >
+            <EyeOpenIcon />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -332,10 +326,13 @@ function AISummaryCard() {
       >
         <div className="w-[200px] min-w-[200px] rounded-xl border border-border bg-surface-muted/30 p-2.5 flex flex-col aspect-[10/9] cursor-pointer">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-1.5">AI Summary</div>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <p className="text-[11px] text-text leading-[1.4] line-clamp-8">
+          <div className="flex-1 min-h-0 overflow-hidden relative">
+            <p className="text-xs text-text leading-[1.5] line-clamp-6">
               {AI_SUMMARY_FULL}
             </p>
+            <div className="flex justify-end mt-1">
+              <span className="text-xs text-text-muted">›</span>
+            </div>
           </div>
         </div>
       </div>
@@ -480,15 +477,16 @@ export default function Profile({ isOwnProfile = false }) {
         watchlist={watchlist}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
+        leftPadding={50}
       />
 
-      <main className="lg:pl-[300px]">
+      <main className="lg:pl-[350px]">
         <TopNavigation darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <TickerTape />
 
-        <div className="max-w-[1200px] mx-auto px-4 py-4 flex gap-6">
+        <div className="max-w-[1200px] mx-auto pl-0 pr-0 py-4 flex gap-0">
           {/* Middle column: Profile */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 max-w-[660px] pl-4">
             {/* Profile header */}
             <div className="border-b border-border pb-4">
               <div className="flex items-center gap-4">
@@ -1034,7 +1032,42 @@ export default function Profile({ isOwnProfile = false }) {
           </div>
 
           {/* Right sidebar */}
-          <aside className="w-[280px] shrink-0 hidden lg:block space-y-6">
+          <aside className="w-[300px] max-w-[300px] shrink-0 hidden lg:block space-y-6 pl-4 pr-4 pt-4 border-l border-border">
+            {/* Related Users */}
+            <div className="pb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-text">Related Users</h3>
+                <button type="button" className="text-text-muted hover:text-text transition-colors" aria-label="See more">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+              <ul className="divide-y divide-border">
+                {[
+                  { name: 'ChartMaster', handle: 'ChartMaster', avatar: '/avatars/top-voice-1.png', bio: 'Technical analysis & chart patterns' },
+                  { name: 'MomentumKing', handle: 'MomentumKing', avatar: '/avatars/top-voice-2.png', bio: 'Momentum plays & swing trades' },
+                  { name: 'OptionsFlow', handle: 'OptionsFlow', avatar: '/avatars/top-voice-3.png', bio: 'Unusual options activity tracker' },
+                  { name: 'MacroView', handle: 'MacroView', avatar: '/avatars/who-follow-1.png', bio: 'Fed watch & macro insights' },
+                  { name: 'RetailTrader42', handle: 'RetailTrader42', avatar: '/avatars/who-follow-2.png', bio: 'Long-term conviction holds' },
+                ].map((person) => (
+                  <li key={person.handle} className="flex items-center justify-between gap-3 py-3">
+                    <Link to={`/profile/${person.handle}`} className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity">
+                      <img src={person.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0 bg-surface-muted" />
+                      <div className="min-w-0">
+                        <span className="text-sm font-bold text-text truncate block">{person.name}</span>
+                        <p className="text-xs text-text-muted truncate">@{person.handle}</p>
+                      </div>
+                    </Link>
+                    <button
+                      type="button"
+                      className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border border-border bg-surface hover:bg-surface-muted text-text transition-colors"
+                    >
+                      Follow
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             <RelatedSymbols />
             <PredictionLeaderboard />
           </aside>
