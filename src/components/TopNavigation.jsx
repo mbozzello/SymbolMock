@@ -240,7 +240,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
     }
   }
 
-  const navItems = ['Markets', 'News', 'Earnings']
+  const navItems = ['Social Tools', 'News', 'Earnings']
 
   const isSearchPage = location.pathname === '/search'
   const handleTrendingClick = (item) => {
@@ -766,7 +766,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
         <div className="flex items-center gap-2 shrink-0">
           {navItems.map((item) => {
             const isNews = item === 'News'
-            const isMarkets = item === 'Markets'
+            const isMarkets = item === 'Social Tools'
             const isActive = isNews ? isNewsPage : isMarkets ? isMarketsPage : activeTab === item
             const content = (
               <span

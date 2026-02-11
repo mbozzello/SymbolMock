@@ -76,6 +76,55 @@ const SORT_OPTIONS = [
   { key: 'topLosers', label: 'Top Losers', icon: 'arrowDown' },
 ]
 
+// Heatmap data — rich dataset across sectors for proper treemap
+const HEATMAP_DATA = [
+  // Technology
+  { ticker: 'NVDA', sector: 'Technology', pctChange: -0.75, sentimentScore: 80, messageVolumeNum: 280000, marketCapNum: 3100e9 },
+  { ticker: 'AAPL', sector: 'Technology', pctChange: -0.30, sentimentScore: 10, messageVolumeNum: 95000, marketCapNum: 2780e9 },
+  { ticker: 'MSFT', sector: 'Technology', pctChange: -0.06, sentimentScore: 40, messageVolumeNum: 88000, marketCapNum: 2900e9 },
+  { ticker: 'AVGO', sector: 'Technology', pctChange: -1.04, sentimentScore: -30, messageVolumeNum: 42000, marketCapNum: 800e9 },
+  { ticker: 'AMD', sector: 'Technology', pctChange: -1.11, sentimentScore: -40, messageVolumeNum: 76000, marketCapNum: 280e9 },
+  { ticker: 'PLTR', sector: 'Technology', pctChange: -2.39, sentimentScore: 100, messageVolumeNum: 67000, marketCapNum: 250e9 },
+  { ticker: 'INTC', sector: 'Technology', pctChange: -6.17, sentimentScore: -90, messageVolumeNum: 54000, marketCapNum: 120e9 },
+  { ticker: 'QCOM', sector: 'Technology', pctChange: 0.89, sentimentScore: 20, messageVolumeNum: 28000, marketCapNum: 200e9 },
+  { ticker: 'TXN', sector: 'Technology', pctChange: 0.99, sentimentScore: 30, messageVolumeNum: 12000, marketCapNum: 170e9 },
+  // Communication Services
+  { ticker: 'GOOGL', sector: 'Communication Services', pctChange: -1.78, sentimentScore: -10, messageVolumeNum: 120000, marketCapNum: 2000e9 },
+  { ticker: 'META', sector: 'Communication Services', pctChange: -0.94, sentimentScore: 60, messageVolumeNum: 110000, marketCapNum: 1200e9 },
+  { ticker: 'NFLX', sector: 'Communication Services', pctChange: 0.90, sentimentScore: 50, messageVolumeNum: 48000, marketCapNum: 300e9 },
+  { ticker: 'DIS', sector: 'Communication Services', pctChange: 0.65, sentimentScore: 10, messageVolumeNum: 32000, marketCapNum: 200e9 },
+  // Consumer Cyclical
+  { ticker: 'AMZN', sector: 'Consumer Cyclical', pctChange: -0.83, sentimentScore: -20, messageVolumeNum: 72000, marketCapNum: 1850e9 },
+  { ticker: 'TSLA', sector: 'Consumer Cyclical', pctChange: 1.87, sentimentScore: -100, messageVolumeNum: 320000, marketCapNum: 792e9 },
+  { ticker: 'HD', sector: 'Consumer Cyclical', pctChange: 2.26, sentimentScore: 40, messageVolumeNum: 18000, marketCapNum: 370e9 },
+  { ticker: 'WMT', sector: 'Consumer Cyclical', pctChange: -1.75, sentimentScore: 0, messageVolumeNum: 22000, marketCapNum: 490e9 },
+  // Healthcare
+  { ticker: 'LLY', sector: 'Healthcare', pctChange: -1.90, sentimentScore: 30, messageVolumeNum: 38000, marketCapNum: 750e9 },
+  { ticker: 'JNJ', sector: 'Healthcare', pctChange: -0.14, sentimentScore: 5, messageVolumeNum: 15000, marketCapNum: 400e9 },
+  { ticker: 'ABBV', sector: 'Healthcare', pctChange: -0.39, sentimentScore: -10, messageVolumeNum: 12000, marketCapNum: 300e9 },
+  { ticker: 'MRK', sector: 'Healthcare', pctChange: -0.47, sentimentScore: -20, messageVolumeNum: 11000, marketCapNum: 280e9 },
+  // Financial Services
+  { ticker: 'V', sector: 'Financial Services', pctChange: 0.78, sentimentScore: 50, messageVolumeNum: 22000, marketCapNum: 550e9 },
+  { ticker: 'MA', sector: 'Financial Services', pctChange: 0.93, sentimentScore: 45, messageVolumeNum: 18000, marketCapNum: 400e9 },
+  { ticker: 'JPM', sector: 'Financial Services', pctChange: -1.24, sentimentScore: 20, messageVolumeNum: 34000, marketCapNum: 550e9 },
+  { ticker: 'BAC', sector: 'Financial Services', pctChange: -1.79, sentimentScore: -30, messageVolumeNum: 28000, marketCapNum: 300e9 },
+  { ticker: 'WFC', sector: 'Financial Services', pctChange: -2.83, sentimentScore: -50, messageVolumeNum: 18000, marketCapNum: 200e9 },
+  { ticker: 'GS', sector: 'Financial Services', pctChange: 0.51, sentimentScore: 30, messageVolumeNum: 14000, marketCapNum: 150e9 },
+  { ticker: 'HOOD', sector: 'Financial Services', pctChange: -9.24, sentimentScore: -100, messageVolumeNum: 12500, marketCapNum: 89e9 },
+  // Energy
+  { ticker: 'XOM', sector: 'Energy', pctChange: 0.25, sentimentScore: 15, messageVolumeNum: 20000, marketCapNum: 440e9 },
+  { ticker: 'CVX', sector: 'Energy', pctChange: -0.20, sentimentScore: 5, messageVolumeNum: 14000, marketCapNum: 280e9 },
+  // Industrials
+  { ticker: 'CAT', sector: 'Industrials', pctChange: 0.04, sentimentScore: 25, messageVolumeNum: 9000, marketCapNum: 170e9 },
+  { ticker: 'GE', sector: 'Industrials', pctChange: -0.15, sentimentScore: 35, messageVolumeNum: 11000, marketCapNum: 190e9 },
+  { ticker: 'RTX', sector: 'Industrials', pctChange: -0.52, sentimentScore: 10, messageVolumeNum: 7000, marketCapNum: 140e9 },
+  // Digital Assets
+  { ticker: 'BTC', sector: 'Digital Assets', pctChange: 2.25, sentimentScore: 100, messageVolumeNum: 450000, marketCapNum: 1920e9 },
+  { ticker: 'ETH', sector: 'Digital Assets', pctChange: -2.67, sentimentScore: 0, messageVolumeNum: 180000, marketCapNum: 390e9 },
+  { ticker: 'XRP', sector: 'Digital Assets', pctChange: 8.33, sentimentScore: 100, messageVolumeNum: 89000, marketCapNum: 134e9 },
+  { ticker: 'DOGE', sector: 'Digital Assets', pctChange: 7.22, sentimentScore: 100, messageVolumeNum: 210000, marketCapNum: 26e9 },
+]
+
 function MiniSparkline({ values = [], isUp }) {
   const width = 72
   const height = 28
@@ -100,6 +149,226 @@ function MiniSparkline({ values = [], isUp }) {
         strokeLinecap="round"
       />
     </svg>
+  )
+}
+
+// Treemap color: vibrant red/green on dark background, matching the reference image
+function getTreemapColor(metric, value, absMax) {
+  if (metric === 'messageVolume') {
+    const t = Math.min(1, value / Math.max(1, absMax))
+    const r = Math.round(20 + 15 * t)
+    const g = Math.round(30 + 100 * t)
+    const b = Math.round(50 + 150 * t)
+    return `rgb(${r},${g},${b})`
+  }
+  // For price and sentiment: red (negative) / green (positive), dark near zero
+  const t = absMax > 0 ? value / absMax : 0
+  const clamped = Math.max(-1, Math.min(1, t))
+  if (clamped < 0) {
+    const s = -clamped
+    const r = Math.round(30 + 195 * s)
+    const g = Math.round(20 + 10 * (1 - s))
+    const b = Math.round(20 + 10 * (1 - s))
+    return `rgb(${r},${g},${b})`
+  }
+  const s = clamped
+  const r = Math.round(20 + 10 * (1 - s))
+  const g = Math.round(30 + 170 * s)
+  const b = Math.round(20 + 10 * (1 - s))
+  return `rgb(${r},${g},${b})`
+}
+
+// Squarified treemap layout algorithm
+function squarifyLayout(items, rect) {
+  if (items.length === 0) return []
+  if (items.length === 1) return [{ ...items[0], x: rect.x, y: rect.y, w: rect.w, h: rect.h }]
+  const total = items.reduce((s, d) => s + d.value, 0)
+  if (total <= 0) return []
+  const sorted = [...items].sort((a, b) => b.value - a.value)
+  const results = []
+  let remaining = sorted
+  let cur = { ...rect }
+  while (remaining.length > 0) {
+    const isWide = cur.w >= cur.h
+    const side = isWide ? cur.h : cur.w
+    const remTotal = remaining.reduce((s, d) => s + d.value, 0)
+    const area = cur.w * cur.h
+    let row = [remaining[0]]
+    let rowVal = remaining[0].value
+    let best = worstAR(row, rowVal, side, area, remTotal)
+    for (let i = 1; i < remaining.length; i++) {
+      const next = [...row, remaining[i]]
+      const nextVal = rowVal + remaining[i].value
+      const w = worstAR(next, nextVal, side, area, remTotal)
+      if (w <= best) { row = next; rowVal = nextVal; best = w } else break
+    }
+    const rowArea = (rowVal / remTotal) * area
+    const rowLen = rowArea / side
+    let off = 0
+    for (const item of row) {
+      const itemLen = (item.value / rowVal) * side
+      if (isWide) {
+        results.push({ ...item, x: cur.x, y: cur.y + off, w: rowLen, h: itemLen })
+      } else {
+        results.push({ ...item, x: cur.x + off, y: cur.y, w: itemLen, h: rowLen })
+      }
+      off += itemLen
+    }
+    if (isWide) cur = { x: cur.x + rowLen, y: cur.y, w: cur.w - rowLen, h: cur.h }
+    else cur = { x: cur.x, y: cur.y + rowLen, w: cur.w, h: cur.h - rowLen }
+    remaining = remaining.slice(row.length)
+  }
+  return results
+}
+function worstAR(row, rowVal, side, totalArea, totalVal) {
+  const rArea = (rowVal / totalVal) * totalArea
+  const rLen = rArea / side
+  let worst = 0
+  for (const item of row) {
+    const iLen = (item.value / rowVal) * side
+    worst = Math.max(worst, Math.max(rLen / Math.max(0.01, iLen), iLen / Math.max(0.01, rLen)))
+  }
+  return worst
+}
+
+const TREEMAP_W = 1100
+const TREEMAP_H = 620
+const SECTOR_LABEL_H = 18
+
+function ResearchHeatmap({ data, metric }) {
+  const { absMax, getValue, formatLabel } = useMemo(() => {
+    if (metric === 'price') {
+      const vals = data.map((d) => Math.abs(d.pctChange))
+      return {
+        absMax: Math.max(...vals, 1),
+        getValue: (d) => d.pctChange,
+        formatLabel: (v) => (v >= 0 ? '' : '') + v.toFixed(2),
+      }
+    }
+    if (metric === 'sentiment') {
+      return {
+        absMax: 100,
+        getValue: (d) => d.sentimentScore,
+        formatLabel: (v) => (v > 0 ? 'Bull' : v < 0 ? 'Bear' : '—'),
+      }
+    }
+    const vals = data.map((d) => d.messageVolumeNum)
+    return {
+      absMax: Math.max(...vals, 1),
+      getValue: (d) => d.messageVolumeNum,
+      formatLabel: (v) => (v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${Math.round(v / 1e3)}K` : String(v)),
+    }
+  }, [data, metric])
+
+  const tiles = useMemo(() => {
+    // Group by sector
+    const sectorMap = new Map()
+    data.forEach((d) => {
+      const s = d.sector || 'Other'
+      if (!sectorMap.has(s)) sectorMap.set(s, [])
+      sectorMap.get(s).push(d)
+    })
+    const sectors = Array.from(sectorMap.entries()).map(([name, items]) => ({
+      name,
+      items,
+      value: items.reduce((s, d) => s + d.marketCapNum, 0),
+    }))
+    // Layout sectors in the full rect
+    const sectorRects = squarifyLayout(
+      sectors.map((s) => ({ id: s.name, value: s.value })),
+      { x: 0, y: 0, w: TREEMAP_W, h: TREEMAP_H }
+    )
+    // For each sector, layout stocks inside (with space for label)
+    const all = []
+    sectorRects.forEach((sr) => {
+      const sec = sectors.find((s) => s.name === sr.id)
+      if (!sec) return
+      all.push({ type: 'sector', name: sr.id, x: sr.x, y: sr.y, w: sr.w, h: sr.h })
+      const innerRect = { x: sr.x + 1, y: sr.y + SECTOR_LABEL_H, w: sr.w - 2, h: sr.h - SECTOR_LABEL_H - 1 }
+      if (innerRect.w <= 0 || innerRect.h <= 0) return
+      const stockRects = squarifyLayout(
+        sec.items.map((d) => ({ id: d.ticker, value: d.marketCapNum, data: d })),
+        innerRect
+      )
+      stockRects.forEach((t) => {
+        all.push({ type: 'stock', ...t })
+      })
+    })
+    return all
+  }, [data])
+
+  return (
+    <div className="overflow-x-auto">
+      <div
+        className="relative select-none"
+        style={{ width: TREEMAP_W, height: TREEMAP_H, backgroundColor: '#111', borderRadius: 6, overflow: 'hidden' }}
+      >
+        {tiles.map((t) => {
+          if (t.type === 'sector') {
+            return (
+              <div
+                key={`sec-${t.name}`}
+                className="absolute border border-[#333] overflow-hidden"
+                style={{ left: t.x, top: t.y, width: t.w, height: t.h }}
+              >
+                <div
+                  className="absolute top-0 left-0 right-0 flex items-center px-1.5 text-[11px] font-semibold text-white/80 truncate"
+                  style={{ height: SECTOR_LABEL_H, backgroundColor: '#1a1a1a' }}
+                >
+                  {t.name}
+                </div>
+              </div>
+            )
+          }
+          // Stock tile
+          const d = t.data
+          const value = getValue(d)
+          const bg = getTreemapColor(metric, value, absMax)
+          const area = t.w * t.h
+          const showTicker = t.w > 30 && t.h > 20
+          const showValue = t.w > 40 && t.h > 30
+          const isLarge = t.w > 100 && t.h > 60
+          const isMedium = t.w > 55 && t.h > 40
+          return (
+            <div
+              key={`stk-${t.id}`}
+              className="absolute overflow-hidden flex flex-col items-center justify-center text-center border border-[#222]"
+              style={{
+                left: t.x,
+                top: t.y,
+                width: t.w,
+                height: t.h,
+                backgroundColor: bg,
+              }}
+            >
+              {showTicker && (
+                <span
+                  className="font-bold text-white leading-none truncate max-w-full px-0.5"
+                  style={{
+                    fontSize: isLarge ? 18 : isMedium ? 13 : 10,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.7)',
+                  }}
+                >
+                  {t.id}
+                </span>
+              )}
+              {showValue && (
+                <span
+                  className="text-white/90 leading-none truncate max-w-full px-0.5"
+                  style={{
+                    fontSize: isLarge ? 16 : isMedium ? 11 : 9,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.7)',
+                    marginTop: 1,
+                  }}
+                >
+                  {formatLabel(value)}
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -134,6 +403,7 @@ export default function Markets() {
   const [showColumnsModal, setShowColumnsModal] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS)
   const [columnsDraft, setColumnsDraft] = useState(null)
+  const [heatmapMetric, setHeatmapMetric] = useState('price') // 'price' | 'sentiment' | 'messageVolume'
 
   const toggleColumn = (id) => {
     setVisibleColumns((prev) => {
@@ -295,7 +565,7 @@ export default function Markets() {
                 activeSection === 'socialScreener' ? 'bg-primary text-white' : 'bg-surface-muted text-text hover:bg-surface'
               )}
             >
-              Social Screener
+              Screener
             </button>
             <button
               onClick={() => setActiveSection('research')}
@@ -304,43 +574,12 @@ export default function Markets() {
                 activeSection === 'research' ? 'bg-primary text-white' : 'bg-surface-muted text-text hover:bg-surface'
               )}
             >
-              Research
+              Heatmaps
             </button>
           </div>
 
           {activeSection === 'socialScreener' && (
             <>
-              {/* Top controls */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <div className="relative flex-1">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                  </svg>
-                  <input
-                    type="text"
-                    value={symbolFilter}
-                    onChange={(e) => setSymbolFilter(e.target.value)}
-                    placeholder="Filter by symbol..."
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-surface text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  {['All', 'Equities', 'Crypto'].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => setAssetFilter(opt)}
-                      className={clsx(
-                        'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                        assetFilter === opt ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-surface-muted text-text hover:bg-surface'
-                      )}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Sort toggles */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 {SORT_OPTIONS.map((opt) => (
@@ -386,6 +625,10 @@ export default function Markets() {
                     {opt.label}
                   </button>
                 ))}
+              </div>
+
+              {/* Filters, Columns, Apply to Navigation */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
                 <button
                   type="button"
                   onClick={() => setShowFiltersModal(true)}
@@ -406,10 +649,6 @@ export default function Markets() {
                   </svg>
                   Columns
                 </button>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex items-center gap-2 mb-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -591,8 +830,29 @@ export default function Markets() {
           )}
 
           {activeSection === 'research' && (
-            <div className="rounded-xl border border-border bg-surface p-8 text-center text-muted">
-              <p className="text-sm">Research section — coming soon</p>
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold text-text mr-1">Heatmap by:</span>
+                {[
+                  { key: 'price', label: 'Price' },
+                  { key: 'sentiment', label: 'Sentiment' },
+                  { key: 'messageVolume', label: 'Message Volume' },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setHeatmapMetric(opt.key)}
+                    className={clsx(
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                      heatmapMetric === opt.key ? 'bg-primary text-white' : 'bg-surface-muted text-text hover:bg-surface border border-transparent',
+                      heatmapMetric !== opt.key && 'border-border'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <ResearchHeatmap data={HEATMAP_DATA} metric={heatmapMetric} />
             </div>
           )}
         </div>
