@@ -21,6 +21,7 @@ import Article from './pages/Article.jsx'
 import Markets from './pages/Markets.jsx'
 import Scheduled from './pages/Scheduled.jsx'
 import Profile from './pages/Profile.jsx'
+import Onboarding from './pages/Onboarding.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
 import { LiveQuotesProvider, useLiveQuotesContext } from './contexts/LiveQuotesContext.jsx'
@@ -760,6 +761,7 @@ export default function App() {
         <Route path="/myprofile/:username" element={<Profile isOwnProfile />} />
         <Route path="/registered" element={<RegisteredPage />} />
         <Route path="/unreg" element={<UnregisteredPage />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/newpage" element={<NewPage />} />
       </Routes>
       </TickerTapeProvider>
