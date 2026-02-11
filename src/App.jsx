@@ -23,6 +23,7 @@ import Scheduled from './pages/Scheduled.jsx'
 import Profile from './pages/Profile.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import HomeIOS from './pages/HomeIOS.jsx'
+import IOSTools from './pages/IOSTools.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
 import { LiveQuotesProvider, useLiveQuotesContext } from './contexts/LiveQuotesContext.jsx'
@@ -764,6 +765,7 @@ export default function App() {
         <Route path="/unreg" element={<UnregisteredPage />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/homeios" element={<HomeIOS />} />
+        <Route path="/iostools" element={<IOSTools />} />
         <Route path="/newpage" element={<NewPage />} />
       </Routes>
       </TickerTapeProvider>

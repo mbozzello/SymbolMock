@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
+import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import IOSBottomNav from '../components/IOSBottomNav.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -22,24 +25,12 @@ const TRENDING = [
   { ticker: 'PLTR', name: 'Palantir Tech', price: 98.45, pct: 5.21, spark: [90, 92, 94, 93, 95, 96, 97, 98] },
 ]
 
-/* ── Watchlist ── */
-const WATCHLIST = [
-  { ticker: 'SEDG', name: 'Solaredge Technologies Inc', price: 36.33, change: -0.46, pct: -1.25 },
-  { ticker: 'KNX', name: 'Knight-Swift Transportation Ho...', price: 60.26, change: 0.21, pct: 0.35 },
-  { ticker: 'CACI', name: 'Caci International Inc. - Registe...', price: 550.00, change: -75.80, pct: -12.45 },
-  { ticker: 'RICK', name: 'RCI Hospitality Holdings Inc', price: 23.40, change: -0.35, pct: -1.47 },
-  { ticker: 'KMI', name: 'Kinder Morgan Inc - Ordinary S...', price: 31.50, change: 0.49, pct: 1.58 },
-  { ticker: 'JPM', name: 'JPMorgan Chase & Co', price: 311.50, change: -6.78, pct: -2.12 },
-  { ticker: 'WLTH', name: 'Wealthfront Corp.', price: 4.90, change: -0.22, pct: -4.29 },
-  { ticker: 'LFCR', name: 'Lifecore Biomedical', price: 7.23, change: 0.18, pct: 2.55 },
-  { ticker: 'AAPL', name: 'Apple Inc', price: 227.63, change: 1.42, pct: 0.63 },
-  { ticker: 'MSFT', name: 'Microsoft Corp', price: 412.18, change: -3.24, pct: -0.78 },
-  { ticker: 'AMZN', name: 'Amazon.com Inc', price: 228.93, change: 2.87, pct: 1.27 },
-  { ticker: 'GOOGL', name: 'Alphabet Inc', price: 186.45, change: -1.13, pct: -0.60 },
-  { ticker: 'META', name: 'Meta Platforms Inc', price: 612.30, change: 8.45, pct: 1.40 },
-  { ticker: 'AMD', name: 'Advanced Micro Devices', price: 117.82, change: -2.31, pct: -1.92 },
-  { ticker: 'DIS', name: 'Walt Disney Co', price: 112.45, change: 0.87, pct: 0.78 },
-  { ticker: 'HOOD', name: 'Robinhood Markets Inc', price: 54.23, change: 1.56, pct: 2.96 },
+/* ── Sort options ── */
+const SORT_OPTIONS = [
+  { key: 'gain', label: 'Gain' },
+  { key: 'loss', label: 'Loss' },
+  { key: 'a-z', label: 'A-Z' },
+  { key: 'my-sort', label: 'My Sort' },
 ]
 
 /* ── Mini sparkline for trending cards ── */
@@ -78,14 +69,108 @@ const FOLLOWING_RECOMMENDED = [...FOLLOWING_FEED].sort((a, b) => (b.likes + b.co
 const FOLLOWING_LATEST = [...FOLLOWING_FEED].sort((a, b) => a.ts - b.ts)
 
 export default function HomeIOS() {
-  const [activeTab, setActiveTab] = useState('home')
+  const {
+    watchlist,
+    watchlists,
+    currentWatchlistId,
+    currentWatchlist,
+    setCurrentWatchlistId,
+    addWatchlist,
+    removeWatchlist,
+    removeSymbol,
+    addSymbol,
+    renameWatchlist,
+  } = useWatchlist()
+  const { getQuote } = useLiveQuotesContext()
+
   const [mainTab, setMainTab] = useState('watchlist') // 'watchlist' | 'following'
   const [followingSort, setFollowingSort] = useState('recommended') // 'recommended' | 'latest'
-  const [watchlistFilter, setWatchlistFilter] = useState('All')
-  const [watchlistSort, setWatchlistSort] = useState('My Sort')
+  const [watchlistSortKey, setWatchlistSortKey] = useState('gain')
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const [watchlistPickerOpen, setWatchlistPickerOpen] = useState(false)
+  const [addingSymbol, setAddingSymbol] = useState(false)
+  const [addTickerValue, setAddTickerValue] = useState('')
+  const addInputRef = useRef(null)
+  const sortMenuRef = useRef(null)
+  const pickerRef = useRef(null)
+
+  // Rename watchlist
+  const [editingName, setEditingName] = useState(false)
+  const [editNameValue, setEditNameValue] = useState('')
+  const editInputRef = useRef(null)
+
+  // Delete watchlist
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+
+  // Price alerts
+  const [alerts, setAlerts] = useState(() => {
+    try { const s = localStorage.getItem('price_alerts'); return s ? JSON.parse(s) : [] } catch { return [] }
+  })
+  const [alertModalOpen, setAlertModalOpen] = useState(false)
+  const [alertTab, setAlertTab] = useState('set')
+  const [alertModalTicker, setAlertModalTicker] = useState(null)
+  const [newAlertPrice, setNewAlertPrice] = useState('')
+  const [newAlertCondition, setNewAlertCondition] = useState('above')
+  const [newAlertNote, setNewAlertNote] = useState('')
+  const [alertSymbolSearch, setAlertSymbolSearch] = useState('')
+
+  const saveAlerts = (next) => { setAlerts(next); try { localStorage.setItem('price_alerts', JSON.stringify(next)) } catch {} }
+  const openAlertModal = (ticker) => {
+    setAlertModalTicker(ticker); setAlertModalOpen(true); setAlertTab('set')
+    setNewAlertPrice(''); setNewAlertCondition('above'); setNewAlertNote(''); setAlertSymbolSearch('')
+  }
+  const handleCreateAlert = () => {
+    const price = parseFloat(newAlertPrice)
+    if (!price || !alertModalTicker) return
+    saveAlerts([...alerts, { id: Date.now(), ticker: alertModalTicker, price, condition: newAlertCondition, note: newAlertNote.trim(), createdAt: new Date().toISOString(), triggered: false }])
+    setNewAlertPrice(''); setNewAlertNote(''); setAlertTab('manage')
+  }
+  const removeAlert = (id) => saveAlerts(alerts.filter((a) => a.id !== id))
+
+  const handleSaveName = () => {
+    const trimmed = editNameValue.trim()
+    if (trimmed && currentWatchlistId) renameWatchlist(currentWatchlistId, trimmed)
+    setEditingName(false); setEditNameValue('')
+  }
+
+  // Close menus on outside tap
+  useEffect(() => {
+    if (!sortMenuOpen && !watchlistPickerOpen) return
+    const close = (e) => {
+      if (sortMenuOpen && sortMenuRef.current && !sortMenuRef.current.contains(e.target)) setSortMenuOpen(false)
+      if (watchlistPickerOpen && pickerRef.current && !pickerRef.current.contains(e.target)) setWatchlistPickerOpen(false)
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [sortMenuOpen, watchlistPickerOpen])
+
+  useEffect(() => { if (addingSymbol && addInputRef.current) addInputRef.current.focus() }, [addingSymbol])
+  useEffect(() => { if (editingName && editInputRef.current) editInputRef.current.focus() }, [editingName])
+
+  const handleAddSymbol = (e) => {
+    e?.preventDefault()
+    const t = addTickerValue.trim().toUpperCase()
+    if (t) { addSymbol(t, t); setAddTickerValue(''); setAddingSymbol(false) }
+  }
+
+  const sortedWatchlist = useMemo(() => {
+    const list = [...watchlist]
+    if (watchlistSortKey === 'a-z') return list.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''))
+    if (watchlistSortKey === 'my-sort') return list
+    const withPct = list.map((s) => {
+      const q = getQuote(s.ticker)
+      const price = q?.price ?? s.price
+      const change = q?.change ?? s.change
+      const pct = q?.changePercent ?? (price && price !== 0 ? (change / price) * 100 : 0)
+      return { ...s, _pct: pct }
+    })
+    if (watchlistSortKey === 'gain') return withPct.sort((a, b) => (b._pct ?? 0) - (a._pct ?? 0))
+    if (watchlistSortKey === 'loss') return withPct.sort((a, b) => (a._pct ?? 0) - (b._pct ?? 0))
+    return list
+  }, [watchlist, watchlistSortKey, getQuote])
 
   return (
-    <div className="mx-auto max-w-[430px] h-screen bg-black text-white flex flex-col overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif' }}>
+    <div className="mx-auto max-w-[430px] h-screen bg-black text-white flex flex-col overflow-hidden relative" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif' }}>
 
       {/* ── iOS Status Bar ── */}
       <div className="flex items-center justify-between px-6 pt-3 pb-1 shrink-0">
@@ -206,41 +291,198 @@ export default function HomeIOS() {
 
         {/* ── Watchlist Section ── */}
         <div className="px-4 pt-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold">Watchlist</span>
-              <button type="button" className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center">
-                <svg className="w-3 h-3" fill="white" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/></svg>
+          {/* Header row: list picker + add + alert + sort */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 min-w-0 relative" ref={pickerRef}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setWatchlistPickerOpen((v) => !v) }}
+                className="flex items-center gap-1 text-base font-bold"
+              >
+                <span className="truncate max-w-[120px]">{currentWatchlist?.name || 'Watchlist'}</span>
+                <svg className={clsx('w-4 h-4 text-white/50 transition-transform', watchlistPickerOpen && 'rotate-180')} fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
               </button>
+              {/* Add symbol */}
+              <button type="button" onClick={() => setAddingSymbol(true)} className="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center shrink-0">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round"/></svg>
+              </button>
+              {/* Price alerts */}
+              <button
+                type="button"
+                onClick={() => { setAlertModalTicker(null); setAlertModalOpen(true); setAlertTab('manage') }}
+                className="relative w-6 h-6 rounded-full border border-white/30 flex items-center justify-center shrink-0"
+                aria-label="Price alerts"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {alerts.length > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full bg-[#2196F3] text-[8px] font-bold text-white flex items-center justify-center px-0.5">{alerts.length}</span>
+                )}
+              </button>
+              {/* Watchlist picker dropdown */}
+              {watchlistPickerOpen && (
+                <div className="absolute left-0 top-full mt-1 z-50 min-w-[200px] rounded-xl border border-white/10 bg-[#1c1c1e] shadow-xl py-1">
+                  {watchlists.map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      onClick={() => { setCurrentWatchlistId(w.id); setWatchlistPickerOpen(false) }}
+                      className={clsx('w-full text-left px-4 py-2.5 text-sm', w.id === currentWatchlistId ? 'text-[#2196F3] font-semibold' : 'text-white/70')}
+                    >
+                      {w.name}
+                    </button>
+                  ))}
+                  <div className="border-t border-white/10 my-1" />
+                  <button
+                    type="button"
+                    onClick={() => { setEditingName(true); setEditNameValue(currentWatchlist?.name ?? ''); setWatchlistPickerOpen(false) }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-white/70 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    Rename List
+                  </button>
+                  {watchlists.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => { setWatchlistPickerOpen(false); setConfirmDeleteOpen(true) }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-400 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      Delete List
+                    </button>
+                  )}
+                  <div className="border-t border-white/10 my-1" />
+                  <button
+                    type="button"
+                    onClick={() => { addWatchlist(); setWatchlistPickerOpen(false) }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-[#2196F3]"
+                  >
+                    + New List
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-3">
-              <button type="button" className="flex items-center gap-0.5 text-xs text-white/60">
-                {watchlistFilter} <svg className="w-3 h-3" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
+            <div className="relative shrink-0" ref={sortMenuRef}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setSortMenuOpen((v) => !v) }}
+                className="flex items-center gap-1 text-xs text-white/50"
+              >
+                {SORT_OPTIONS.find((o) => o.key === watchlistSortKey)?.label || 'Gain'}
+                <svg className={clsx('w-3 h-3 transition-transform', sortMenuOpen && 'rotate-180')} fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
               </button>
-              <button type="button" className="flex items-center gap-0.5 text-xs text-white/60">
-                {watchlistSort} <svg className="w-3 h-3" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
-              </button>
+              {sortMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] rounded-xl border border-white/10 bg-[#1c1c1e] shadow-xl py-1">
+                  {SORT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => { setWatchlistSortKey(opt.key); setSortMenuOpen(false) }}
+                      className={clsx('w-full text-left px-4 py-2.5 text-sm', watchlistSortKey === opt.key ? 'text-[#2196F3] font-semibold' : 'text-white/70')}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Inline rename watchlist */}
+          {editingName && (
+            <div className="flex items-center gap-2 mb-3">
+              <input
+                ref={editInputRef}
+                type="text"
+                value={editNameValue}
+                onChange={(e) => setEditNameValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') { setEditingName(false); setEditNameValue('') } }}
+                onBlur={handleSaveName}
+                className="flex-1 text-sm rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#2196F3] min-w-0"
+                placeholder="List name"
+              />
+            </div>
+          )}
+
+          {/* Add symbol input */}
+          {addingSymbol && (
+            <form onSubmit={handleAddSymbol} className="flex items-center gap-2 mb-3">
+              <input
+                ref={addInputRef}
+                type="text"
+                value={addTickerValue}
+                onChange={(e) => setAddTickerValue(e.target.value.toUpperCase())}
+                onKeyDown={(e) => { if (e.key === 'Escape') { setAddingSymbol(false); setAddTickerValue('') } }}
+                placeholder="Ticker (e.g. AAPL)"
+                className="flex-1 text-sm rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white placeholder-white/30 focus:outline-none focus:border-[#2196F3] min-w-0"
+                maxLength={10}
+              />
+              <button type="submit" className="px-3 py-2 rounded-lg bg-[#2196F3] text-sm font-semibold shrink-0">Add</button>
+              <button type="button" onClick={() => { setAddingSymbol(false); setAddTickerValue('') }} className="text-white/40 text-lg px-1">×</button>
+            </form>
+          )}
+
+          {/* Watchlist items */}
           <div className="divide-y divide-white/10">
-            {WATCHLIST.map((stock) => {
-              const isUp = stock.change >= 0
+            {sortedWatchlist.map((s) => {
+              const q = getQuote(s.ticker)
+              const price = q?.price ?? s.price
+              const change = q?.change ?? s.change
+              const pct = q?.changePercent ?? (price && price !== 0 ? (change / price) * 100 : 0)
+              const isUp = (change ?? 0) >= 0
+              const logo = getTickerLogo(s.ticker)
+              const hasAlert = alerts.some((a) => a.ticker === s.ticker)
               return (
-                <div key={stock.ticker} className="flex items-center justify-between py-3">
-                  <div className="min-w-0">
-                    <span className="text-sm font-bold block">{stock.ticker}</span>
-                    <span className="text-xs text-white/40 block truncate max-w-[200px]">{stock.name}</span>
+                <div key={s.ticker} className="flex items-center gap-3 py-3 group">
+                  <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-white/5 border border-white/10">
+                    {logo ? (
+                      <img src={logo} alt="" className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-white/50">{s.ticker[0]}</span>
+                    )}
                   </div>
-                  <div className="text-right shrink-0 ml-3">
-                    <span className="text-sm font-semibold block">${stock.price.toFixed(2)}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-bold block">{s.ticker}</span>
+                    <span className="text-xs text-white/40 block truncate">{s.name}</span>
+                  </div>
+                  {/* Per-row actions: alert + remove */}
+                  <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => openAlertModal(s.ticker)}
+                      className="p-1 rounded-full hover:bg-white/10"
+                      aria-label={`Set alert for ${s.ticker}`}
+                    >
+                      <svg className={clsx('w-3.5 h-3.5', hasAlert ? 'text-[#2196F3]' : 'text-white/40')} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeSymbol(s.ticker)}
+                      className="p-1 rounded-full hover:bg-white/10"
+                      aria-label={`Remove ${s.ticker}`}
+                    >
+                      <svg className="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-sm font-semibold block">${typeof price === 'number' ? price.toFixed(2) : '--'}</span>
                     <span className={clsx('text-xs font-medium', isUp ? 'text-green-400' : 'text-red-400')}>
-                      {isUp ? '↑' : '↓'} ${Math.abs(stock.change).toFixed(2)} ({Math.abs(stock.pct).toFixed(2)}%)
+                      {isUp ? '↑' : '↓'} ${Math.abs(change ?? 0).toFixed(2)} ({Math.abs(pct).toFixed(2)}%)
                     </span>
                   </div>
                 </div>
               )
             })}
+            {sortedWatchlist.length === 0 && (
+              <div className="py-8 text-center text-sm text-white/30">
+                No symbols yet. Tap + to add one.
+              </div>
+            )}
           </div>
         </div>
         </>
@@ -309,8 +551,212 @@ export default function HomeIOS() {
 
       </div>
 
+      {/* ── Confirm Delete Watchlist Modal ── */}
+      {confirmDeleteOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-6" aria-modal="true" role="alertdialog">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setConfirmDeleteOpen(false)} />
+          <div className="relative bg-[#1c1c1e] rounded-2xl border border-white/10 shadow-xl p-5 max-w-xs w-full">
+            <p className="text-sm font-semibold text-white text-center mb-1">Delete Watchlist</p>
+            <p className="text-xs text-white/50 text-center mb-5">Are you sure you want to delete "{currentWatchlist?.name}"? This cannot be undone.</p>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setConfirmDeleteOpen(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-white/10 text-white">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { if (currentWatchlistId) removeWatchlist(currentWatchlistId); setConfirmDeleteOpen(false) }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-500 text-white"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Price Alerts Modal ── */}
+      {alertModalOpen && (
+        <div className="absolute inset-0 z-50 flex flex-col" aria-modal="true" role="dialog">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setAlertModalOpen(false)} />
+          <div className="relative mt-auto bg-[#1c1c1e] rounded-t-2xl border-t border-white/10 shadow-xl flex flex-col max-h-[85vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="text-base font-bold text-white">
+                  {alertModalTicker ? `Alerts — ${alertModalTicker}` : 'Price Alerts'}
+                </span>
+              </div>
+              <button type="button" onClick={() => setAlertModalOpen(false)} className="p-1.5 rounded-full hover:bg-white/10" aria-label="Close">
+                <svg className="w-5 h-5 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-white/10 shrink-0">
+              <button
+                type="button"
+                onClick={() => setAlertTab('set')}
+                className={clsx(
+                  'flex-1 py-3 text-sm font-semibold text-center border-b-2 -mb-px transition-colors',
+                  alertTab === 'set' ? 'border-[#2196F3] text-[#2196F3]' : 'border-transparent text-white/40'
+                )}
+              >
+                Set Alert
+              </button>
+              <button
+                type="button"
+                onClick={() => setAlertTab('manage')}
+                className={clsx(
+                  'flex-1 py-3 text-sm font-semibold text-center border-b-2 -mb-px transition-colors',
+                  alertTab === 'manage' ? 'border-[#2196F3] text-[#2196F3]' : 'border-transparent text-white/40'
+                )}
+              >
+                Manage Alerts{alerts.length > 0 && ` (${alerts.length})`}
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {alertTab === 'set' && (
+                <div className="space-y-4">
+                  {/* Symbol search / select */}
+                  <div>
+                    <label className="text-xs text-white/50 mb-1.5 block">Search Symbol</label>
+                    <input
+                      type="text"
+                      value={alertSymbolSearch}
+                      onChange={(e) => { setAlertSymbolSearch(e.target.value.toUpperCase()); setAlertModalTicker(e.target.value.toUpperCase() || null) }}
+                      placeholder="Type a symbol..."
+                      className="w-full text-sm rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-[#2196F3]"
+                    />
+                  </div>
+                  {/* Quick symbol pills from watchlist */}
+                  {watchlist.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {watchlist.filter((s) => !alertSymbolSearch || s.ticker.includes(alertSymbolSearch)).slice(0, 12).map((s) => (
+                        <button
+                          key={s.ticker}
+                          type="button"
+                          onClick={() => { setAlertModalTicker(s.ticker); setAlertSymbolSearch(s.ticker) }}
+                          className={clsx(
+                            'px-2.5 py-1 rounded-full text-xs font-semibold transition-colors',
+                            alertModalTicker === s.ticker ? 'bg-[#2196F3] text-white' : 'bg-white/10 text-white/60'
+                          )}
+                        >
+                          {s.ticker}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Price + condition */}
+                  {alertModalTicker && (
+                    <>
+                      <div>
+                        <label className="text-xs text-white/50 mb-1.5 block">Alert when {alertModalTicker} goes</label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setNewAlertCondition('above')}
+                            className={clsx(
+                              'flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors',
+                              newAlertCondition === 'above' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-white/5 text-white/50 border border-white/10'
+                            )}
+                          >
+                            Above
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewAlertCondition('below')}
+                            className={clsx(
+                              'flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors',
+                              newAlertCondition === 'below' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/5 text-white/50 border border-white/10'
+                            )}
+                          >
+                            Below
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/50 mb-1.5 block">Price</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={newAlertPrice}
+                          onChange={(e) => setNewAlertPrice(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full text-sm rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-[#2196F3]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/50 mb-1.5 block">Note (optional)</label>
+                        <input
+                          type="text"
+                          value={newAlertNote}
+                          onChange={(e) => setNewAlertNote(e.target.value)}
+                          placeholder="e.g. Take profit level"
+                          className="w-full text-sm rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-[#2196F3]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCreateAlert}
+                        disabled={!newAlertPrice || !alertModalTicker}
+                        className={clsx(
+                          'w-full py-3 rounded-xl text-sm font-bold transition-colors',
+                          newAlertPrice && alertModalTicker ? 'bg-[#2196F3] text-white' : 'bg-white/10 text-white/30 cursor-not-allowed'
+                        )}
+                      >
+                        Create Alert
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {alertTab === 'manage' && (
+                <div>
+                  {alerts.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <svg className="w-10 h-10 mx-auto mb-3 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      <p className="text-sm text-white/40">No alerts set yet</p>
+                      <button type="button" onClick={() => setAlertTab('set')} className="mt-3 text-sm font-semibold text-[#2196F3]">
+                        + Create your first alert
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {alerts.map((a) => (
+                        <div key={a.id} className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-white">{a.ticker}</span>
+                              <span className={clsx('text-[10px] font-semibold px-1.5 py-0.5 rounded-full', a.condition === 'above' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400')}>
+                                {a.condition === 'above' ? '↑ Above' : '↓ Below'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-white/50">${parseFloat(a.price).toFixed(2)}{a.note ? ` · ${a.note}` : ''}</span>
+                          </div>
+                          <button type="button" onClick={() => removeAlert(a.id)} className="p-1.5 rounded-full hover:bg-white/10 shrink-0" aria-label="Delete alert">
+                            <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Bottom Navigation (always visible) ── */}
-      <div className="shrink-0 bg-black border-t border-white/10 pb-5 pt-2 px-2 relative">
+      <div className="shrink-0 relative">
         {/* FAB */}
         <button
           type="button"
@@ -318,44 +764,7 @@ export default function HomeIOS() {
         >
           <svg className="w-7 h-7" fill="white" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/></svg>
         </button>
-        <div className="flex items-center justify-around">
-          {[
-            { id: 'home', label: 'Home', icon: (active) => (
-              <svg className="w-6 h-6" fill={active ? '#2196F3' : 'none'} stroke={active ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-            )},
-            { id: 'community', label: 'Community', icon: (active) => (
-              <svg className="w-6 h-6" fill="none" stroke={active ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
-            )},
-            { id: 'explore', label: 'Explore', icon: (active) => (
-              <svg className="w-6 h-6" fill="none" stroke={active ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-            )},
-            { id: 'trending', label: 'Trending', icon: (active) => (
-              <svg className="w-6 h-6" fill="none" stroke={active ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z"/></svg>
-            )},
-            { id: 'notifications', label: 'Notifications', badge: 4, icon: (active) => (
-              <svg className="w-6 h-6" fill="none" stroke={active ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-            )},
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className="flex flex-col items-center gap-0.5 relative"
-            >
-              <div className="relative">
-                {tab.icon(activeTab === tab.id)}
-                {tab.badge && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
-                    {tab.badge}
-                  </span>
-                )}
-              </div>
-              <span className={clsx('text-[10px]', activeTab === tab.id ? 'text-[#2196F3]' : 'text-white/50')}>
-                {tab.label}
-              </span>
-            </button>
-          ))}
-        </div>
+        <IOSBottomNav />
       </div>
     </div>
   )
