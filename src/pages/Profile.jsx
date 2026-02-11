@@ -60,11 +60,11 @@ const HOWARD_PROFILE = {
     ],
   },
   frequentTags: ['Momentum', 'Swing trading'],
-  predictionRank: { rank: 3, total: 66000 },
+  predictionRank: { rank: 3, total: 69238 },
   predictionStreak: 16,
   predictionWinRate: 72,
   predictionROI: 82.98,
-  marketPredictionRank: { rank: 34, total: 155000 },
+  marketPredictionRank: { rank: 34, total: 156230 },
   marketPredictionStreak: 14,
   marketPredictionWinRate: 88,
   marketPredictionROI: 68.2,
@@ -173,23 +173,29 @@ function ConsolidatedPredictionBox({ price, market, username, isOwnProfile, isHi
     <div className="mt-3 rounded-lg px-3 py-2 w-full space-y-1.5" style={{ background: 'linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)' }}>
       {price && (
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium text-[#3b1f7e]">Price Prediction Rank</span>
+          <span className="text-sm font-bold text-[#2d1660]">
+            <span className="text-lg font-black">#{price.rank}</span>
+            <span className="text-[11px] font-semibold text-[#2d1660]/60">/ {price.total?.toLocaleString()}</span>
+            {' '}<span className="text-[11px] font-semibold text-[#2d1660]">Price Prediction</span>
+          </span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-black text-[#3b1f7e]">#{price.rank}</span>
-            <span className="text-[10px] text-[#3b1f7e]/50">/ {price.total?.toLocaleString()}</span>
-            <span className="text-[11px] font-semibold text-green-700 ml-1">{price.winRate}% win rate</span>
-            <span className="text-[11px] text-[#3b1f7e]/40 ml-0.5">›</span>
+            <span className="text-[11px] font-semibold text-green-800">{price.winRate}% win rate</span>
+            <span className="text-[10px] text-[#2d1660]/70">🔥 {price.streak} Win Streak</span>
+            <span className="text-[11px] text-[#2d1660]/50">›</span>
           </div>
         </div>
       )}
       {market && (
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium text-[#3b1f7e]">Market Prediction Rank</span>
+          <span className="text-sm font-bold text-[#2d1660]">
+            <span className="text-lg font-black">#{market.rank}</span>
+            <span className="text-[11px] font-semibold text-[#2d1660]/60">/ {market.total?.toLocaleString()}</span>
+            {' '}<span className="text-[11px] font-semibold text-[#2d1660]">Market Prediction</span>
+          </span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-black text-[#3b1f7e]">#{market.rank}</span>
-            <span className="text-[10px] text-[#3b1f7e]/50">/ {market.total?.toLocaleString()}</span>
-            <span className="text-[11px] font-semibold text-green-700 ml-1">{market.winRate}% win rate</span>
-            <span className="text-[11px] text-[#3b1f7e]/40 ml-0.5">›</span>
+            <span className="text-[11px] font-semibold text-green-800">{market.winRate}% win rate</span>
+            <span className="text-[10px] text-[#2d1660]/70">🔥 {market.streak} Win Streak</span>
+            <span className="text-[11px] text-[#2d1660]/50">›</span>
           </div>
         </div>
       )}
@@ -1046,8 +1052,8 @@ export default function Profile({ isOwnProfile = false }) {
                   { name: 'ChartMaster', handle: 'ChartMaster', avatar: '/avatars/top-voice-1.png', bio: 'Technical analysis & chart patterns' },
                   { name: 'MomentumKing', handle: 'MomentumKing', avatar: '/avatars/top-voice-2.png', bio: 'Momentum plays & swing trades' },
                   { name: 'OptionsFlow', handle: 'OptionsFlow', avatar: '/avatars/top-voice-3.png', bio: 'Unusual options activity tracker' },
-                  { name: 'MacroView', handle: 'MacroView', avatar: '/avatars/who-follow-1.png', bio: 'Fed watch & macro insights' },
-                  { name: 'RetailTrader42', handle: 'RetailTrader42', avatar: '/avatars/who-follow-2.png', bio: 'Long-term conviction holds' },
+                  { name: 'MacroView', handle: 'MacroView', avatar: '/avatars/michael-bolling.png', bio: 'Fed watch & macro insights' },
+                  { name: 'RetailTrader42', handle: 'RetailTrader42', avatar: '/avatars/ross-cameron.png', bio: 'Long-term conviction holds' },
                 ].map((person) => (
                   <li key={person.handle} className="flex items-center justify-between gap-3 py-3">
                     <Link to={`/profile/${person.handle}`} className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity">
@@ -1068,8 +1074,8 @@ export default function Profile({ isOwnProfile = false }) {
               </ul>
             </div>
 
-            <RelatedSymbols />
             <PredictionLeaderboard />
+            <RelatedSymbols title="@howardlindzon Watchlist Adds" />
           </aside>
         </div>
       </main>
