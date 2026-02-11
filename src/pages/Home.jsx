@@ -6,6 +6,7 @@ import TickerTape from '../components/TickerTape.jsx'
 import MessagePostBox from '../components/MessagePostBox.jsx'
 import SymbolHeaderAbovePostBox from '../components/SymbolHeaderAbovePostBox.jsx'
 import RelatedSymbols from '../components/RelatedSymbols.jsx'
+import LatestNews from '../components/LatestNews.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import DebateBox from '../components/DebateBox.jsx'
 import { useBookmarks } from '../contexts/BookmarkContext.jsx'
@@ -691,6 +692,7 @@ export default function Home() {
 
           {/* Right sidebar */}
           <aside className="w-[280px] shrink-0 hidden lg:block space-y-6">
+            <LatestNews />
             <RelatedSymbols />
             <PredictionLeaderboard />
           </aside>
