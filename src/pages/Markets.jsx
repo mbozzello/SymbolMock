@@ -1393,7 +1393,7 @@ export default function Markets() {
                               <td key={colId} className="py-3 px-4">
                                 <span className={clsx('font-bold tabular-nums', row.pctChange >= 0 ? 'text-success' : 'text-danger')}>
                                   {row.pctChange >= 0 ? '↑' : '↓'}
-                                  {Math.abs(row.pctChange)}%
+                                  {Math.abs(row.pctChange).toFixed(2)}%
                                 </span>
                               </td>
                             )

@@ -27,6 +27,15 @@ const LOGO_MAP = {
   BITCOIN: '/images/logos/btc.png',
   ETH: '/images/logos/eth.png',
   DOGE: '/images/logos/doge.png',
+  XRP: '/images/logos/xrp.png',
+  FIG: '/images/logos/fig.png',
+  C: '/images/logos/c.png',
+  ETOR: '/images/logos/etor.png',
+  SNAP: '/images/logos/snap.png',
+  PZZA: '/images/logos/pzza.png',
+  'BRK.A': '/images/logos/brk.png',
+  'BRK.B': '/images/logos/brk.png',
+  ABNB: '/images/logos/abnb.png',
 }
 
 export function getTickerLogo(ticker) {
