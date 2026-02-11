@@ -422,13 +422,13 @@ export default function Home() {
             ))}
 
             {/* Filter pills: All + TSLA topics (match /home Popular Topics) */}
-            <div ref={topicsSectionRef} className="flex flex-wrap gap-2 py-3" style={{ scrollMarginTop: '5rem' }}>
+            <div ref={topicsSectionRef} className="flex gap-2 py-3 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" style={{ scrollMarginTop: '5rem', scrollbarWidth: 'thin' }}>
               {SYMBOL_TOPICS.map((t) => (
                 <button
                   key={t.slug}
                   onClick={() => setActiveFilter(t.label)}
                   className={clsx(
-                    'px-4 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5',
+                    'px-4 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap',
                     activeFilter === t.label
                       ? 'bg-black text-white'
                       : 'bg-surface-muted text-text hover:bg-border border border-border'

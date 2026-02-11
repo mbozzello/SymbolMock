@@ -240,7 +240,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
     }
   }
 
-  const navItems = ['Social Tools', 'News', 'Earnings']
+  const navItems = ['Earnings', 'News', 'Leaderboards', 'Social Tools']
 
   const isSearchPage = location.pathname === '/search'
   const handleTrendingClick = (item) => {

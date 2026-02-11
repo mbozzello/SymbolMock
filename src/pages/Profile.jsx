@@ -359,6 +359,9 @@ export default function Profile({ isOwnProfile = false }) {
     return saved ? saved === 'dark' : false
   })
   const [activeTab, setActiveTab] = useState('Posts')
+  const [postSortFilter, setPostSortFilter] = useState('recent') // 'recent' | 'mostLiked' | 'mostReplies'
+  const [showPostFilterDropdown, setShowPostFilterDropdown] = useState(false)
+  const postFilterRef = useRef(null)
   const [isFollowing, setIsFollowing] = useState(HOWARD_PROFILE.following)
   const [ranksVisibility, setRanksVisibility] = useState('public')
   const [predictionStatsHidden, setPredictionStatsHidden] = useState(() => {
@@ -376,7 +379,21 @@ export default function Profile({ isOwnProfile = false }) {
   })
 
   const profile = username === 'howardlindzon' ? HOWARD_PROFILE : null
-  const posts = username === 'howardlindzon' ? HOWARD_POSTS : []
+  const rawPosts = username === 'howardlindzon' ? HOWARD_POSTS : []
+  const posts = [...rawPosts].sort((a, b) => {
+    if (postSortFilter === 'mostLiked') return b.likes - a.likes
+    if (postSortFilter === 'mostReplies') return b.comments - a.comments
+    return 0 // 'recent' keeps original order
+  })
+
+  useEffect(() => {
+    if (!showPostFilterDropdown) return
+    const onClickOutside = (e) => {
+      if (postFilterRef.current && !postFilterRef.current.contains(e.target)) setShowPostFilterDropdown(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [showPostFilterDropdown])
 
   useEffect(() => {
     if (username && typeof window !== 'undefined') {
@@ -851,24 +868,68 @@ export default function Profile({ isOwnProfile = false }) {
             {/* Tabs */}
             <div className="flex border-b border-border flex-wrap">
               {[
-                { id: 'Posts', label: 'Posts' },
+                { id: 'Posts', label: 'Posts', hasFilter: true },
                 { id: 'Posts & Replies', label: 'Posts & Replies' },
                 { id: 'Liked', label: 'Liked' },
                 { id: 'Watchlist', label: `${profile.watchlistCount} Watchlist` },
                 { id: 'Private Journal', label: 'Private Journal', lock: true },
               ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={clsx(
-                    'px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2',
-                    activeTab === tab.id ? 'border-text text-text' : 'border-transparent text-muted hover:text-text'
+                <div key={tab.id} className="relative flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={clsx(
+                      'px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2',
+                      activeTab === tab.id ? 'border-text text-text' : 'border-transparent text-muted hover:text-text'
+                    )}
+                  >
+                    {tab.lock && <LockIcon className="w-4 h-4" />}
+                    {tab.label}
+                  </button>
+                  {tab.hasFilter && activeTab === 'Posts' && (
+                    <div className="relative -ml-2" ref={postFilterRef}>
+                      <button
+                        type="button"
+                        onClick={() => setShowPostFilterDropdown((v) => !v)}
+                        className={clsx(
+                          'p-1 rounded transition-colors -mb-px',
+                          showPostFilterDropdown ? 'text-text bg-surface-muted' : 'text-muted hover:text-text hover:bg-surface-muted'
+                        )}
+                        aria-label="Filter posts"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 15l-6-6-6 6" />
+                        </svg>
+                      </button>
+                      {showPostFilterDropdown && (
+                        <div className="absolute top-full left-0 mt-1 z-30 bg-surface border border-border rounded-lg shadow-xl py-1 min-w-[160px]">
+                          {[
+                            { key: 'recent', label: 'Recent' },
+                            { key: 'mostLiked', label: 'Most Liked' },
+                            { key: 'mostReplies', label: 'Most Replies' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.key}
+                              type="button"
+                              onClick={() => { setPostSortFilter(opt.key); setShowPostFilterDropdown(false) }}
+                              className={clsx(
+                                'w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between',
+                                postSortFilter === opt.key ? 'text-primary font-semibold bg-primary/10' : 'text-text hover:bg-surface-muted'
+                              )}
+                            >
+                              {opt.label}
+                              {postSortFilter === opt.key && (
+                                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
-                >
-                  {tab.lock && <LockIcon className="w-4 h-4" />}
-                  {tab.label}
-                </button>
+                </div>
               ))}
             </div>
 

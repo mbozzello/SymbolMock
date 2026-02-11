@@ -38,7 +38,6 @@ const POST_ACTIONS = [
   { key: 'images', label: 'Images', color: '#dc2626' },
   { key: 'gifs', label: 'GIFs', color: '#7c3aed' },
   { key: 'polls', label: 'Polls', color: '#0d9488' },
-  { key: 'scheduler', label: 'Schedule', color: '#c2410c' },
   { key: 'emoji', label: 'Emoji', color: '#ea580c' },
   { key: 'predict', label: 'Predict', color: '#2563eb' },
   { key: 'marketTags', label: 'Tags', color: '#eab308' },
@@ -259,7 +258,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   }
 
   return (
-    <div className="p-4">
+    <div className="px-0 py-4">
       <div
           className={clsx(
             'rounded-2xl bg-surface border-2 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] overflow-hidden transition-colors',
@@ -311,6 +310,22 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                       <span className="text-[10px] font-bold leading-none">i</span>
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowScheduleModal(true)}
+                    className="ml-auto flex items-center gap-1.5 text-sm font-medium hover:opacity-80 transition-opacity shrink-0"
+                    style={{ color: '#c2410c' }}
+                    aria-label="Schedule"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span>Schedule</span>
+                  </button>
                 </div>
               )}
               {showPredictionModal && (

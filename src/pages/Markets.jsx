@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
@@ -63,7 +63,7 @@ const COLUMN_METRICS = [
   { id: 'volume30d', label: 'Volume(30d)', category: 'Volume' },
 ]
 
-const DEFAULT_VISIBLE_COLUMNS = ['rank', 'symbol', 'chart', 'lastPrice', 'pctChange', 'volume', 'watchers', 'followers', 'sentiment', 'marketCap', 'watch']
+const DEFAULT_VISIBLE_COLUMNS = ['rank', 'symbol', 'watch', 'chart', 'lastPrice', 'pctChange', 'volume', 'watchers', 'followers', 'sentiment', 'marketCap']
 const MAX_COLUMNS = 12
 
 const SORT_OPTIONS = [
@@ -372,6 +372,219 @@ function ResearchHeatmap({ data, metric }) {
   )
 }
 
+// Topics bubble map data — sourced from trending symbol topics on /home
+const TOPICS_DATA = [
+  // NVDA topics
+  { id: 'datacenter', label: '🖥️ Data Center Demand', count: 52300, color: '#6366f1', symbols: ['NVDA', 'AMD', 'AVGO', 'MSFT', 'GOOGL'] },
+  { id: 'blackwell', label: '🔮 Blackwell Ramp', count: 38100, color: '#8b5cf6', symbols: ['NVDA', 'AMD'] },
+  { id: 'aicapex', label: '📈 AI Capex', count: 44600, color: '#06b6d4', symbols: ['NVDA', 'AMD', 'MSFT', 'GOOGL', 'META', 'AMZN'] },
+  { id: 'earningsbeat', label: '⚡ Earnings Beat', count: 35200, color: '#f59e0b', symbols: ['NVDA', 'AAPL', 'AMZN', 'TSLA', 'PLTR'] },
+  // TSLA topics
+  { id: 'merging', label: '🚀 Merging Ambitions', count: 28400, color: '#ef4444', symbols: ['TSLA'] },
+  { id: 'robotaxi', label: '🤖 Robotaxi Dreams', count: 41200, color: '#22c55e', symbols: ['TSLA', 'NVDA', 'GOOGL'] },
+  { id: 'semitruck', label: '🚚 Semi Truck Boost', count: 15800, color: '#84cc16', symbols: ['TSLA'] },
+  { id: 'volatilerange', label: '📊 Volatile Range', count: 19600, color: '#fb923c', symbols: ['TSLA', 'GME', 'AMD'] },
+  // AAPL topics
+  { id: 'services', label: '📱 Services Growth', count: 22500, color: '#a855f7', symbols: ['AAPL', 'GOOGL', 'MSFT'] },
+  { id: 'china', label: '🌏 China Sales', count: 18200, color: '#ec4899', symbols: ['AAPL', 'AMZN', 'TSLA'] },
+  { id: 'capitalreturn', label: '💵 Capital Return', count: 14700, color: '#14b8a6', symbols: ['AAPL', 'MSFT', 'META', 'GOOGL'] },
+  { id: 'ecosystem', label: '🔒 Ecosystem Lock-in', count: 12100, color: '#0ea5e9', symbols: ['AAPL'] },
+  // AMD topics
+  { id: 'mi300', label: '🔷 MI300 Adoption', count: 26800, color: '#3b82f6', symbols: ['AMD', 'NVDA'] },
+  { id: 'dcshare', label: '🏢 Data Center Share', count: 20100, color: '#6d28d9', symbols: ['AMD', 'NVDA', 'AVGO', 'INTC'] },
+  // AMZN topics
+  { id: 'aws', label: '☁️ AWS Reacceleration', count: 31500, color: '#f97316', symbols: ['AMZN', 'MSFT', 'GOOGL'] },
+  { id: 'advertising', label: '📢 Advertising', count: 16400, color: '#d946ef', symbols: ['AMZN', 'GOOGL', 'META'] },
+  { id: 'retailmargins', label: '📦 Retail Margins', count: 13200, color: '#fbbf24', symbols: ['AMZN', 'WMT'] },
+  { id: 'freecashflow', label: '💰 Free Cash Flow', count: 11800, color: '#10b981', symbols: ['AMZN', 'AAPL', 'MSFT'] },
+]
+
+function TopicsBubbleMap() {
+  const [hoveredId, setHoveredId] = useState(null)
+  const [addedAll, setAddedAll] = useState(new Set())
+  const hideTimeout = useRef(null)
+  const { addSymbol } = useWatchlist()
+
+  const scheduleHide = () => {
+    hideTimeout.current = setTimeout(() => setHoveredId(null), 350)
+  }
+  const cancelHide = () => {
+    if (hideTimeout.current) { clearTimeout(hideTimeout.current); hideTimeout.current = null }
+  }
+  const enterBubble = (id) => { cancelHide(); setHoveredId(id) }
+  const leaveBubble = () => { scheduleHide() }
+  const enterTooltip = () => { cancelHide() }
+  const leaveTooltip = () => { scheduleHide() }
+
+  const handleAddAll = (symbols, topicId) => {
+    symbols.forEach((sym) => addSymbol(sym, sym))
+    setAddedAll((prev) => new Set([...prev, topicId]))
+  }
+
+  const bubbles = useMemo(() => {
+    const sorted = [...TOPICS_DATA].sort((a, b) => b.count - a.count)
+    const maxCount = Math.max(...sorted.map((t) => t.count))
+    const W = 1100
+    const H = 600
+    const GAP = 6
+    const placed = []
+    for (const topic of sorted) {
+      const r = 30 + (topic.count / maxCount) * 80
+      let bestX = W / 2
+      let bestY = H / 2
+      let found = false
+      for (let angle = 0; angle < 800 && !found; angle += 0.2) {
+        const spiral = 2 + angle * 1.4
+        const cx = W / 2 + Math.cos(angle) * spiral
+        const cy = H / 2 + Math.sin(angle) * spiral
+        if (cx - r < 0 || cx + r > W || cy - r < 0 || cy + r > H) continue
+        let overlaps = false
+        for (const p of placed) {
+          const dx = cx - p.cx
+          const dy = cy - p.cy
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < r + p.r + GAP) { overlaps = true; break }
+        }
+        if (!overlaps) {
+          bestX = cx
+          bestY = cy
+          found = true
+        }
+      }
+      placed.push({ ...topic, cx: bestX, cy: bestY, r })
+    }
+    return placed
+  }, [])
+
+  const hovered = hoveredId ? bubbles.find((b) => b.id === hoveredId) : null
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-text-muted">Most discussed topics across all symbols. Hover a bubble to see which tickers are talking about it.</p>
+      <div className="relative overflow-x-auto">
+        <svg
+          viewBox="0 0 1100 600"
+          className="w-full"
+          style={{ minWidth: 700, maxHeight: 620, backgroundColor: '#111', borderRadius: 6 }}
+        >
+          <style>{`
+            @keyframes bubbleBounce {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.08); }
+            }
+          `}</style>
+          {bubbles.map((b) => {
+            const isHovered = hoveredId === b.id
+            return (
+              <g
+                key={b.id}
+                onMouseEnter={() => enterBubble(b.id)}
+                onMouseLeave={leaveBubble}
+                style={{
+                  cursor: 'pointer',
+                  transformOrigin: `${b.cx}px ${b.cy}px`,
+                  animation: isHovered ? 'bubbleBounce 0.4s ease-in-out' : 'none',
+                }}
+              >
+                <circle
+                  cx={b.cx}
+                  cy={b.cy}
+                  r={b.r}
+                  fill={b.color}
+                  opacity={hoveredId && !isHovered ? 0.35 : 0.85}
+                  stroke={isHovered ? '#fff' : 'rgba(255,255,255,0.15)'}
+                  strokeWidth={isHovered ? 2.5 : 1}
+                  style={{ transition: 'opacity 0.2s, stroke-width 0.2s' }}
+                />
+                {b.r > 35 && (
+                  <text
+                    x={b.cx}
+                    y={b.cy - (b.r > 55 ? 6 : 2)}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#fff"
+                    fontWeight="700"
+                    fontSize={b.r > 80 ? 14 : b.r > 55 ? 12 : 10}
+                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7)', pointerEvents: 'none' }}
+                  >
+                    {b.label}
+                  </text>
+                )}
+                {b.r > 45 && (
+                  <text
+                    x={b.cx}
+                    y={b.cy + (b.r > 55 ? 14 : 10)}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="rgba(255,255,255,0.7)"
+                    fontSize={b.r > 80 ? 12 : 10}
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {b.count >= 1000 ? `${(b.count / 1000).toFixed(1)}K posts` : `${b.count} posts`}
+                  </text>
+                )}
+              </g>
+            )
+          })}
+        </svg>
+        {hovered && (
+          <div
+            className="absolute z-10 bg-surface border border-border rounded-lg shadow-xl p-3"
+            style={{
+              left: Math.min(hovered.cx, 900),
+              top: Math.max(0, hovered.cy - hovered.r - 10),
+              transform: 'translate(-50%, -100%)',
+              minWidth: 200,
+            }}
+            onMouseEnter={enterTooltip}
+            onMouseLeave={leaveTooltip}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: hovered.color }} />
+              <span className="text-sm font-bold text-text">{hovered.label}</span>
+            </div>
+            <p className="text-xs text-text-muted mb-2">{hovered.count >= 1000 ? `${(hovered.count / 1000).toFixed(1)}K` : hovered.count} posts</p>
+            <div className="flex flex-wrap gap-1.5 mb-2.5">
+              {hovered.symbols.map((sym) => (
+                <a
+                  key={sym}
+                  href={`/symbol?t=${sym}`}
+                  className="inline-flex items-center px-2 py-0.5 rounded bg-surface-muted text-xs font-semibold text-primary hover:bg-primary/15 transition-colors"
+                >
+                  ${sym}
+                </a>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => handleAddAll(hovered.symbols, hovered.id)}
+              disabled={addedAll.has(hovered.id)}
+              className={clsx(
+                'w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors',
+                addedAll.has(hovered.id)
+                  ? 'bg-surface-muted text-text-muted cursor-default'
+                  : 'bg-black text-white hover:bg-gray-800'
+              )}
+            >
+              {addedAll.has(hovered.id) ? (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                  Added to Watchlist
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Add All to Watchlist
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function Markets() {
   const { applyCustomTickers, clearCustomTickers, customTickers } = useTickerTape()
   const { getQuote } = useLiveQuotesContext()
@@ -428,9 +641,9 @@ export default function Markets() {
   }, [showColumnsModal, visibleColumns])
 
   const reorderColumns = (draggedId, dropTargetId) => {
-    if (draggedId === 'rank' || draggedId === 'symbol' || dropTargetId === 'rank' || dropTargetId === 'symbol') return
-    const fixed = visibleColumns.filter((c) => c === 'rank' || c === 'symbol')
-    const draggable = visibleColumns.filter((c) => c !== 'rank' && c !== 'symbol')
+    if (draggedId === 'rank' || draggedId === 'symbol' || draggedId === 'watch' || dropTargetId === 'rank' || dropTargetId === 'symbol' || dropTargetId === 'watch') return
+    const fixed = visibleColumns.filter((c) => c === 'rank' || c === 'symbol' || c === 'watch')
+    const draggable = visibleColumns.filter((c) => c !== 'rank' && c !== 'symbol' && c !== 'watch')
     if (!draggable.includes(draggedId) || !draggable.includes(dropTargetId)) return
     const dragIdx = draggable.indexOf(draggedId)
     const dropIdx = draggable.indexOf(dropTargetId)
@@ -576,6 +789,15 @@ export default function Markets() {
             >
               Heatmaps
             </button>
+            <button
+              onClick={() => setActiveSection('topics')}
+              className={clsx(
+                'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+                activeSection === 'topics' ? 'bg-primary text-white' : 'bg-surface-muted text-text hover:bg-surface'
+              )}
+            >
+              Topics
+            </button>
           </div>
 
           {activeSection === 'socialScreener' && (
@@ -680,7 +902,7 @@ export default function Markets() {
                     <tr className="border-b border-border">
                       {visibleColumns.map((colId) => {
                         const m = COLUMN_METRICS.find((c) => c.id === colId)
-                        const isDraggable = colId !== 'rank' && colId !== 'symbol'
+                        const isDraggable = colId !== 'rank' && colId !== 'symbol' && colId !== 'watch'
                         return m ? (
                           <th
                             key={colId}
@@ -852,8 +1074,47 @@ export default function Markets() {
                   </button>
                 ))}
               </div>
+              {heatmapMetric === 'sentiment' && (
+                <div className="flex items-center gap-0 w-fit text-[10px]">
+                  {[
+                    { label: 'Extremely Bearish', value: -1 },
+                    { label: 'Bearish', value: -0.5 },
+                    { label: 'Neutral', value: 0 },
+                    { label: 'Bullish', value: 0.5 },
+                    { label: 'Extremely Bullish', value: 1 },
+                  ].map((s) => (
+                    <div key={s.label} className="flex items-center gap-1 px-2 py-1" style={{ backgroundColor: getTreemapColor('sentiment', s.value * 100, 100), color: '#fff', borderRadius: 0 }}>
+                      <span className="whitespace-nowrap font-medium" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {heatmapMetric === 'messageVolume' && (
+                <div className="flex items-center gap-0 w-fit text-[10px]">
+                  {[
+                    { label: 'Extremely Low', t: 0 },
+                    { label: 'Low', t: 0.25 },
+                    { label: 'Moderate', t: 0.5 },
+                    { label: 'High', t: 0.75 },
+                    { label: 'Extremely High', t: 1 },
+                  ].map((s) => {
+                    const r = Math.round(20 + 15 * s.t)
+                    const g = Math.round(30 + 100 * s.t)
+                    const b = Math.round(50 + 150 * s.t)
+                    return (
+                      <div key={s.label} className="flex items-center gap-1 px-2 py-1" style={{ backgroundColor: `rgb(${r},${g},${b})`, color: '#fff', borderRadius: 0 }}>
+                        <span className="whitespace-nowrap font-medium" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{s.label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
               <ResearchHeatmap data={HEATMAP_DATA} metric={heatmapMetric} />
             </div>
+          )}
+
+          {activeSection === 'topics' && (
+            <TopicsBubbleMap />
           )}
         </div>
       </main>
