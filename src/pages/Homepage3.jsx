@@ -917,8 +917,8 @@ export default function Homepage3() {
         )}
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
-        <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-3')}>
-        <main className={clsx('flex-1 min-w-0 flex flex-col pr-2 py-4 lg:pr-3 lg:py-6 gap-4', homeTab === 'trending' && !isHome2 ? 'pl-0 lg:pl-0' : 'pl-4 lg:pl-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
+        <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-0')}>
+        <main className={clsx('flex-1 min-w-0 flex flex-col pl-4 pr-0 py-4 lg:pl-4 lg:pr-0 lg:py-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
           <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0">
             {isHome2 ? (
@@ -2226,7 +2226,7 @@ export default function Homepage3() {
         </main>
 
         {!isHome2 && (
-          <aside className="w-[300px] max-w-[300px] shrink-0 hidden lg:block space-y-6 pl-2 pr-3 pt-4 pb-4">
+          <aside className="w-[300px] max-w-[300px] shrink-0 hidden lg:block space-y-6 pl-4 pr-4 pt-4 pb-4 border-l border-border">
             <LatestNews />
             <TopDiscussions />
             <RelatedSymbols title="Top Watchlist Additions" />
