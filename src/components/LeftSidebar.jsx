@@ -150,12 +150,15 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
     try { localStorage.setItem('price_alerts', JSON.stringify(next)) } catch {}
   }
 
+  const [alertSymbolSearch, setAlertSymbolSearch] = useState('')
   const openAlertModal = (ticker) => {
     setAlertModalTicker(ticker)
     setAlertModalOpen(true)
+    setAlertTab('set')
     setNewAlertPrice('')
     setNewAlertCondition('above')
     setNewAlertNote('')
+    setAlertSymbolSearch('')
     setAlertTab('set')
   }
 
@@ -589,8 +592,7 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
                   alertTab === 'manage' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
                 )}
               >
-                Manage Alerts
-                {alerts.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-primary/15 text-primary font-bold">{alerts.length}</span>}
+                Manage Alerts{alerts.length > 0 && ` (${alerts.length})`}
               </button>
             </div>
 
@@ -602,8 +604,20 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
                   {!alertModalTicker && (
                     <div>
                       <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-1.5">Symbol</label>
+                      <div className="relative mb-3">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="m21 21-4.35-4.35" /></svg>
+                        <input
+                          type="text"
+                          value={alertSymbolSearch}
+                          onChange={(e) => setAlertSymbolSearch(e.target.value)}
+                          placeholder="Search symbol..."
+                          className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-surface text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        />
+                      </div>
                       <div className="flex flex-wrap gap-2">
-                        {sortedWatchlist.map((s) => (
+                        {sortedWatchlist
+                          .filter((s) => !alertSymbolSearch || s.ticker.toLowerCase().includes(alertSymbolSearch.toLowerCase()))
+                          .map((s) => (
                           <button
                             key={s.ticker}
                             type="button"
