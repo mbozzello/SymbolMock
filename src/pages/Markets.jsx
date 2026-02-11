@@ -585,6 +585,355 @@ function TopicsBubbleMap() {
   )
 }
 
+// Who to Follow data
+const WHO_TO_FOLLOW = [
+  { handle: 'howardlindzon', displayName: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits. Founder of Wallstrip (Acquired by CBS). Managing Partner of Social Leverage.', verified: true, followers: '376.2K', topTickers: ['TSLA', 'BTC', 'HOOD'], category: 'Influencer' },
+  { handle: 'Steeletwits', displayName: 'Michele Steele', avatar: '/avatars/michele-steele.png', bio: 'Head of Content @Stocktwits. Former ESPN reporter. Market enthusiast covering the intersection of sports & finance.', verified: true, followers: '42.1K', topTickers: ['DKNG', 'ESPN', 'DIS'], category: 'Influencer' },
+  { handle: 'rosscameron', displayName: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. Day trading educator. $10M+ in verified profits. Sharing setups & lessons daily.', verified: true, followers: '128.5K', topTickers: ['SPY', 'AMD', 'NVDA'], category: 'Day Trader' },
+  { handle: 'michaelbolling', displayName: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', bio: 'VP of Content @Stocktwits. Covering markets, macro, and momentum. Formerly @FoxBusiness.', verified: true, followers: '85.3K', topTickers: ['AAPL', 'MSFT', 'QQQ'], category: 'Analyst' },
+  { handle: 'AIBull', displayName: 'AI Bull', avatar: '/avatars/top-voice-1.png', bio: 'Full-time AI/semiconductor sector analyst. Long $NVDA since $12. Data center thesis > hype.', verified: false, followers: '18.7K', topTickers: ['NVDA', 'AMD', 'AVGO'], category: 'Sector Expert' },
+  { handle: 'TechTrader', displayName: 'Tech Trader', avatar: '/avatars/top-voice-2.png', bio: 'Options flow & technicals on mega-cap tech. 15+ years in the game. Risk management first.', verified: false, followers: '24.3K', topTickers: ['AAPL', 'GOOGL', 'META'], category: 'Options Trader' },
+  { handle: 'ChipWatcher', displayName: 'Chip Watcher', avatar: '/avatars/top-voice-3.png', bio: 'Semiconductor supply chain analyst. Tracking wafer starts, CoWoS, and AI chip demand globally.', verified: false, followers: '11.2K', topTickers: ['NVDA', 'TSM', 'ASML'], category: 'Sector Expert' },
+  { handle: 'CryptoKing', displayName: 'Crypto King', avatar: '/avatars/who-follow-1.png', bio: 'Full-time crypto trader since 2017. DeFi, Layer 1s, and macro. Not financial advice.', verified: false, followers: '52.8K', topTickers: ['BTC', 'ETH', 'SOL'], category: 'Crypto' },
+  { handle: 'MomentumKing', displayName: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Swing trading momentum setups. Focus on relative strength and volume breakouts.', verified: false, followers: '31.6K', topTickers: ['TSLA', 'PLTR', 'MSTR'], category: 'Swing Trader' },
+  { handle: 'ValueHunter', displayName: 'Value Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Deep value & contrarian plays. Buying what everyone else is selling. CFA charterholder.', verified: false, followers: '14.9K', topTickers: ['BRK.B', 'JPM', 'BAC'], category: 'Value Investor' },
+  { handle: 'MacroMaven', displayName: 'Macro Maven', avatar: '/avatars/who-follow-4.png', bio: 'Global macro strategist. Bonds, currencies, commodities. Former institutional PM.', verified: false, followers: '22.4K', topTickers: ['GLD', 'TLT', 'DXY'], category: 'Macro' },
+  { handle: 'OptionsFlow', displayName: 'Options Flow', avatar: '/avatars/top-voice-1.png', bio: 'Real-time unusual options activity. Tracking smart money bets across 4,000+ names.', verified: false, followers: '67.1K', topTickers: ['SPY', 'QQQ', 'TSLA'], category: 'Options Trader' },
+]
+
+const WHO_TO_FOLLOW_CATEGORIES = ['All', 'Influencer', 'Day Trader', 'Analyst', 'Sector Expert', 'Options Trader', 'Crypto', 'Swing Trader', 'Value Investor', 'Macro']
+
+function WhoToFollow() {
+  const [followedHandles, setFollowedHandles] = useState(new Set())
+  const [categoryFilter, setCategoryFilter] = useState('All')
+
+  const toggleFollow = (handle) => {
+    setFollowedHandles((prev) => {
+      const next = new Set(prev)
+      if (next.has(handle)) next.delete(handle)
+      else next.add(handle)
+      return next
+    })
+  }
+
+  const filtered = categoryFilter === 'All'
+    ? WHO_TO_FOLLOW
+    : WHO_TO_FOLLOW.filter((u) => u.category === categoryFilter)
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-text-muted">Discover traders, analysts, and influencers to follow based on your interests.</p>
+      {/* Category filter pills */}
+      <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-1 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+        {WHO_TO_FOLLOW_CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setCategoryFilter(cat)}
+            className={clsx(
+              'px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-colors border',
+              categoryFilter === cat
+                ? 'bg-primary text-white border-primary'
+                : 'bg-surface-muted text-text border-border hover:bg-surface'
+            )}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+      {/* User cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((user) => {
+          const isFollowing = followedHandles.has(user.handle)
+          return (
+            <div
+              key={user.handle}
+              className="rounded-xl border border-border bg-surface p-4 flex flex-col gap-3 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start gap-3">
+                <a href={`/profile/${user.handle}`} className="shrink-0">
+                  <img
+                    src={user.avatar}
+                    alt=""
+                    className="w-12 h-12 rounded-full object-cover border border-border"
+                  />
+                </a>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <a href={`/profile/${user.handle}`} className="font-semibold text-sm text-text hover:underline truncate">
+                      {user.displayName}
+                    </a>
+                    {user.verified && (
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-400 shrink-0" aria-label="Verified">
+                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-text-muted truncate">@{user.handle}</p>
+                  <p className="text-xs text-text-muted mt-0.5">{user.followers} followers</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleFollow(user.handle)}
+                  className={clsx(
+                    'px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-colors',
+                    isFollowing
+                      ? 'border border-border bg-surface text-text hover:bg-danger/10 hover:border-danger hover:text-danger'
+                      : 'bg-primary text-white hover:opacity-90'
+                  )}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+              </div>
+              <p className="text-xs text-text leading-relaxed line-clamp-2">{user.bio}</p>
+              <div className="flex items-center gap-2 mt-auto">
+                <span className="text-[10px] text-text-muted font-medium uppercase tracking-wide">{user.category}</span>
+                <span className="text-text-muted">·</span>
+                <div className="flex items-center gap-1">
+                  {user.topTickers.map((t) => (
+                    <a
+                      key={t}
+                      href={`/symbol?t=${t}`}
+                      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-surface-muted text-[10px] font-semibold text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      {getTickerLogo(t) && <img src={getTickerLogo(t)} alt="" className="w-3 h-3 rounded object-cover" />}
+                      ${t}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Sentiment Index chart data (mock 1M daily data from ~1/14 to 2/9)
+const SENTIMENT_INDEX_DATA = {
+  '1M': {
+    dates: ['1/14','1/15','1/16','1/17','1/18','1/20','1/21','1/22','1/23','1/24','1/25','1/26','1/27','1/28','1/29','1/30','1/31','2/1','2/3','2/4','2/5','2/6','2/7','2/8','2/9'],
+    sentiment: [1.02,1.0,1.01,1.05,1.08,1.1,1.12,1.14,1.18,1.28,1.32,1.28,1.24,1.18,1.15,1.2,1.18,1.12,1.08,1.05,1.02,1.08,1.12,1.14,1.18],
+    spy: [0.52,0.48,0.45,0.5,0.54,0.58,0.62,0.65,0.68,0.72,0.74,0.76,0.78,0.8,0.82,0.84,0.86,0.88,0.85,0.87,0.9,0.92,0.94,0.96,0.98],
+  },
+  '3M': {
+    dates: ['11/10','11/17','11/24','12/1','12/8','12/15','12/22','12/29','1/5','1/12','1/19','1/26','2/2','2/9'],
+    sentiment: [0.85,0.92,0.98,1.05,1.1,0.95,0.88,0.92,1.0,1.08,1.15,1.28,1.12,1.18],
+    spy: [0.42,0.48,0.52,0.58,0.62,0.56,0.5,0.54,0.6,0.68,0.74,0.82,0.88,0.98],
+  },
+  '6M': {
+    dates: ['8/9','8/23','9/6','9/20','10/4','10/18','11/1','11/15','11/29','12/13','12/27','1/10','1/24','2/7'],
+    sentiment: [1.15,1.08,0.92,0.85,0.78,0.82,0.9,0.95,1.02,1.08,0.95,1.05,1.28,1.16],
+    spy: [0.8,0.75,0.65,0.58,0.52,0.55,0.6,0.65,0.7,0.72,0.68,0.78,0.88,0.96],
+  },
+  '1Y': {
+    dates: ['2/9/25','4/9','6/9','8/9','10/9','12/9','2/9/26'],
+    sentiment: [0.72,0.85,1.1,1.15,0.88,0.95,1.18],
+    spy: [0.35,0.45,0.6,0.72,0.58,0.68,0.98],
+  },
+  'All': {
+    dates: ['2022','Q2 22','Q3 22','Q4 22','2023','Q2 23','Q3 23','Q4 23','2024','Q2 24','Q3 24','Q4 24','2025','Q2 25','Q3 25','Q4 25','2026'],
+    sentiment: [1.3,0.65,0.55,0.7,0.82,1.05,0.9,1.0,1.12,1.2,0.95,1.08,1.1,1.15,0.88,1.0,1.18],
+    spy: [0.9,0.55,0.42,0.5,0.58,0.72,0.65,0.75,0.82,0.88,0.7,0.8,0.85,0.9,0.78,0.88,0.98],
+  },
+}
+
+function SentimentIndexChart() {
+  const [timeRange, setTimeRange] = useState('1M')
+  const [showSpy, setShowSpy] = useState(true)
+  const [hoveredIdx, setHoveredIdx] = useState(null)
+
+  const data = SENTIMENT_INDEX_DATA[timeRange]
+  const ranges = ['1M', '3M', '6M', '1Y', 'All']
+
+  // Chart dimensions
+  const W = 900
+  const H = 400
+  const PAD = { top: 30, right: 60, bottom: 50, left: 20 }
+  const chartW = W - PAD.left - PAD.right
+  const chartH = H - PAD.top - PAD.bottom
+
+  // Y axis: 0.3 to 1.5
+  const yMin = 0.3
+  const yMax = 1.5
+  const yRange = yMax - yMin
+  const yTicks = [0.3, 0.6, 0.9, 1.2, 1.5]
+
+  const toX = (i) => PAD.left + (i / (data.dates.length - 1)) * chartW
+  const toY = (v) => PAD.top + (1 - (v - yMin) / yRange) * chartH
+
+  const sentimentPath = data.sentiment.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(v)}`).join(' ')
+  const spyPath = data.spy.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(v)}`).join(' ')
+
+  // Baseline at 1.0
+  const baselineY = toY(1.0)
+
+  // Show ~8 date labels max
+  const labelStep = Math.max(1, Math.floor(data.dates.length / 8))
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-text">Stocktwits Sentiment Index</h2>
+        <button type="button" className="p-1 rounded-full text-text-muted hover:text-text hover:bg-surface-muted transition-colors" aria-label="Info">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4m0-4h.01" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* SPY Price toggle */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowSpy((v) => !v)}
+          className={clsx(
+            'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+            showSpy
+              ? 'border-green-500 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400'
+              : 'border-border bg-surface text-text hover:bg-surface-muted'
+          )}
+        >
+          <span className={clsx('w-2.5 h-2.5 rounded-full', showSpy ? 'bg-green-500' : 'bg-border')} />
+          SPY Price
+        </button>
+      </div>
+
+      {/* Chart */}
+      <div className="rounded-xl border border-border bg-surface overflow-hidden p-4">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-full"
+          style={{ maxHeight: 420 }}
+          onMouseLeave={() => setHoveredIdx(null)}
+        >
+          {/* Y-axis grid lines and labels */}
+          {yTicks.map((tick) => (
+            <g key={tick}>
+              {tick === 1.0 ? (
+                <line
+                  x1={PAD.left} y1={toY(tick)} x2={W - PAD.right} y2={toY(tick)}
+                  stroke="currentColor" strokeWidth="1.5" strokeDasharray="6 4" className="text-text-muted" opacity="0.5"
+                />
+              ) : (
+                <line
+                  x1={PAD.left} y1={toY(tick)} x2={W - PAD.right} y2={toY(tick)}
+                  stroke="currentColor" strokeWidth="0.5" className="text-border" opacity="0.4"
+                />
+              )}
+              <text x={W - PAD.right + 10} y={toY(tick) + 4} fontSize="12" fill="currentColor" className="text-text-muted">
+                {tick.toFixed(1)}
+              </text>
+            </g>
+          ))}
+
+          {/* X-axis date labels */}
+          {data.dates.map((d, i) => {
+            if (i % labelStep !== 0 && i !== data.dates.length - 1) return null
+            return (
+              <text key={i} x={toX(i)} y={H - 8} fontSize="11" textAnchor="middle" fill="currentColor" className="text-text-muted">
+                {d}
+              </text>
+            )
+          })}
+
+          {/* SPY line */}
+          {showSpy && (
+            <path d={spyPath} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+          )}
+
+          {/* Sentiment line */}
+          <path d={sentimentPath} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+
+          {/* Hover interaction zones */}
+          {data.dates.map((_, i) => (
+            <rect
+              key={i}
+              x={toX(i) - chartW / data.dates.length / 2}
+              y={PAD.top}
+              width={chartW / data.dates.length}
+              height={chartH}
+              fill="transparent"
+              onMouseEnter={() => setHoveredIdx(i)}
+            />
+          ))}
+
+          {/* Hover crosshair + dots */}
+          {hoveredIdx !== null && (
+            <>
+              <line
+                x1={toX(hoveredIdx)} y1={PAD.top} x2={toX(hoveredIdx)} y2={PAD.top + chartH}
+                stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" className="text-text-muted" opacity="0.4"
+              />
+              <circle cx={toX(hoveredIdx)} cy={toY(data.sentiment[hoveredIdx])} r="5" fill="#ef4444" stroke="white" strokeWidth="2" />
+              {showSpy && (
+                <circle cx={toX(hoveredIdx)} cy={toY(data.spy[hoveredIdx])} r="5" fill="#22c55e" stroke="white" strokeWidth="2" />
+              )}
+              {/* Tooltip */}
+              <g>
+                <rect
+                  x={Math.min(toX(hoveredIdx) - 70, W - PAD.right - 150)}
+                  y={PAD.top - 28}
+                  width="150" height="24" rx="6"
+                  fill="currentColor" className="text-surface" opacity="0.95"
+                  stroke="currentColor" strokeWidth="0.5"
+                />
+                <text
+                  x={Math.min(toX(hoveredIdx) - 70, W - PAD.right - 150) + 8}
+                  y={PAD.top - 12}
+                  fontSize="11" fontWeight="600" fill="currentColor" className="text-text"
+                >
+                  {data.dates[hoveredIdx]} — Sentiment: {data.sentiment[hoveredIdx].toFixed(2)}{showSpy ? ` · SPY: ${data.spy[hoveredIdx].toFixed(2)}` : ''}
+                </text>
+              </g>
+            </>
+          )}
+        </svg>
+      </div>
+
+      {/* Time range toggles */}
+      <div className="flex items-center gap-1">
+        {ranges.map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => { setTimeRange(r); setHoveredIdx(null) }}
+            className={clsx(
+              'px-3 py-1.5 rounded-md text-sm font-semibold transition-colors',
+              timeRange === r
+                ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'
+                : 'text-text-muted hover:text-text hover:bg-surface-muted'
+            )}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-6 text-xs text-text-muted">
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-0.5 bg-red-500 rounded-full inline-block" />
+          Sentiment Index
+        </span>
+        {showSpy && (
+          <span className="flex items-center gap-1.5">
+            <span className="w-4 h-0.5 bg-green-500 rounded-full inline-block" />
+            SPY Price (normalized)
+          </span>
+        )}
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-0 border-t border-dashed border-text-muted inline-block" />
+          Baseline (1.0)
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export default function Markets() {
   const { applyCustomTickers, clearCustomTickers, customTickers } = useTickerTape()
   const { getQuote } = useLiveQuotesContext()
@@ -797,6 +1146,24 @@ export default function Markets() {
               )}
             >
               Topics
+            </button>
+            <button
+              onClick={() => setActiveSection('whoToFollow')}
+              className={clsx(
+                'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+                activeSection === 'whoToFollow' ? 'bg-primary text-white' : 'bg-surface-muted text-text hover:bg-surface'
+              )}
+            >
+              Who to Follow
+            </button>
+            <button
+              onClick={() => setActiveSection('sentimentIndex')}
+              className={clsx(
+                'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+                activeSection === 'sentimentIndex' ? 'bg-primary text-white' : 'bg-surface-muted text-text hover:bg-surface'
+              )}
+            >
+              Sentiment Index
             </button>
           </div>
 
@@ -1115,6 +1482,14 @@ export default function Markets() {
 
           {activeSection === 'topics' && (
             <TopicsBubbleMap />
+          )}
+
+          {activeSection === 'whoToFollow' && (
+            <WhoToFollow />
+          )}
+
+          {activeSection === 'sentimentIndex' && (
+            <SentimentIndexChart />
           )}
         </div>
       </main>
