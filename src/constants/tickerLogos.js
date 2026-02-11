@@ -1,7 +1,7 @@
 // Maps ticker symbols to logo paths in public/images/logos/
 const LOGO_MAP = {
   SPY: '/images/logos/spdr.png',
-  QQQ: '/images/logos/spdr.png',
+  QQQ: '/images/logos/qqq.png',
   GLD: '/images/logos/spdr.png',
   VIX: '/images/logos/vix.png',
   AAPL: '/images/logos/apple.png',
@@ -36,6 +36,10 @@ const LOGO_MAP = {
   'BRK.A': '/images/logos/brk.png',
   'BRK.B': '/images/logos/brk.png',
   ABNB: '/images/logos/abnb.png',
+  AMC: '/images/logos/amc.png',
+  LULU: '/images/logos/lulu.png',
+  SPOT: '/images/logos/spot.png',
+  META: '/images/logos/meta.png',
 }
 
 export function getTickerLogo(ticker) {
