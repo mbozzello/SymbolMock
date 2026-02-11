@@ -970,10 +970,19 @@ export default function Homepage3() {
                 Following
               </button>
             ) : (
-              <span className="flex items-center gap-1.5 text-base font-bold text-text-muted" title="Sign up to unlock">
+              <button
+                type="button"
+                onClick={() => setHomeTab('following')}
+                className={clsx(
+                  'flex items-center gap-1.5 text-base font-bold pb-0.5 -mb-0.5 transition-colors',
+                  homeTab === 'following'
+                    ? 'text-black border-b-2 border-black'
+                    : 'text-text-muted border-b-2 border-transparent hover:text-text'
+                )}
+                style={homeTab === 'following' ? { borderBottomWidth: 2 } : {}}
+              >
                 Following
-                <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-              </span>
+              </button>
             )}
           </div>
           {(isHome2 || (!isHome2 && homeTab === 'market-overview')) && homeTab !== 'following' && (
@@ -1024,8 +1033,79 @@ export default function Homepage3() {
           </div>
           )}
 
-          {/* Following feed: messages from people user follows — when logged in and homeTab === 'following' */}
-          {!isHome2 && homeTab === 'following' && (
+          {/* Following feed — logged-out: Who to Follow; logged-in: feed */}
+          {!isHome2 && homeTab === 'following' && !isLoggedIn && (
+          <div className="shrink-0 space-y-5">
+            {/* CTA banner */}
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 via-purple-500/5 to-blue-500/10 border border-primary/20 p-5">
+              <h2 className="text-lg font-bold text-text">Unlock the power of the community</h2>
+              <p className="text-sm text-text-muted mt-1 leading-relaxed">
+                Sign up to follow top traders, analysts, and investors. See their posts, predictions, and market calls — all in one personalized feed tailored to your watchlist.
+              </p>
+              <div className="flex items-center gap-3 mt-4">
+                <Link to="/onboarding" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">
+                  Sign Up Free
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </Link>
+                <span className="text-xs text-text-muted">It only takes 30 seconds</span>
+              </div>
+            </div>
+            {/* Who to follow grid */}
+            <div>
+              <h3 className="text-sm font-bold text-text uppercase tracking-wide mb-3">Who to Follow</h3>
+              <div className="space-y-3">
+                {[
+                  { handle: 'howardlindzon', displayName: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits. Managing Partner of Social Leverage. Angel investor in Robinhood, Etoro, Koyfin.', verified: true, followers: '376.2K', tickers: ['TSLA', 'BTC', 'HOOD'] },
+                  { handle: 'rosscameron', displayName: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. Day trading educator with $10M+ in verified profits.', verified: true, followers: '128.5K', tickers: ['SPY', 'AMD', 'NVDA'] },
+                  { handle: 'Steeletwits', displayName: 'Michele Steele', avatar: '/avatars/michele-steele.png', bio: 'Head of Content @Stocktwits. Former ESPN reporter covering the intersection of sports & finance.', verified: true, followers: '42.1K', tickers: ['DKNG', 'DIS'] },
+                  { handle: 'michaelbolling', displayName: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', bio: 'VP of Content @Stocktwits. Covering markets, macro, and momentum. Formerly @FoxBusiness.', verified: true, followers: '85.3K', tickers: ['AAPL', 'MSFT', 'QQQ'] },
+                  { handle: 'AIBull', displayName: 'AI Bull', avatar: '/avatars/top-voice-1.png', bio: 'Full-time AI/semiconductor analyst. Long $NVDA since $12. Data center thesis > hype.', verified: false, followers: '18.7K', tickers: ['NVDA', 'AMD'] },
+                  { handle: 'CryptoKing', displayName: 'Crypto King', avatar: '/avatars/who-follow-1.png', bio: 'Full-time crypto trader since 2017. DeFi, Layer 1s, and macro.', verified: false, followers: '52.8K', tickers: ['BTC', 'ETH', 'SOL'] },
+                  { handle: 'MomentumKing', displayName: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Swing trading momentum setups. Relative strength and volume breakouts.', verified: false, followers: '31.6K', tickers: ['TSLA', 'PLTR'] },
+                  { handle: 'MacroMaven', displayName: 'Macro Maven', avatar: '/avatars/who-follow-4.png', bio: 'Global macro strategist. Bonds, currencies, commodities. Former institutional PM.', verified: false, followers: '22.4K', tickers: ['GLD', 'TLT'] },
+                ].map((user) => (
+                  <div key={user.handle} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-surface hover:shadow-sm transition-shadow">
+                    <img src={user.avatar} alt="" className="w-11 h-11 rounded-full object-cover border border-border shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-sm text-text truncate">{user.displayName}</span>
+                        {user.verified && (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-400 shrink-0" aria-label="Verified">
+                            <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                          </span>
+                        )}
+                        <span className="text-xs text-text-muted">@{user.handle}</span>
+                      </div>
+                      <p className="text-xs text-text-muted mt-0.5 line-clamp-1">{user.bio}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-[10px] text-text-muted">{user.followers} followers</span>
+                        <span className="text-text-muted">·</span>
+                        <div className="flex gap-1">
+                          {user.tickers.map((t) => (
+                            <span key={t} className="text-[10px] font-semibold text-primary">${t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      to="/onboarding"
+                      className="shrink-0 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity mt-0.5"
+                    >
+                      Follow
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Bottom CTA */}
+            <div className="text-center pt-2 pb-4">
+              <Link to="/onboarding" className="text-sm font-semibold text-primary hover:underline">
+                Sign up to see more →
+              </Link>
+            </div>
+          </div>
+          )}
+          {!isHome2 && homeTab === 'following' && isLoggedIn && (
           <div className="shrink-0">
             <div className="flex items-center gap-4 border-b border-border pb-2 mb-3">
               <button

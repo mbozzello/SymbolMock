@@ -58,6 +58,15 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [dotsMenuOpen, setDotsMenuOpen] = useState(false)
   const dotsMenuRef = useRef(null)
+  const [alertModalOpen, setAlertModalOpen] = useState(false)
+  const [alertModalTicker, setAlertModalTicker] = useState(null)
+  const [alerts, setAlerts] = useState(() => {
+    try { const raw = localStorage.getItem('price_alerts'); return raw ? JSON.parse(raw) : [] } catch { return [] }
+  })
+  const [newAlertPrice, setNewAlertPrice] = useState('')
+  const [newAlertCondition, setNewAlertCondition] = useState('above') // 'above' | 'below'
+  const [newAlertNote, setNewAlertNote] = useState('')
+  const [alertTab, setAlertTab] = useState('set') // 'set' | 'manage'
   const [columns, setColumns] = useState({ last: true, change: true, changePct: true, volume: false, extendedHours: false })
   const [symbolDisplay, setSymbolDisplay] = useState({ logo: true, mode: 'ticker' }) // mode: 'ticker' | 'description'
   const editInputRef = useRef(null)
@@ -135,6 +144,49 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
       setAddingSymbol(false)
     }
   }
+
+  const saveAlerts = (next) => {
+    setAlerts(next)
+    try { localStorage.setItem('price_alerts', JSON.stringify(next)) } catch {}
+  }
+
+  const openAlertModal = (ticker) => {
+    setAlertModalTicker(ticker)
+    setAlertModalOpen(true)
+    setNewAlertPrice('')
+    setNewAlertCondition('above')
+    setNewAlertNote('')
+    setAlertTab('set')
+  }
+
+  const handleCreateAlert = () => {
+    const price = parseFloat(newAlertPrice)
+    if (!price || !alertModalTicker) return
+    const alert = {
+      id: Date.now(),
+      ticker: alertModalTicker,
+      price,
+      condition: newAlertCondition,
+      note: newAlertNote.trim(),
+      createdAt: new Date().toISOString(),
+      triggered: false,
+    }
+    saveAlerts([...alerts, alert])
+    setNewAlertPrice('')
+    setNewAlertNote('')
+    setAlertTab('manage')
+  }
+
+  const removeAlert = (id) => {
+    saveAlerts(alerts.filter((a) => a.id !== id))
+  }
+
+  const toggleAlertTriggered = (id) => {
+    saveAlerts(alerts.map((a) => a.id === id ? { ...a, triggered: !a.triggered } : a))
+  }
+
+  const alertsForTicker = alertModalTicker ? alerts.filter((a) => a.ticker === alertModalTicker) : []
+  const allAlertTickers = [...new Set(alerts.map((a) => a.ticker))]
 
   const content = (
     <div className="flex h-full w-full flex-col gap-4 bg-background p-4 border-r border-border">
@@ -348,6 +400,19 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
             >
               +
             </button>
+            <button
+              type="button"
+              onClick={() => { setAlertModalTicker(null); setAlertModalOpen(true); setAlertTab('manage'); }}
+              className="relative p-1.5 rounded-full border border-border bg-surface-muted hover:bg-surface text-text-muted hover:text-text flex items-center justify-center w-7 h-7 shrink-0 transition-colors"
+              aria-label="Manage price alerts"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {alerts.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-primary text-white text-[8px] font-bold flex items-center justify-center">{alerts.length}</span>
+              )}
+            </button>
           </div>
           <button
             type="button"
@@ -426,9 +491,21 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
                 </div>
               </div>
               </Link>
-              <button type="button" onClick={() => removeSymbol(s.ticker)} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-surface-muted opacity-0 group-hover:opacity-100 transition-opacity" aria-label={`Remove ${s.ticker} from watchlist`}>
-                <svg className="w-3.5 h-3.5 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              </button>
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => openAlertModal(s.ticker)}
+                  className="p-1 rounded hover:bg-surface-muted"
+                  aria-label={`Set price alert for ${s.ticker}`}
+                >
+                  <svg className="w-3.5 h-3.5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </button>
+                <button type="button" onClick={() => removeSymbol(s.ticker)} className="p-1 rounded hover:bg-surface-muted" aria-label={`Remove ${s.ticker} from watchlist`}>
+                  <svg className="w-3.5 h-3.5 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                </button>
+              </div>
             </div>
           )
         })}
@@ -467,6 +544,278 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
               >
                 Delete
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Price Alert Modal */}
+      {alertModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-modal="true" role="dialog" aria-labelledby="alert-modal-title">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setAlertModalOpen(false)} />
+          <div className="relative bg-background rounded-xl border border-border shadow-xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <h2 id="alert-modal-title" className="text-lg font-bold text-text">
+                  {alertModalTicker ? `Price Alerts — ${alertModalTicker}` : 'Price Alerts'}
+                </h2>
+              </div>
+              <button type="button" onClick={() => setAlertModalOpen(false)} className="p-1.5 rounded-full hover:bg-surface-muted text-text-muted hover:text-text" aria-label="Close">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-border shrink-0">
+              <button
+                type="button"
+                onClick={() => setAlertTab('set')}
+                className={clsx(
+                  'flex-1 py-3 text-sm font-semibold text-center border-b-2 -mb-px transition-colors',
+                  alertTab === 'set' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
+                )}
+              >
+                Set Alert
+              </button>
+              <button
+                type="button"
+                onClick={() => setAlertTab('manage')}
+                className={clsx(
+                  'flex-1 py-3 text-sm font-semibold text-center border-b-2 -mb-px transition-colors',
+                  alertTab === 'manage' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
+                )}
+              >
+                Manage Alerts
+                {alerts.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-primary/15 text-primary font-bold">{alerts.length}</span>}
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5">
+              {alertTab === 'set' && (
+                <div className="space-y-4">
+                  {/* Symbol selector if opened from the general bell icon */}
+                  {!alertModalTicker && (
+                    <div>
+                      <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-1.5">Symbol</label>
+                      <div className="flex flex-wrap gap-2">
+                        {sortedWatchlist.map((s) => (
+                          <button
+                            key={s.ticker}
+                            type="button"
+                            onClick={() => setAlertModalTicker(s.ticker)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-border bg-surface hover:bg-surface-muted transition-colors"
+                          >
+                            {getTickerLogo(s.ticker) && <img src={getTickerLogo(s.ticker)} alt="" className="w-4 h-4 rounded object-cover" />}
+                            {s.ticker}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {alertModalTicker && (
+                    <>
+                      {/* Current price */}
+                      {(() => {
+                        const q = getQuote(alertModalTicker)
+                        const curPrice = q?.price
+                        return curPrice ? (
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-muted/50 border border-border">
+                            <div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface border border-border">
+                              {getTickerLogo(alertModalTicker) ? (
+                                <img src={getTickerLogo(alertModalTicker)} alt="" className="w-full h-full object-contain" />
+                              ) : (
+                                <span className="text-sm font-bold text-text-muted">{alertModalTicker[0]}</span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-text">{alertModalTicker}</p>
+                              <p className="text-xs text-text-muted">Current: <span className="font-semibold text-text">${curPrice.toFixed(2)}</span></p>
+                            </div>
+                          </div>
+                        ) : null
+                      })()}
+
+                      {/* Condition */}
+                      <div>
+                        <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-1.5">Condition</label>
+                        <div className="flex rounded-lg border border-border overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setNewAlertCondition('above')}
+                            className={clsx(
+                              'flex-1 py-2.5 text-sm font-semibold text-center transition-colors',
+                              newAlertCondition === 'above' ? 'bg-success/15 text-success' : 'bg-surface text-text-muted hover:bg-surface-muted'
+                            )}
+                          >
+                            Price Goes Above
+                          </button>
+                          <div className="w-px bg-border" />
+                          <button
+                            type="button"
+                            onClick={() => setNewAlertCondition('below')}
+                            className={clsx(
+                              'flex-1 py-2.5 text-sm font-semibold text-center transition-colors',
+                              newAlertCondition === 'below' ? 'bg-danger/15 text-danger' : 'bg-surface text-text-muted hover:bg-surface-muted'
+                            )}
+                          >
+                            Price Goes Below
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Target price */}
+                      <div>
+                        <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-1.5">Target Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm font-medium">$</span>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={newAlertPrice}
+                            onChange={(e) => setNewAlertPrice(e.target.value.replace(/[^0-9.]/g, ''))}
+                            placeholder="0.00"
+                            className="w-full pl-7 pr-3 py-3 rounded-lg bg-surface border border-border text-text text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Note (optional) */}
+                      <div>
+                        <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-1.5">Note (optional)</label>
+                        <input
+                          type="text"
+                          value={newAlertNote}
+                          onChange={(e) => setNewAlertNote(e.target.value)}
+                          placeholder="e.g. Sell half position"
+                          maxLength={100}
+                          className="w-full px-3 py-3 rounded-lg bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        />
+                      </div>
+
+                      {/* Create button */}
+                      <button
+                        type="button"
+                        onClick={handleCreateAlert}
+                        disabled={!newAlertPrice || isNaN(parseFloat(newAlertPrice))}
+                        className={clsx(
+                          'w-full py-3 rounded-lg text-sm font-bold transition-colors',
+                          newAlertPrice && !isNaN(parseFloat(newAlertPrice))
+                            ? 'bg-primary text-white hover:opacity-90'
+                            : 'bg-surface-muted text-text-muted cursor-not-allowed'
+                        )}
+                      >
+                        Create Alert
+                      </button>
+
+                      {/* Existing alerts for this ticker */}
+                      {alertsForTicker.length > 0 && (
+                        <div className="pt-2 border-t border-border">
+                          <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">Active Alerts for {alertModalTicker}</p>
+                          <div className="space-y-2">
+                            {alertsForTicker.map((a) => (
+                              <div key={a.id} className={clsx('flex items-center gap-3 p-2.5 rounded-lg border', a.triggered ? 'border-success/50 bg-success/5' : 'border-border bg-surface')}>
+                                <span className={clsx('shrink-0 w-2 h-2 rounded-full', a.condition === 'above' ? 'bg-success' : 'bg-danger')} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-semibold text-text">
+                                    {a.condition === 'above' ? '↑' : '↓'} ${a.price.toFixed(2)}
+                                  </p>
+                                  {a.note && <p className="text-xs text-text-muted truncate">{a.note}</p>}
+                                </div>
+                                <button type="button" onClick={() => removeAlert(a.id)} className="p-1 rounded hover:bg-surface-muted text-text-muted hover:text-danger shrink-0" aria-label="Delete alert">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {alertTab === 'manage' && (
+                <div className="space-y-4">
+                  {alerts.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <svg className="w-12 h-12 mx-auto text-text-muted/30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      <p className="text-sm font-medium text-text-muted">No alerts set yet</p>
+                      <p className="text-xs text-text-muted mt-1">Click "Set Alert" to create your first price alert.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {allAlertTickers.map((ticker) => {
+                        const tickerAlerts = alerts.filter((a) => a.ticker === ticker)
+                        const q = getQuote(ticker)
+                        const curPrice = q?.price
+                        return (
+                          <div key={ticker} className="rounded-xl border border-border overflow-hidden">
+                            <div className="flex items-center gap-3 px-4 py-3 bg-surface-muted/30 border-b border-border">
+                              <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-surface border border-border">
+                                {getTickerLogo(ticker) ? (
+                                  <img src={getTickerLogo(ticker)} alt="" className="w-full h-full object-contain" />
+                                ) : (
+                                  <span className="text-xs font-bold text-text-muted">{ticker[0]}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-bold text-text">{ticker}</p>
+                                {curPrice && <p className="text-xs text-text-muted">Current: ${curPrice.toFixed(2)}</p>}
+                              </div>
+                              <span className="text-xs font-semibold text-text-muted">{tickerAlerts.length} alert{tickerAlerts.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div className="divide-y divide-border">
+                              {tickerAlerts.map((a) => (
+                                <div key={a.id} className="flex items-center gap-3 px-4 py-3">
+                                  <span className={clsx('shrink-0 w-2.5 h-2.5 rounded-full', a.condition === 'above' ? 'bg-success' : 'bg-danger')} />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-text flex items-center gap-1.5">
+                                      {a.condition === 'above' ? (
+                                        <svg className="w-3.5 h-3.5 text-success shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5H7z" /></svg>
+                                      ) : (
+                                        <svg className="w-3.5 h-3.5 text-danger shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5H7z" /></svg>
+                                      )}
+                                      ${a.price.toFixed(2)}
+                                    </p>
+                                    {a.note && <p className="text-xs text-text-muted truncate mt-0.5">{a.note}</p>}
+                                    <p className="text-[10px] text-text-muted mt-0.5">Created {new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => { setAlertModalTicker(ticker); setAlertTab('set'); }}
+                                      className="p-1.5 rounded hover:bg-surface-muted text-text-muted hover:text-primary transition-colors"
+                                      aria-label="Add another alert"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" d="M12 4v16m8-8H4" /></svg>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeAlert(a.id)}
+                                      className="p-1.5 rounded hover:bg-surface-muted text-text-muted hover:text-danger transition-colors"
+                                      aria-label="Delete alert"
+                                    >
+                                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
