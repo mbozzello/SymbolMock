@@ -1126,6 +1126,46 @@ export default function Markets() {
   const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS)
   const [columnsDraft, setColumnsDraft] = useState(null)
   const [heatmapMetric, setHeatmapMetric] = useState('price') // 'price' | 'sentiment' | 'messageVolume'
+  // Multi-column sort: array of { colId, dir } in priority order
+  const [colSorts, setColSorts] = useState([])
+
+  const handleScreenerColumnSort = (colId) => {
+    if (colId === 'watch' || colId === 'chart') return
+    setColSorts((prev) => {
+      const existing = prev.find((s) => s.colId === colId)
+      if (!existing) return [...prev, { colId, dir: 'desc' }]
+      if (existing.dir === 'desc') return prev.map((s) => s.colId === colId ? { ...s, dir: 'asc' } : s)
+      // asc → remove
+      return prev.filter((s) => s.colId !== colId)
+    })
+  }
+
+  const getColSortDir = (colId) => {
+    const s = colSorts.find((s) => s.colId === colId)
+    return s ? s.dir : null
+  }
+
+  const getScreenerSortValue = (row, colId) => {
+    switch (colId) {
+      case 'rank': return row._origRank ?? row.rank
+      case 'symbol': return (row.ticker || '').toLowerCase()
+      case 'lastPrice': return row.price ?? 0
+      case 'pctChange':
+      case '1hPct':
+      case '7dPct':
+      case '30dPct': return row.pctChange ?? 0
+      case 'volume':
+      case 'volume7d':
+      case 'volume30d': return row.volumeNum ?? 0
+      case 'watchers': return row.watchersNum ?? 0
+      case 'followers': return row.followersNum ?? 0
+      case 'messageVolume': return 0
+      case 'sentiment': return row.sentimentScore ?? 0
+      case 'marketCap':
+      case 'fullyDilutedMcap': return row.marketCapNum ?? 0
+      default: return 0
+    }
+  }
 
   const toggleColumn = (id) => {
     setVisibleColumns((prev) => {
@@ -1219,6 +1259,7 @@ export default function Markets() {
         )
       }
     }
+    // Apply pill sort first as base ordering
     if (activeSort === 'mostActive') rows.sort((a, b) => b.volumeNum - a.volumeNum)
     else if (activeSort === 'watchers') rows.sort((a, b) => b.watchersNum - a.watchersNum)
     else if (activeSort === 'mostBullish') rows.sort((a, b) => b.sentimentScore - a.sentimentScore)
@@ -1226,8 +1267,28 @@ export default function Markets() {
     else if (activeSort === 'topGainers') rows.sort((a, b) => b.pctChange - a.pctChange)
     else if (activeSort === 'topLosers') rows.sort((a, b) => a.pctChange - b.pctChange)
     else rows.sort((a, b) => a.rank - b.rank)
+    // Stash original rank before column sorts override
+    rows = rows.map((r, i) => ({ ...r, _origRank: i + 1 }))
+    // Apply column sorts in order (first sort = highest priority)
+    if (colSorts.length > 0) {
+      rows.sort((a, b) => {
+        for (const { colId, dir } of colSorts) {
+          const m = dir === 'asc' ? 1 : -1
+          const va = getScreenerSortValue(a, colId)
+          const vb = getScreenerSortValue(b, colId)
+          if (typeof va === 'string' && typeof vb === 'string') {
+            const cmp = va.localeCompare(vb)
+            if (cmp !== 0) return m * cmp
+          } else {
+            if (va < vb) return -1 * m
+            if (va > vb) return 1 * m
+          }
+        }
+        return 0
+      })
+    }
     return rows.map((r, i) => ({ ...r, rank: i + 1 }))
-  }, [getQuote, assetFilter, symbolFilter, appliedFilters, activeSort])
+  }, [getQuote, assetFilter, symbolFilter, appliedFilters, activeSort, colSorts])
 
   useEffect(() => {
     if (darkMode) {
@@ -1430,15 +1491,18 @@ export default function Markets() {
                       {visibleColumns.map((colId) => {
                         const m = COLUMN_METRICS.find((c) => c.id === colId)
                         const isDraggable = colId !== 'rank' && colId !== 'symbol' && colId !== 'watch'
+                        const isSortable = colId !== 'watch' && colId !== 'chart'
+                        const sortDir = getColSortDir(colId)
                         return m ? (
                           <th
                             key={colId}
                             className={clsx(
-                              'text-left py-3 px-4 font-semibold text-text select-none',
-                              isDraggable && 'cursor-grab active:cursor-grabbing',
+                              'text-left py-3 px-4 font-semibold text-text select-none whitespace-nowrap',
+                              isSortable && 'cursor-pointer hover:bg-surface-muted/50',
                               isDraggable && dragOverCol === colId && 'bg-primary/10 ring-1 ring-primary/30 rounded'
                             )}
                             draggable={isDraggable}
+                            onClick={() => isSortable && handleScreenerColumnSort(colId)}
                             onDragStart={(e) => {
                               if (!isDraggable) return
                               e.dataTransfer.setData('text/plain', colId)
@@ -1460,18 +1524,15 @@ export default function Markets() {
                             onDragEnd={() => setDragOverCol(null)}
                           >
                             <span className="inline-flex items-center gap-1">
-                              {colId === 'rank' && (
-                                <>
-                                  Rank
-                                  <svg className="inline w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                  </svg>
-                                </>
+                              {m.label}
+                              {isSortable && sortDir && (
+                                <svg className={clsx('w-3.5 h-3.5 text-primary transition-transform', sortDir === 'asc' && 'rotate-180')} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
                               )}
-                              {colId !== 'rank' && m.label}
-                              {isDraggable && (
-                                <svg className="w-3.5 h-3.5 text-muted opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                              {isSortable && !sortDir && (
+                                <svg className="w-3.5 h-3.5 text-muted opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                               )}
                             </span>
