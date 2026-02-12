@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import IOSBottomNav from '../components/IOSBottomNav.jsx'
+import IOSShareSheet from '../components/IOSShareSheet.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 
 function clsx(...v) { return v.filter(Boolean).join(' ') }
@@ -8,14 +9,6 @@ function clsx(...v) { return v.filter(Boolean).join(' ') }
 /* ══════════════════════════════════════════════════════════════
    OVERVIEW DATA  (mirrored from Homepage3 Market Overview)
    ══════════════════════════════════════════════════════════════ */
-const MARKET_CARDS = [
-  { symbol: 'SPY', price: 609.98, change: -5.23, pct: -0.85, sentiment: 62, sentimentLabel: 'BULLISH', topTopic: 'Metals Nosedive', topTopicIcon: '🏅' },
-  { symbol: 'QQQ', price: 523.41, change: -6.12, pct: -1.16, sentiment: 58, sentimentLabel: 'BULLISH', topTopic: 'New Fed Chair', topTopicIcon: '🪑' },
-  { symbol: 'BITCOIN', price: 97234.5, change: 1245.2, pct: 1.3, sentiment: 71, sentimentLabel: 'BULLISH', topTopic: 'ETF Flows', topTopicIcon: '📈' },
-  { symbol: 'GLD', price: 2654.8, change: -8.4, pct: -0.32, sentiment: 48, sentimentLabel: 'NEUTRAL', topTopic: 'Rate Cuts', topTopicIcon: '✂️' },
-  { symbol: 'VIX', price: 18.52, change: 1.64, pct: 9.72, sentiment: 35, sentimentLabel: 'BEARISH', topTopic: 'Volatility', topTopicIcon: '⚡' },
-]
-
 const TRENDING_NOW = [
   { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 15.84, comments: '12.8K', sentiment: 75, whyBlurb: 'Cybertruck production ramp and full self-driving rollout are driving the conversation.' },
   { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 48.93, comments: '15.2K', sentiment: 82, whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume.' },
@@ -30,14 +23,14 @@ const TRENDING_NOW = [
 ]
 
 const TOP_TOPICS = [
-  { emoji: '🖥️', label: 'Data Center Demand', count: '52.3K', color: '#6366f1' },
-  { emoji: '📈', label: 'AI Capex', count: '44.6K', color: '#06b6d4' },
-  { emoji: '🤖', label: 'Robotaxi Dreams', count: '41.2K', color: '#22c55e' },
-  { emoji: '🔮', label: 'Blackwell Ramp', count: '38.1K', color: '#8b5cf6' },
-  { emoji: '⚡', label: 'Earnings Beat', count: '35.2K', color: '#f59e0b' },
-  { emoji: '☁️', label: 'AWS Reacceleration', count: '31.5K', color: '#f97316' },
-  { emoji: '🚀', label: 'Merging Ambitions', count: '28.4K', color: '#ef4444' },
-  { emoji: '🔷', label: 'MI300 Adoption', count: '26.8K', color: '#3b82f6' },
+  { emoji: '🖥️', label: 'Data Center Demand', count: '52.3K', color: '#6366f1', tickers: ['NVDA', 'AMD', 'AVGO', 'MSFT'] },
+  { emoji: '📈', label: 'AI Capex', count: '44.6K', color: '#06b6d4', tickers: ['NVDA', 'MSFT', 'GOOGL', 'META'] },
+  { emoji: '🤖', label: 'Robotaxi Dreams', count: '41.2K', color: '#22c55e', tickers: ['TSLA', 'NVDA', 'GOOGL'] },
+  { emoji: '🔮', label: 'Blackwell Ramp', count: '38.1K', color: '#8b5cf6', tickers: ['NVDA', 'AMD'] },
+  { emoji: '⚡', label: 'Earnings Beat', count: '35.2K', color: '#f59e0b', tickers: ['NVDA', 'AAPL', 'AMZN', 'TSLA'] },
+  { emoji: '☁️', label: 'AWS Reacceleration', count: '31.5K', color: '#f97316', tickers: ['AMZN', 'MSFT', 'GOOGL'] },
+  { emoji: '🚀', label: 'Merging Ambitions', count: '28.4K', color: '#ef4444', tickers: ['TSLA'] },
+  { emoji: '🔷', label: 'MI300 Adoption', count: '26.8K', color: '#3b82f6', tickers: ['AMD', 'NVDA'] },
 ]
 
 const LIVE_EARNINGS = [
@@ -69,10 +62,73 @@ const PREDICTION_LEADERBOARD = [
 ]
 
 const TOP_DISCUSSIONS = [
-  { id: 1, question: 'Which mega-cap has the best risk/reward here?', choices: ['$AAPL', '$MSFT', '$NVDA', '$GOOGL'], votes: '8.2k', timeLabel: '2d left' },
-  { id: 2, question: 'What do you expect from $HOOD earnings on Tuesday?', choices: ['Beat EPS & rev', 'Beat EPS, miss rev', 'Miss both'], votes: '5.7k', timeLabel: '21h left' },
-  { id: 3, question: "S&P 500's next 5% move?", choices: ['Up 5%', 'Down 5%'], votes: '14k', timeLabel: 'Ended' },
+  { id: 6, question: 'Which mega-cap has the best risk/reward here?', choices: ['$AAPL', '$MSFT', '$NVDA', '$GOOGL'], votes: '8.2k', timeLabel: '2d left', published: 'Feb 09, 2026 · 8:00 AM', comments: 203 },
+  { id: 1, question: 'What do you expect from $HOOD earnings on Tuesday?', choices: ['Beat EPS and revenue', 'Beat EPS, miss revenue', 'Miss EPS, beat revenue', 'Miss EPS and revenue'], votes: '5.7k', timeLabel: '21h left', published: 'Feb 09, 2026 · 10:23 AM', comments: 84 },
+  { id: 2, question: "What will be the S&P 500's next 5% move?", choices: ['Up 5%', 'Down 5%'], votes: '14k', timeLabel: 'Ended 13h ago', published: 'Feb 08, 2026 · 2:15 PM', comments: 312 },
+  { id: 3, question: 'Are you buying the dip on any of these beaten down growth stocks?', choices: ['$HOOD', '$APP', '$PLTR', '$RKLB'], votes: '1.7k', timeLabel: 'Ended 1d ago', published: 'Feb 08, 2026 · 9:00 AM', comments: 156 },
+  { id: 4, question: 'Where does crypto go from here?', choices: ['Recovery and trend continuation', 'Sideways consolidation', 'Lower lows ahead', 'Volatile chop before direction'], votes: '11.5k', timeLabel: 'Ended 1d ago', published: 'Feb 07, 2026 · 4:45 PM', comments: 428 },
+  { id: 5, question: 'What do you expect from $RDDT earnings on Thursday?', choices: ['Beat EPS and revenue', 'Beat EPS, miss revenue', 'Miss EPS, beat revenue', 'Miss EPS and revenue'], votes: '3k', timeLabel: 'Ended 4d ago', published: 'Feb 06, 2026 · 11:20 AM', comments: 67 },
 ]
+
+const WTF_CATEGORIES = ['Trending', 'Day Trader', 'Options', 'Crypto', 'Swing', 'Macro', 'Value']
+const WTF_PEOPLE = {
+  Trending: [
+    { handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', bio: 'Co-Founder & CEO @Stocktwits', verified: true, followers: '376.2K' },
+    { handle: 'rosscameron', name: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. $10M+ verified profits.', verified: true, followers: '128.5K' },
+    { handle: 'FinanceBuzz', name: 'Finance Buzz', avatar: '/avatars/who-follow-3.png', bio: 'Breaking down complex market events simply.', verified: true, followers: '112.4K' },
+    { handle: 'MarketVibes', name: 'Market Vibes', avatar: '/avatars/who-follow-4.png', bio: 'Daily market recaps and pre-market analysis.', verified: false, followers: '89.7K' },
+    { handle: 'StreetSmarts', name: 'Street Smarts', avatar: '/avatars/ross-cameron.png', bio: 'Making finance fun. Viral market explainers.', verified: true, followers: '324.1K' },
+    { handle: 'CryptoKing', name: 'Crypto King', avatar: '/avatars/top-voice-1.png', bio: 'Full-time crypto trader since 2017.', verified: false, followers: '52.8K' },
+  ],
+  'Day Trader': [
+    { handle: 'rosscameron', name: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', bio: 'Founder @WarriorTrading. Day trading educator.', verified: true, followers: '128.5K' },
+    { handle: 'ScalpKing', name: 'Scalp King', avatar: '/avatars/top-voice-3.png', bio: 'ES and NQ futures scalper. 200+ trades/week.', verified: false, followers: '34.8K' },
+    { handle: 'TapeReader', name: 'Tape Reader', avatar: '/avatars/top-voice-1.png', bio: 'Order flow, time & sales, Level 2 depth.', verified: false, followers: '22.1K' },
+    { handle: 'PreMarketPro', name: 'Pre-Market Pro', avatar: '/avatars/michael-bolling.png', bio: 'Gap scanners and news catalysts daily.', verified: false, followers: '31.4K' },
+    { handle: 'GapTrader', name: 'Gap Trader', avatar: '/avatars/who-follow-2.png', bio: 'Gap-and-go specialist. Small caps with volume.', verified: false, followers: '19.2K' },
+    { handle: 'FuturesEdge', name: 'Futures Edge', avatar: '/avatars/top-voice-2.png', bio: 'ES, NQ, and CL futures full-time since 2016.', verified: false, followers: '28.9K' },
+  ],
+  Options: [
+    { handle: 'OptionsFlow', name: 'Options Flow', avatar: '/avatars/top-voice-1.png', bio: 'Real-time unusual options activity tracking.', verified: false, followers: '67.1K' },
+    { handle: 'ThetaGang', name: 'Theta Gang', avatar: '/avatars/who-follow-2.png', bio: 'Premium selling specialist. Time decay is my edge.', verified: false, followers: '41.2K' },
+    { handle: 'GammaExposure', name: 'Gamma Exposure', avatar: '/avatars/top-voice-3.png', bio: 'Tracking dealer gamma positioning daily.', verified: false, followers: '35.4K' },
+    { handle: '0DTEWarrior', name: '0DTE Warrior', avatar: '/avatars/who-follow-4.png', bio: 'Zero-days-to-expiration options specialist.', verified: false, followers: '47.2K' },
+    { handle: 'SpreadTrader', name: 'Spread Trader', avatar: '/avatars/ross-cameron.png', bio: 'Credit spreads, debit spreads, and butterflies.', verified: false, followers: '29.3K' },
+    { handle: 'VolSurface', name: 'Vol Surface', avatar: '/avatars/michele-steele.png', bio: 'Volatility trader and former market maker.', verified: false, followers: '13.7K' },
+  ],
+  Crypto: [
+    { handle: 'CryptoKing', name: 'Crypto King', avatar: '/avatars/top-voice-1.png', bio: 'Full-time crypto trader since 2017. DeFi & L1s.', verified: false, followers: '52.8K' },
+    { handle: 'BTCMaxi', name: 'BTC Maxi', avatar: '/avatars/top-voice-1.png', bio: 'Bitcoin-only conviction. Halving cycles.', verified: false, followers: '73.6K' },
+    { handle: 'DeFiDegen', name: 'DeFi Degen', avatar: '/avatars/top-voice-3.png', bio: 'Yield farming and on-chain analysis.', verified: false, followers: '38.5K' },
+    { handle: 'OnChainAlpha', name: 'On-Chain Alpha', avatar: '/avatars/who-follow-4.png', bio: 'Whale wallets and exchange flows.', verified: false, followers: '26.1K' },
+    { handle: 'AltSeason', name: 'Alt Season', avatar: '/avatars/howard-lindzon.png', bio: 'Altcoin specialist. Finding the next 10x.', verified: false, followers: '44.9K' },
+    { handle: 'MemeCoiner', name: 'Meme Coiner', avatar: '/avatars/who-follow-4.png', bio: 'DOGE, SHIB, and the next viral token.', verified: false, followers: '56.3K' },
+  ],
+  Swing: [
+    { handle: 'MomentumKing', name: 'Momentum King', avatar: '/avatars/who-follow-2.png', bio: 'Relative strength and volume breakouts.', verified: false, followers: '31.6K' },
+    { handle: 'SwingSetups', name: 'Swing Setups', avatar: '/avatars/top-voice-1.png', bio: 'Multi-day holds based on weekly charts.', verified: false, followers: '22.8K' },
+    { handle: 'TrendRider', name: 'Trend Rider', avatar: '/avatars/ross-cameron.png', bio: 'Riding trends. 12-year track record.', verified: false, followers: '19.5K' },
+    { handle: 'BreakoutHunter', name: 'Breakout Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Cup & handle, bull flags, tight consolidations.', verified: false, followers: '17.3K' },
+    { handle: 'PullbackKing', name: 'Pullback King', avatar: '/avatars/who-follow-4.png', bio: 'Buying pullbacks in uptrends. Fibonacci levels.', verified: false, followers: '18.3K' },
+    { handle: 'PatternTrader', name: 'Pattern Trader', avatar: '/avatars/who-follow-3.png', bio: 'Classical chart patterns. Textbook entries.', verified: false, followers: '28.6K' },
+  ],
+  Macro: [
+    { handle: 'MacroMaven', name: 'Macro Maven', avatar: '/avatars/who-follow-4.png', bio: 'Global macro strategist. Former institutional PM.', verified: false, followers: '22.4K' },
+    { handle: 'FedWatcher', name: 'Fed Watcher', avatar: '/avatars/top-voice-2.png', bio: 'Interest rate forecasting since 2010.', verified: false, followers: '35.6K' },
+    { handle: 'GeopoliticsNow', name: 'Geopolitics Now', avatar: '/avatars/top-voice-3.png', bio: 'How geopolitics moves markets.', verified: false, followers: '45.8K' },
+    { handle: 'ChiefEconomist', name: 'Chief Economist', avatar: '/avatars/top-voice-2.png', bio: 'Former Fed economist. Data releases decoded.', verified: true, followers: '52.4K' },
+    { handle: 'InflationWatch', name: 'Inflation Watch', avatar: '/avatars/who-follow-3.png', bio: 'CPI, PPI, PCE — every inflation data point.', verified: false, followers: '33.1K' },
+    { handle: 'BondVigilante', name: 'Bond Vigilante', avatar: '/avatars/michele-steele.png', bio: 'Fixed income. Auctions and credit spreads.', verified: false, followers: '26.9K' },
+  ],
+  Value: [
+    { handle: 'MarginOfSafety', name: 'Margin of Safety', avatar: '/avatars/top-voice-1.png', bio: 'Buffett-style value investing. Moats & management.', verified: false, followers: '42.3K' },
+    { handle: 'DividendKing', name: 'Dividend King', avatar: '/avatars/michael-bolling.png', bio: '25-year DRIP portfolio. Yield + growth.', verified: false, followers: '33.7K' },
+    { handle: 'ValueHunter', name: 'Value Hunter', avatar: '/avatars/who-follow-3.png', bio: 'Deep value & contrarian plays. CFA charterholder.', verified: false, followers: '14.9K' },
+    { handle: 'FCFocus', name: 'Free Cash Flow Focus', avatar: '/avatars/top-voice-2.png', bio: 'Undervalued compounders with sustainable FCF.', verified: false, followers: '18.2K' },
+    { handle: 'DividendGrowth', name: 'Dividend Growth', avatar: '/avatars/ross-cameron.png', bio: 'Companies raising dividends 10+ years straight.', verified: false, followers: '38.9K' },
+    { handle: 'QualityCompound', name: 'Quality Compounder', avatar: '/avatars/michele-steele.png', bio: 'High ROIC, capital-light businesses.', verified: false, followers: '22.5K' },
+  ],
+}
 
 /* ══════════════════════════════════════════════════════════════
    NEWS DATA  (mirrored from News.jsx)
@@ -155,6 +211,113 @@ const EARNINGS_CALENDAR = [
 ]
 
 /* ══════════════════════════════════════════════════════════════
+   FOR YOU FEED DATA (mixed video + message posts)
+   ══════════════════════════════════════════════════════════════ */
+const FYF_ITEMS = [
+  {
+    id: 1, type: 'video',
+    user: { handle: 'shahh', name: 'shah', avatar: '/avatars/top-voice-1.png', verified: true },
+    caption: 'oh boy we might actually be in trouble',
+    videoThumb: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=430&h=760&fit=crop',
+    overlay: 'Michael Saylor says credit risk over Strategy overblown',
+    duration: '00:43', elapsed: '00:05',
+    comments: 752, reposts: 706, likes: 3300, views: '867K',
+    time: '8h',
+  },
+  {
+    id: 2, type: 'message',
+    user: { handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', verified: true, badge: 'EDGE' },
+    ticker: 'HOOD', sentiment: 'bullish',
+    body: '$HOOD updated robinhood cheat sheet',
+    embed: { source: 'EquityResearch...', sourceIcon: '📊', date: '2/10/26, 8:15 PM', title: '$HOOD 4Q25 - The SuperApp Nobody\'s Pricing In. Robinhood\'s 2026 Roadmap Is Insane. Bull $175', domain: 'open.substack.com', hasChart: true },
+    comments: 1, reposts: 0, likes: 7,
+    time: '11:18 AM',
+  },
+  {
+    id: 3, type: 'video',
+    user: { handle: 'MickeyMarkets', name: 'Michael Bolling', avatar: '/avatars/who-follow-1.png', verified: true },
+    caption: '$NVDA Blackwell ramp is real. Jensen just confirmed another quarter of insane demand.',
+    videoThumb: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=430&h=760&fit=crop',
+    overlay: 'NVIDIA CEO confirms Blackwell demand far exceeds supply',
+    duration: '01:22', elapsed: '00:15',
+    comments: 423, reposts: 189, likes: 2100, views: '412K',
+    time: '3h',
+  },
+  {
+    id: 4, type: 'message',
+    user: { handle: 'TechTrader', name: 'TechTrader', avatar: '/avatars/top-voice-2.png', verified: false },
+    ticker: 'TSLA', sentiment: 'bullish',
+    body: 'Cybertruck production numbers just leaked. Way higher than expected. This is going to send it. Full self-driving v12.5 rollout expanding to 100% of fleet by March.',
+    embed: null,
+    comments: 45, reposts: 12, likes: 234,
+    time: '2h',
+  },
+  {
+    id: 5, type: 'video',
+    user: { handle: 'CNBCClips', name: 'CNBC Clips', avatar: '/avatars/top-voice-3.png', verified: true },
+    caption: 'Fed Chair Powell: "We are in no hurry to cut rates"',
+    videoThumb: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=430&h=760&fit=crop',
+    overlay: 'Powell speaks on rate policy and inflation trajectory',
+    duration: '02:15', elapsed: '00:32',
+    comments: 1200, reposts: 845, likes: 5600, views: '1.2M',
+    time: '5h',
+  },
+  {
+    id: 6, type: 'message',
+    user: { handle: 'QuantQueen', name: 'QuantQueen', avatar: '/avatars/top-voice-2.png', verified: false },
+    ticker: 'AMD', sentiment: 'bullish',
+    body: 'MI300X allocations completely sold out through Q3. Lisa Su just confirmed on the call that inference demand is accelerating faster than training. $AMD is about to have its moment.',
+    embed: null,
+    comments: 89, reposts: 34, likes: 567,
+    time: '45m',
+  },
+  {
+    id: 7, type: 'video',
+    user: { handle: 'rosscameron', name: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', verified: true },
+    caption: 'Day trading $GME — caught the breakout for +$8,400 in 12 minutes',
+    videoThumb: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=430&h=760&fit=crop',
+    overlay: 'Live trade: GME breakout above $31 resistance',
+    duration: '03:45', elapsed: '01:02',
+    comments: 312, reposts: 156, likes: 1890, views: '523K',
+    time: '1h',
+  },
+  {
+    id: 8, type: 'message',
+    user: { handle: 'CryptoBull', name: 'CryptoBull', avatar: '/avatars/user-avatar.png', verified: false },
+    ticker: 'BTC', sentiment: 'bullish',
+    body: 'Bitcoin ETF inflows just hit a new daily record. Over $1.2B in a single day. Institutions are not slowing down. The supply shock is coming.',
+    embed: null,
+    comments: 156, reposts: 78, likes: 1200,
+    time: '30m',
+  },
+  {
+    id: 9, type: 'video',
+    user: { handle: 'steeletwits', name: 'Michele Steele', avatar: '/avatars/michele-steele.png', verified: true },
+    caption: 'Why the earnings revision cycle is just getting started for big tech',
+    videoThumb: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=430&h=760&fit=crop',
+    overlay: 'Big Tech earnings revisions accelerating into Q2',
+    duration: '04:12', elapsed: '00:48',
+    comments: 267, reposts: 123, likes: 1450, views: '389K',
+    time: '6h',
+  },
+  {
+    id: 10, type: 'message',
+    user: { handle: 'AlphaSeeker', name: 'AlphaSeeker', avatar: '/avatars/top-voice-1.png', verified: false },
+    ticker: 'PLTR', sentiment: 'bullish',
+    body: 'Palantir AIP bootcamp pipeline is absolutely insane. Every Fortune 500 company wants in. This is going to be a $100B company within 2 years. Commercial revenue inflection is HERE.',
+    embed: null,
+    comments: 67, reposts: 23, likes: 345,
+    time: '1h',
+  },
+]
+
+function formatCount(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
+  return String(n)
+}
+
+/* ══════════════════════════════════════════════════════════════
    COMPONENT
    ══════════════════════════════════════════════════════════════ */
 export default function IOSExplore() {
@@ -162,15 +325,54 @@ export default function IOSExplore() {
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
   const [trendingTicker, setTrendingTicker] = useState('TSLA')
+  const [wtfCat, setWtfCat] = useState('Trending')
   const [sectorFilter, setSectorFilter] = useState('Technology')
   const [earningsFilter, setEarningsFilter] = useState('upcoming')
+  const [forYouUnlocked, setForYouUnlocked] = useState(false)
+  const [fyCurrentIndex, setFyCurrentIndex] = useState(0)
+  const [fyLiked, setFyLiked] = useState(() => new Set())
+  const [fyPlaying, setFyPlaying] = useState(true)
+  const [shareSheetOpen, setShareSheetOpen] = useState(false)
   const searchRef = useRef(null)
+  const fyContainerRef = useRef(null)
+  const fyTouchStartY = useRef(0)
+  const fyTouchStartTime = useRef(0)
 
   const TABS = [
+    ...(forYouUnlocked ? [{ id: 'foryou', label: 'For You' }] : []),
     { id: 'overview', label: 'Overview' },
     { id: 'news', label: 'News' },
     { id: 'earnings', label: 'Earnings' },
   ]
+
+  /* ── For You swipe handling ── */
+  const fyItem = FYF_ITEMS[fyCurrentIndex] || FYF_ITEMS[0]
+
+  const handleFyTouchStart = useCallback((e) => {
+    fyTouchStartY.current = e.touches[0].clientY
+    fyTouchStartTime.current = Date.now()
+  }, [])
+
+  const handleFyTouchEnd = useCallback((e) => {
+    const dy = fyTouchStartY.current - e.changedTouches[0].clientY
+    const dt = Date.now() - fyTouchStartTime.current
+    const velocity = Math.abs(dy) / dt
+    // Swipe up → next, swipe down → prev (threshold: 50px or fast flick)
+    if (dy > 50 || (dy > 20 && velocity > 0.3)) {
+      setFyCurrentIndex(prev => Math.min(prev + 1, FYF_ITEMS.length - 1))
+    } else if (dy < -50 || (dy < -20 && velocity > 0.3)) {
+      setFyCurrentIndex(prev => Math.max(prev - 1, 0))
+    }
+  }, [])
+
+  const toggleFyLike = useCallback((id) => {
+    setFyLiked(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
 
   const selectedTrending = TRENDING_NOW.find(t => t.ticker === trendingTicker) || TRENDING_NOW[0]
 
@@ -192,9 +394,15 @@ export default function IOSExplore() {
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4" fill="white" viewBox="0 0 24 24"><path d="M1 9l2 2c3.9-3.9 10.1-3.9 14 0l2-2C14.1 4.1 5.9 4.1 1 9zm8 8l3 3 3-3a4.2 4.2 0 00-6 0zm-4-4l2 2a7 7 0 019.9 0l2-2C14.1 8.1 9.9 8.1 5 13z" /></svg>
           <svg className="w-4 h-4" fill="white" viewBox="0 0 24 24"><path d="M2 22h20V2z" opacity="0.3" /><path d="M2 22h20V2L2 22zm18-2H6.83L20 6.83V20z" /></svg>
-          <div className="w-6 h-3 rounded-sm border border-white/40 relative overflow-hidden">
-            <div className="absolute inset-y-0.5 left-0.5 right-1 bg-white rounded-[1px]" style={{ width: '70%' }} />
-          </div>
+          <button
+            type="button"
+            onClick={() => { if (!forYouUnlocked) { setForYouUnlocked(true); setActiveTab('foryou') } }}
+            className="relative"
+          >
+            <div className={clsx('w-6 h-3 rounded-sm border relative overflow-hidden transition-colors', forYouUnlocked ? 'border-[#2196F3]' : 'border-white/40')}>
+              <div className={clsx('absolute inset-y-0.5 left-0.5 right-1 rounded-[1px]', forYouUnlocked ? 'bg-[#2196F3]' : 'bg-white')} style={{ width: '70%' }} />
+            </div>
+          </button>
         </div>
       </div>
 
@@ -273,41 +481,225 @@ export default function IOSExplore() {
       </div>
 
       {/* ── Scrollable Content ── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className={clsx('flex-1', activeTab === 'foryou' ? 'overflow-hidden' : 'overflow-y-auto')}>
+
+        {/* ═══════════  FOR YOU TAB  ═══════════ */}
+        {activeTab === 'foryou' && (
+          <div
+            ref={fyContainerRef}
+            className="h-full w-full relative bg-black select-none"
+            onTouchStart={handleFyTouchStart}
+            onTouchEnd={handleFyTouchEnd}
+          >
+            {/* ── Video Item ── */}
+            {fyItem.type === 'video' && (
+              <div className="absolute inset-0 flex flex-col">
+                {/* Video background */}
+                <div className="absolute inset-0">
+                  <img src={fyItem.videoThumb} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30" />
+                </div>
+
+                {/* Overlay text on video */}
+                <div className="absolute bottom-28 left-0 right-14 px-4 z-10">
+                  <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 mb-3 inline-block">
+                    <p className="text-sm font-semibold leading-snug">{fyItem.overlay}</p>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] text-white/60 tabular-nums">{fyItem.elapsed}</span>
+                    <div className="flex-1 h-0.5 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-white rounded-full" style={{ width: '12%' }} />
+                    </div>
+                    <span className="text-[10px] text-white/60 tabular-nums">{fyItem.duration}</span>
+                  </div>
+                  {/* User info */}
+                  <div className="flex items-center gap-2">
+                    <img src={fyItem.user.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-white/20" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold">{fyItem.user.name}</span>
+                      {fyItem.user.verified && (
+                        <svg className="w-3.5 h-3.5 text-[#2196F3]" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                      )}
+                    </div>
+                    <button type="button" className="ml-auto px-3 py-1 rounded-full text-xs font-semibold border border-white/30 text-white active:bg-white/10">
+                      Follow
+                    </button>
+                  </div>
+                  <p className="text-[13px] text-white/90 mt-2 leading-snug">{fyItem.caption}</p>
+                  <span className="text-[11px] text-white/40 mt-1 block">{fyItem.time}</span>
+                </div>
+
+                {/* Right side action buttons — matches /symbol web icons */}
+                <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5 z-10">
+                  {/* Comment */}
+                  <button type="button" onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-0.5">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyItem.comments)}</span>
+                  </button>
+                  {/* Repost */}
+                  <button type="button" className="flex flex-col items-center gap-0.5">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyItem.reposts)}</span>
+                  </button>
+                  {/* Like */}
+                  <button type="button" onClick={() => toggleFyLike(fyItem.id)} className="flex flex-col items-center gap-0.5">
+                    <svg className={clsx('w-7 h-7', fyLiked.has(fyItem.id) ? 'text-red-500' : 'text-white')} fill={fyLiked.has(fyItem.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyLiked.has(fyItem.id) ? fyItem.likes + 1 : fyItem.likes)}</span>
+                  </button>
+                  {/* Share */}
+                  <button type="button" onClick={() => setShareSheetOpen(true)} className="flex flex-col items-center gap-0.5">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                  </button>
+                  {/* Bookmark */}
+                  <button type="button" className="flex flex-col items-center gap-0.5">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z"/></svg>
+                  </button>
+                </div>
+
+                {/* Pagination dots */}
+                <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 z-10">
+                  {FYF_ITEMS.map((_, i) => (
+                    <div key={i} className={clsx('h-0.5 rounded-full transition-all', i === fyCurrentIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/30')} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Message Item ── */}
+            {fyItem.type === 'message' && (
+              <div className="absolute inset-0 flex flex-col bg-black">
+                {/* Pagination dots */}
+                <div className="shrink-0 flex justify-center gap-1 pt-3 pb-2">
+                  {FYF_ITEMS.map((_, i) => (
+                    <div key={i} className={clsx('h-0.5 rounded-full transition-all', i === fyCurrentIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/30')} />
+                  ))}
+                </div>
+
+                {/* Message card centered */}
+                <div className="flex-1 flex items-center justify-center px-4">
+                  <div className="w-full rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                    {/* User header */}
+                    <div className="flex items-center gap-3 p-4 pb-3">
+                      <div className="relative">
+                        <img src={fyItem.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover border border-white/20" />
+                        {fyItem.user.badge && (
+                          <span className="absolute -bottom-1 -left-1 bg-[#2196F3] text-white text-[7px] font-bold px-1 py-0.5 rounded leading-none">{fyItem.user.badge}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-bold">{fyItem.user.name}</span>
+                          {fyItem.user.verified && (
+                            <svg className="w-3.5 h-3.5 text-[#2196F3] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px] text-white/40">
+                          <span>@{fyItem.user.handle}</span>
+                          <span>·</span>
+                          <span>{fyItem.time}</span>
+                        </div>
+                      </div>
+                      <button type="button" className="text-white/30">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                      </button>
+                    </div>
+
+                    {/* Ticker + sentiment */}
+                    {fyItem.ticker && (
+                      <div className="px-4 pb-2 flex items-center gap-2">
+                        {fyItem.sentiment === 'bullish' && (
+                          <span className="inline-flex items-center gap-1 text-green-400 text-xs font-semibold">
+                            <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-[10px]">↑</span>
+                          </span>
+                        )}
+                        <span className="text-[#2196F3] text-sm font-semibold">${fyItem.ticker}</span>
+                      </div>
+                    )}
+
+                    {/* Message body */}
+                    <div className="px-4 pb-3">
+                      <p className="text-[15px] leading-relaxed">{fyItem.body}</p>
+                    </div>
+
+                    {/* Embed card */}
+                    {fyItem.embed && (
+                      <div className="mx-4 mb-3 rounded-xl border border-white/10 overflow-hidden bg-white/5">
+                        <div className="flex items-center gap-2 p-3 border-b border-white/5">
+                          <span className="text-sm">{fyItem.embed.sourceIcon}</span>
+                          <span className="text-xs font-semibold text-white/70">{fyItem.embed.source}</span>
+                          {fyItem.user.verified && (
+                            <svg className="w-3 h-3 text-green-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                          )}
+                          <span className="ml-auto text-[10px] text-white/30">{fyItem.embed.date}</span>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-[13px] leading-snug font-medium">{fyItem.embed.title}</p>
+                          {fyItem.embed.hasChart && (
+                            <div className="mt-3 h-32 bg-black rounded-lg border border-white/10 flex items-center justify-center">
+                              {/* Fake candlestick chart */}
+                              <svg className="w-full h-full p-3" viewBox="0 0 300 100" preserveAspectRatio="none">
+                                {[0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285].map((x, i) => {
+                                  const vals = [20,22,18,25,30,28,35,32,38,42,40,45,50,48,55,60,65,70,75,72]
+                                  const y = 100 - vals[i]
+                                  const h = 8 + Math.random() * 15
+                                  const up = i % 3 !== 0
+                                  return (
+                                    <g key={i}>
+                                      <line x1={x+5} y1={y-4} x2={x+5} y2={y+h+4} stroke={up ? '#22c55e' : '#ef4444'} strokeWidth="1" />
+                                      <rect x={x+2} y={y} width="6" height={h} fill={up ? '#22c55e' : '#ef4444'} rx="0.5" />
+                                    </g>
+                                  )
+                                })}
+                              </svg>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/30">
+                            <span>{fyItem.embed.domain && `🔗 ${fyItem.embed.domain}`}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Engagement bar — matches /symbol web */}
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-white/5 text-white/40">
+                      <button type="button" onClick={() => navigate('/notifications')} className="flex items-center gap-1.5 active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        <span className="text-xs">{fyItem.comments}</span>
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span className="text-xs">{fyItem.reposts}</span>
+                      </button>
+                      <button type="button" onClick={() => toggleFyLike(fyItem.id)} className={clsx('flex items-center gap-1.5 active:scale-110 transition-transform', fyLiked.has(fyItem.id) ? 'text-red-500' : 'text-white/40')}>
+                        <svg className="w-4 h-4" fill={fyLiked.has(fyItem.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        <span className="text-xs">{fyLiked.has(fyItem.id) ? fyItem.likes + 1 : fyItem.likes}</span>
+                      </button>
+                      <button type="button" onClick={() => setShareSheetOpen(true)} className="active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                      </button>
+                      <button type="button" className="active:text-[#2196F3] transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Swipe hint */}
+                {fyCurrentIndex === 0 && (
+                  <div className="shrink-0 pb-4 flex flex-col items-center text-white/20 animate-bounce">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
+                    <span className="text-[10px]">Swipe up</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ═══════════  OVERVIEW TAB  ═══════════ */}
         {activeTab === 'overview' && (
           <div className="px-3 py-4 space-y-5">
-
-            {/* Market Cards */}
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
-              {MARKET_CARDS.map(card => {
-                const up = card.pct >= 0
-                return (
-                  <div key={card.symbol} className="shrink-0 w-[150px] rounded-xl border border-white/10 bg-white/5 px-2.5 py-2">
-                    <div className="flex items-center gap-1.5">
-                      {getTickerLogo(card.symbol) && (
-                        <img src={getTickerLogo(card.symbol)} alt="" className="w-5 h-5 rounded-full object-cover" />
-                      )}
-                      <span className="text-xs font-bold">{card.symbol}</span>
-                    </div>
-                    <div className="text-sm font-bold mt-0.5 tabular-nums">
-                      {card.price >= 1000 ? card.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : card.price.toFixed(2)}
-                    </div>
-                    <div className={clsx('text-[11px] font-semibold tabular-nums', up ? 'text-green-400' : 'text-red-400')}>
-                      {up ? '+' : ''}{card.pct.toFixed(2)}%
-                    </div>
-                    <div className="mt-1.5 pt-1.5 border-t border-white/10">
-                      <div className="text-[8px] uppercase tracking-wide text-white/30 mb-0.5">Discussing</div>
-                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/5 text-[10px]">
-                        <span>{card.topTopicIcon}</span>
-                        <span className="text-white/70">{card.topTopic}</span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
 
             {/* Trending */}
             <section>
@@ -368,16 +760,74 @@ export default function IOSExplore() {
               </div>
             </section>
 
+            {/* Who to Follow */}
+            <section>
+              <h2 className="text-base font-bold mb-2">Who to Follow</h2>
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+                {WTF_CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setWtfCat(cat)}
+                    className={clsx(
+                      'shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border',
+                      wtfCat === cat ? 'bg-[#2196F3] text-white border-[#2196F3]' : 'bg-transparent text-white/50 border-white/10'
+                    )}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-3 px-3 mt-1" style={{ scrollbarWidth: 'none' }}>
+                {(WTF_PEOPLE[wtfCat] || []).map(person => (
+                  <div key={person.handle} className="shrink-0 w-[150px] flex flex-col items-center rounded-xl border border-white/10 bg-white/5 p-3 text-center">
+                    <img src={person.avatar} alt="" className="w-11 h-11 rounded-full object-cover mb-2 bg-white/10" />
+                    <div className="flex items-center gap-1 mb-0.5">
+                      <span className="text-[11px] font-bold truncate max-w-[110px]">{person.name}</span>
+                      {person.verified && (
+                        <svg className="w-3 h-3 text-[#2196F3] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                      )}
+                    </div>
+                    <span className="text-[9px] text-white/30 mb-1">@{person.handle}</span>
+                    <p className="text-[9px] text-white/40 leading-tight line-clamp-2 mb-1.5 min-h-[22px]">{person.bio}</p>
+                    <span className="text-[9px] text-white/30 mb-2">{person.followers} followers</span>
+                    <button type="button" className="w-full py-1.5 rounded-full text-[11px] font-semibold bg-[#2196F3] text-white active:opacity-80 transition-opacity">
+                      Follow
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* Top Topics */}
             <section>
               <h2 className="text-base font-bold mb-2">Top Topics</h2>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+              <div className="flex gap-3 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
                 {TOP_TOPICS.map(t => (
-                  <div key={t.label} className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                    <span className="text-lg">{t.emoji}</span>
-                    <div>
-                      <div className="text-xs font-semibold">{t.label}</div>
-                      <div className="text-[10px] text-white/40">{t.count} posts</div>
+                  <div key={t.label} className="shrink-0 w-[180px] rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">{t.emoji}</span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold leading-tight">{t.label}</div>
+                        <div className="text-[10px] text-white/40">{t.count} posts</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {t.tickers.map(ticker => (
+                        <button
+                          key={ticker}
+                          type="button"
+                          onClick={() => navigate(`/symbol?ticker=${ticker}`)}
+                          className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 active:bg-white/20 transition-colors"
+                        >
+                          {getTickerLogo(ticker) ? (
+                            <img src={getTickerLogo(ticker)} alt="" className="w-4 h-4 rounded-full object-cover" />
+                          ) : (
+                            <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[8px] font-bold">{ticker[0]}</span>
+                          )}
+                          <span className="text-[10px] font-semibold text-white/80">{ticker}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -422,20 +872,23 @@ export default function IOSExplore() {
               </div>
             </section>
 
-            {/* Top Discussions (Polls) */}
+            {/* Top Discussions (Polls) – horizontal carousel */}
             <section>
               <h2 className="text-base font-bold mb-2">Top Discussions</h2>
-              <div className="space-y-3">
+              <div className="flex gap-3 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
                 {TOP_DISCUSSIONS.map(poll => (
-                  <div key={poll.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
-                    <p className="text-[13px] font-semibold leading-snug">{poll.question}</p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                  <div key={poll.id} className="shrink-0 w-[260px] rounded-xl border border-white/10 bg-white/5 p-3 flex flex-col">
+                    <p className="text-[13px] font-semibold leading-snug line-clamp-2 mb-2">{poll.question}</p>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
                       {poll.choices.map(c => (
                         <span key={c} className="px-2.5 py-1 rounded-full text-[11px] border border-white/10 text-white/60">{c}</span>
                       ))}
                     </div>
-                    <div className="flex items-center gap-3 mt-2 text-[10px] text-white/30">
-                      <span>{poll.votes} votes</span>
+                    <div className="mt-auto flex items-center justify-between text-[10px] text-white/30 pt-2 border-t border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span>{poll.votes} votes</span>
+                        <span>💬 {poll.comments}</span>
+                      </div>
                       <span>{poll.timeLabel}</span>
                     </div>
                   </div>
@@ -713,6 +1166,9 @@ export default function IOSExplore() {
         )}
 
       </div>
+
+      {/* ── Share Sheet ── */}
+      <IOSShareSheet open={shareSheetOpen} onClose={() => setShareSheetOpen(false)} />
 
       {/* ── Bottom Navigation ── */}
       <IOSBottomNav />

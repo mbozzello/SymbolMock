@@ -3,6 +3,7 @@ import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import IOSBottomNav from '../components/IOSBottomNav.jsx'
+import IOSShareSheet from '../components/IOSShareSheet.jsx'
 
 function clsx(...values) {
   return values.filter(Boolean).join(' ')
@@ -52,6 +53,7 @@ function MiniSpark({ values, isUp }) {
 
 /* ── Following Feed ── */
 const FOLLOWING_FEED = [
+  { id: 'f0', user: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', badge: 'EDGE', verified: true, ticker: 'HOOD', sentiment: 'bullish', body: '$HOOD updated robinhood cheat sheet', time: '11:18 AM', ts: 0, comments: 1, reposts: 0, likes: 7, embed: { source: 'EquityResearch...', date: '2/10/26, 8:15 PM', title: '$HOOD 4Q25 - The SuperApp Nobody\'s Pricing In. Robinhood\'s 2026 Roadmap Is Insane. Bull $175', domain: 'open.substack.com', hasChart: true } },
   { id: 'f1', user: 'AIBull', avatar: '/avatars/top-voice-1.png', body: 'Data center demand is insane. $NVDA guidance will crush again.', time: '2m', ts: 2, comments: 24, reposts: 8, likes: 142 },
   { id: 'f2', user: 'TechTrader', avatar: '/avatars/top-voice-2.png', body: 'NVDA at $875 and still not expensive given the growth. Holding through earnings.', time: '5m', ts: 5, comments: 18, reposts: 5, likes: 89 },
   { id: 'f3', user: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', body: '15.2K messages and 82% bullish. Crowd is right on this one.', time: '12m', ts: 12, comments: 9, reposts: 3, likes: 67 },
@@ -113,6 +115,7 @@ export default function HomeIOS() {
   const [newAlertCondition, setNewAlertCondition] = useState('above')
   const [newAlertNote, setNewAlertNote] = useState('')
   const [alertSymbolSearch, setAlertSymbolSearch] = useState('')
+  const [shareSheetOpen, setShareSheetOpen] = useState(false)
 
   const saveAlerts = (next) => { setAlerts(next); try { localStorage.setItem('price_alerts', JSON.stringify(next)) } catch {} }
   const openAlertModal = (ticker) => {
@@ -518,28 +521,80 @@ export default function HomeIOS() {
             <div className="divide-y divide-white/10">
               {(followingSort === 'recommended' ? FOLLOWING_RECOMMENDED : FOLLOWING_LATEST).map((msg) => (
                 <div key={msg.id} className="flex gap-3 py-3">
-                  <img src={msg.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0 bg-white/10" />
+                  <div className="relative shrink-0">
+                    <img src={msg.avatar} alt="" className="w-9 h-9 rounded-full object-cover bg-white/10" />
+                    {msg.badge && (
+                      <span className="absolute -bottom-1 -left-1 bg-[#2196F3] text-white text-[6px] font-bold px-0.5 py-px rounded leading-none">{msg.badge}</span>
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold">{msg.user}</span>
+                      {msg.verified && (
+                        <svg className="w-3.5 h-3.5 text-[#2196F3] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                      )}
                       <span className="text-[11px] text-white/40">{msg.time}</span>
                     </div>
+                    {msg.ticker && (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {msg.sentiment === 'bullish' && <span className="w-3.5 h-3.5 rounded-full bg-green-500 flex items-center justify-center text-white text-[8px]">↑</span>}
+                        <span className="text-[#2196F3] text-xs font-semibold">${msg.ticker}</span>
+                      </div>
+                    )}
                     <p className="text-[13px] text-white/80 mt-0.5 leading-snug">{msg.body}</p>
-                    <div className="flex items-center gap-5 mt-2 text-[11px] text-white/40">
-                      <button type="button" className="flex items-center gap-1 hover:text-white/70 transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    {msg.embed && (
+                      <div className="mt-2 rounded-xl border border-white/10 overflow-hidden bg-white/5">
+                        <div className="flex items-center gap-2 p-2.5 border-b border-white/5">
+                          <span className="text-xs">📊</span>
+                          <span className="text-[11px] font-semibold text-white/70">{msg.embed.source}</span>
+                          <svg className="w-3 h-3 text-green-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                          <span className="ml-auto text-[9px] text-white/30">{msg.embed.date}</span>
+                        </div>
+                        <div className="p-2.5">
+                          <p className="text-xs leading-snug font-medium">{msg.embed.title}</p>
+                          {msg.embed.hasChart && (
+                            <div className="mt-2 h-24 bg-black rounded-lg border border-white/10 flex items-center justify-center overflow-hidden">
+                              <svg className="w-full h-full p-2" viewBox="0 0 300 80" preserveAspectRatio="none">
+                                {[0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285].map((x, i) => {
+                                  const vals = [20,22,18,25,30,28,35,32,38,42,40,45,50,48,55,60,65,70,75,72]
+                                  const y = 80 - vals[i]
+                                  const h = 6 + Math.random() * 10
+                                  const up = i % 3 !== 0
+                                  return (
+                                    <g key={i}>
+                                      <line x1={x+5} y1={y-3} x2={x+5} y2={y+h+3} stroke={up ? '#22c55e' : '#ef4444'} strokeWidth="1" />
+                                      <rect x={x+2} y={y} width="6" height={h} fill={up ? '#22c55e' : '#ef4444'} rx="0.5" />
+                                    </g>
+                                  )
+                                })}
+                              </svg>
+                            </div>
+                          )}
+                          {msg.embed.domain && (
+                            <div className="text-[10px] text-white/30 mt-1.5">🔗 {msg.embed.domain}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* Engagement bar — matches /symbol web */}
+                    <div className="flex items-center justify-between mt-2 text-[11px] text-white/40">
+                      <button type="button" className="flex items-center gap-1 active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                         {msg.comments}
                       </button>
-                      <button type="button" className="flex items-center gap-1 hover:text-white/70 transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      <button type="button" className="flex items-center gap-1 active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                         {msg.reposts}
                       </button>
-                      <button type="button" className="flex items-center gap-1 hover:text-white/70 transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                      <button type="button" className="flex items-center gap-1 active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                         {msg.likes}
                       </button>
-                      <button type="button" className="hover:text-white/70 transition-colors ml-auto">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                      <button type="button" onClick={() => setShareSheetOpen(true)} className="active:text-white/70 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                      </button>
+                      <button type="button" className="active:text-[#2196F3] transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z"/></svg>
                       </button>
                     </div>
                   </div>
@@ -754,6 +809,9 @@ export default function HomeIOS() {
           </div>
         </div>
       )}
+
+      {/* ── Share Sheet ── */}
+      <IOSShareSheet open={shareSheetOpen} onClose={() => setShareSheetOpen(false)} />
 
       {/* ── Bottom Navigation (always visible) ── */}
       <div className="shrink-0 relative">
