@@ -96,11 +96,15 @@ export default function HomeIOS() {
   const [watchlistSortKey, setWatchlistSortKey] = useState('gain')
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [watchlistPickerOpen, setWatchlistPickerOpen] = useState(false)
+  const [dotsMenuOpen, setDotsMenuOpen] = useState(false)
   const [addingSymbol, setAddingSymbol] = useState(false)
   const [addTickerValue, setAddTickerValue] = useState('')
   const addInputRef = useRef(null)
   const sortMenuRef = useRef(null)
   const pickerRef = useRef(null)
+  const dotsMenuRef = useRef(null)
+  const [columns, setColumns] = useState({ last: true, change: true, changePct: true, volume: false, extendedHours: false })
+  const [symbolDisplay, setSymbolDisplay] = useState({ logo: true, mode: 'ticker' })
 
   // Rename watchlist
   const [editingName, setEditingName] = useState(false)
@@ -144,14 +148,15 @@ export default function HomeIOS() {
 
   // Close menus on outside tap
   useEffect(() => {
-    if (!sortMenuOpen && !watchlistPickerOpen) return
+    if (!sortMenuOpen && !watchlistPickerOpen && !dotsMenuOpen) return
     const close = (e) => {
       if (sortMenuOpen && sortMenuRef.current && !sortMenuRef.current.contains(e.target)) setSortMenuOpen(false)
       if (watchlistPickerOpen && pickerRef.current && !pickerRef.current.contains(e.target)) setWatchlistPickerOpen(false)
+      if (dotsMenuOpen && dotsMenuRef.current && !dotsMenuRef.current.contains(e.target)) setDotsMenuOpen(false)
     }
     document.addEventListener('click', close)
     return () => document.removeEventListener('click', close)
-  }, [sortMenuOpen, watchlistPickerOpen])
+  }, [sortMenuOpen, watchlistPickerOpen, dotsMenuOpen])
 
   useEffect(() => { if (addingSymbol && addInputRef.current) addInputRef.current.focus() }, [addingSymbol])
   useEffect(() => { if (editingName && editInputRef.current) editInputRef.current.focus() }, [editingName])
@@ -181,44 +186,47 @@ export default function HomeIOS() {
   return (
     <div className="mx-auto max-w-[430px] h-screen bg-black text-white flex flex-col overflow-hidden relative" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif' }}>
 
-      {/* ── iOS Status Bar ── */}
-      <div className="flex items-center justify-between px-6 pt-3 pb-1 shrink-0">
-        <span className="text-sm font-semibold">5:13</span>
-        <div className="flex items-center gap-1.5">
-          <svg className="w-4 h-3" viewBox="0 0 20 14" fill="white"><rect x="0" y="8" width="3" height="6" rx="0.5" opacity="0.4"/><rect x="5" y="5" width="3" height="9" rx="0.5" opacity="0.4"/><rect x="10" y="2" width="3" height="12" rx="0.5" opacity="0.7"/><rect x="15" y="0" width="3" height="14" rx="0.5"/></svg>
-          <svg className="w-4 h-3" viewBox="0 0 16 12" fill="white"><path d="M8 2.4C10.8 2.4 13.2 3.6 14.8 5.6L16 4.4C14 2 11.2 0.4 8 0.4S2 2 0 4.4L1.2 5.6C2.8 3.6 5.2 2.4 8 2.4ZM8 6.4C9.6 6.4 11 7.2 12 8.4L13.2 7.2C11.8 5.6 10 4.4 8 4.4S4.2 5.6 2.8 7.2L4 8.4C5 7.2 6.4 6.4 8 6.4ZM8 10.4C8.8 10.4 9.4 10.8 9.8 11.4L8 13.6L6.2 11.4C6.6 10.8 7.2 10.4 8 10.4Z"/></svg>
-          <div className="flex items-center gap-0.5">
-            <div className="w-7 h-3.5 rounded-sm border border-white/30 flex items-center p-px">
-              <div className="h-full rounded-[1px] bg-green-400" style={{ width: '90%' }} />
+      {/* ── Top nav area: status bar + nav + DIA/SPY/QQQ (divider below) ── */}
+      <div className="shrink-0 border-b border-white/10">
+        {/* iOS Status Bar */}
+        <div className="flex items-center justify-between px-6 pt-3 pb-1">
+          <span className="text-sm font-semibold">5:13</span>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-3" viewBox="0 0 20 14" fill="white"><rect x="0" y="8" width="3" height="6" rx="0.5" opacity="0.4"/><rect x="5" y="5" width="3" height="9" rx="0.5" opacity="0.4"/><rect x="10" y="2" width="3" height="12" rx="0.5" opacity="0.7"/><rect x="15" y="0" width="3" height="14" rx="0.5"/></svg>
+            <svg className="w-4 h-3" viewBox="0 0 16 12" fill="white"><path d="M8 2.4C10.8 2.4 13.2 3.6 14.8 5.6L16 4.4C14 2 11.2 0.4 8 0.4S2 2 0 4.4L1.2 5.6C2.8 3.6 5.2 2.4 8 2.4ZM8 6.4C9.6 6.4 11 7.2 12 8.4L13.2 7.2C11.8 5.6 10 4.4 8 4.4S4.2 5.6 2.8 7.2L4 8.4C5 7.2 6.4 6.4 8 6.4ZM8 10.4C8.8 10.4 9.4 10.8 9.8 11.4L8 13.6L6.2 11.4C6.6 10.8 7.2 10.4 8 10.4Z"/></svg>
+            <div className="flex items-center gap-0.5">
+              <div className="w-7 h-3.5 rounded-sm border border-white/30 flex items-center p-px">
+                <div className="h-full rounded-[1px] bg-green-400" style={{ width: '90%' }} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Top Navigation ── */}
-      <div className="flex items-center justify-between px-4 py-2.5 shrink-0">
-        <button type="button" className="p-1">
-          <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-        <div className="flex items-center gap-1">
-          <span className="text-lg font-bold italic tracking-tight">stocktwits</span>
-          <svg className="w-3.5 h-3.5 opacity-60" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
-        </div>
-        <button type="button" className="p-1">
-          <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-        </button>
-      </div>
-
-      {/* ── Ticker Tape (part of header) ── */}
-      <div className="flex items-center justify-around px-4 py-2 border-t border-white/10 shrink-0">
-        {TAPE.map((t) => (
-          <div key={t.ticker} className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-white/90">{t.ticker}</span>
-            <span className={clsx('text-xs font-medium', t.down ? 'text-red-400' : 'text-green-400')}>
-              {t.down ? '↓' : '↑'} {Math.abs(t.pct).toFixed(2)}%
-            </span>
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <button type="button" className="p-1">
+            <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div className="flex items-center gap-1">
+            <span className="text-lg font-bold italic tracking-tight">stocktwits</span>
+            <svg className="w-3.5 h-3.5 opacity-60" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
           </div>
-        ))}
+          <button type="button" className="p-1">
+            <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </button>
+        </div>
+
+        {/* DIA / SPY / QQQ */}
+        <div className="flex items-center justify-around px-4 py-2">
+          {TAPE.map((t) => (
+            <div key={t.ticker} className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold text-white/90">{t.ticker}</span>
+              <span className={clsx('text-xs font-medium', t.down ? 'text-red-400' : 'text-green-400')}>
+                {t.down ? '↓' : '↑'} {Math.abs(t.pct).toFixed(2)}%
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Watchlist / Following Tabs ── */}
@@ -308,36 +316,17 @@ export default function HomeIOS() {
 
         {/* ── Watchlist Section ── */}
         <div className="px-4 pt-4">
-          {/* Header row: list picker + add + alert + sort */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 min-w-0 relative" ref={pickerRef}>
+          {/* Row 1: Watchlist dropdown (left) + 3-dots menu (far right) */}
+          <div className="flex items-center justify-between mb-1">
+            <div className="relative min-w-0 flex-1" ref={pickerRef}>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setWatchlistPickerOpen((v) => !v) }}
                 className="flex items-center gap-1 text-base font-bold"
               >
-                <span className="truncate max-w-[120px]">{currentWatchlist?.name || 'Watchlist'}</span>
-                <svg className={clsx('w-4 h-4 text-white/50 transition-transform', watchlistPickerOpen && 'rotate-180')} fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
+                <span className="truncate max-w-[160px]">{currentWatchlist?.name || 'Watchlist'}</span>
+                <svg className={clsx('w-4 h-4 text-white/50 transition-transform shrink-0', watchlistPickerOpen && 'rotate-180')} fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
               </button>
-              {/* Add symbol */}
-              <button type="button" onClick={() => setAddingSymbol(true)} className="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center shrink-0">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round"/></svg>
-              </button>
-              {/* Price alerts */}
-              <button
-                type="button"
-                onClick={() => { setAlertModalTicker(null); setAlertModalOpen(true); setAlertTab('manage') }}
-                className="relative w-6 h-6 rounded-full border border-white/30 flex items-center justify-center shrink-0"
-                aria-label="Price alerts"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {alerts.length > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full bg-[#2196F3] text-[8px] font-bold text-white flex items-center justify-center px-0.5">{alerts.length}</span>
-                )}
-              </button>
-              {/* Watchlist picker dropdown */}
               {watchlistPickerOpen && (
                 <div className="absolute left-0 top-full mt-1 z-50 min-w-[200px] rounded-xl border border-white/10 bg-[#1c1c1e] shadow-xl py-1">
                   {watchlists.map((w) => (
@@ -379,6 +368,75 @@ export default function HomeIOS() {
                   </button>
                 </div>
               )}
+            </div>
+            <div className="relative shrink-0" ref={dotsMenuRef}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setDotsMenuOpen((v) => !v) }}
+                className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Watchlist display options"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+              </button>
+              {dotsMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 z-[100] w-[240px] rounded-xl border border-white/10 bg-[#1c1c1e] shadow-xl p-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-white/40 mb-2">Customize columns</div>
+                  <div className="space-y-1.5 mb-3">
+                    {[
+                      { key: 'last', label: 'Last' },
+                      { key: 'change', label: 'Change' },
+                      { key: 'changePct', label: 'Change %' },
+                      { key: 'volume', label: 'Volume' },
+                      { key: 'extendedHours', label: 'Extended Hours' },
+                    ].map(({ key, label }) => (
+                      <label key={key} className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={!!columns[key]} onChange={() => setColumns((c) => ({ ...c, [key]: !c[key] }))} className="rounded border-white/30 text-[#2196F3] focus:ring-[#2196F3]" onClick={(e) => e.stopPropagation()} />
+                        <span className="text-sm text-white/90">{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="border-t border-white/10 pt-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-white/40 mb-2">Symbol display</div>
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={symbolDisplay.logo} onChange={() => setSymbolDisplay((s) => ({ ...s, logo: !s.logo }))} className="rounded border-white/30 text-[#2196F3] focus:ring-[#2196F3]" onClick={(e) => e.stopPropagation()} />
+                        <span className="text-sm text-white/90">Logo</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'ticker'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'ticker' }))} className="border-white/30 text-[#2196F3] focus:ring-[#2196F3]" onClick={(e) => e.stopPropagation()} />
+                        <span className="text-sm text-white/90">Ticker</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="symbolMode" checked={symbolDisplay.mode === 'description'} onChange={() => setSymbolDisplay((s) => ({ ...s, mode: 'description' }))} className="border-white/30 text-[#2196F3] focus:ring-[#2196F3]" onClick={(e) => e.stopPropagation()} />
+                        <span className="text-sm text-white/90">Description</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Row 2: Symbol (column header) + Add + Alerts + Sort */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-medium text-white/60">Symbol</span>
+              <button type="button" onClick={() => setAddingSymbol(true)} className="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center shrink-0">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round"/></svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAlertModalTicker(null); setAlertModalOpen(true); setAlertTab('manage') }}
+                className="relative w-6 h-6 rounded-full border border-white/30 flex items-center justify-center shrink-0"
+                aria-label="Price alerts"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {alerts.length > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full bg-[#2196F3] text-[8px] font-bold text-white flex items-center justify-center px-0.5">{alerts.length}</span>
+                )}
+              </button>
             </div>
             <div className="relative shrink-0" ref={sortMenuRef}>
               <button
