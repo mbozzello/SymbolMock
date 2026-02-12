@@ -214,11 +214,11 @@ const EARNINGS_CALENDAR = [
 const FYF_ITEMS = [
   {
     id: 1, type: 'video',
-    user: { handle: 'shahh', name: 'shah', avatar: '/avatars/top-voice-1.png', verified: true },
+    user: { handle: 'steeletwits', name: 'Michele Steele', avatar: '/avatars/michele-steele.png', verified: true },
     ticker: 'MSTR', price: 312.45, pctChange: -4.23,
     caption: 'oh boy we might actually be in trouble',
     videoSrc: 'https://videos.pexels.com/video-files/3945057/3945057-sd_506_960_25fps.mp4',
-    videoThumb: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=430&h=760&fit=crop',
+    videoThumb: '/images/shah-video.gif',
     overlay: 'Michael Saylor says credit risk over Strategy overblown',
     duration: '00:43', elapsed: '00:05',
     comments: 752, reposts: 706, likes: 3300, views: '867K',
@@ -374,7 +374,7 @@ export default function IOSExplore() {
   const [forYouUnlocked, setForYouUnlocked] = useState(false)
   const [fyCurrentIndex, setFyCurrentIndex] = useState(0)
   const [fyLiked, setFyLiked] = useState(() => new Set())
-  const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'shahh'])) // some users already followed
+  const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'steeletwits'])) // some users already followed
   const [fyWatchlist, setFyWatchlist] = useState(() => new Set(['TSLA', 'NVDA', 'HOOD'])) // some tickers already in watchlist
   const [fyPlaying, setFyPlaying] = useState(true)
   const [shareSheetOpen, setShareSheetOpen] = useState(false)
@@ -575,9 +575,11 @@ export default function IOSExplore() {
             {/* ── Video Item ── */}
             {fyItem.type === 'video' && (
               <div className="absolute inset-0 flex flex-col">
-                {/* Video background — actual short clip */}
+                {/* Video background — actual short clip or gif */}
                 <div className="absolute inset-0">
-                  {fyItem.videoSrc ? (
+                  {fyItem.useGif ? (
+                    <img src={fyItem.videoSrc} alt="" className="w-full h-full object-cover" />
+                  ) : fyItem.videoSrc ? (
                     <video
                       src={fyItem.videoSrc}
                       poster={fyItem.videoThumb}
