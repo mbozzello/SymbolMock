@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
 import IOSBottomNav from '../components/IOSBottomNav.jsx'
 
 function clsx(...values) {
@@ -215,6 +216,7 @@ export default function IOSTools() {
   const navigate = useNavigate()
   const { addSymbol } = useWatchlist()
   const { getQuote } = useLiveQuotesContext()
+  const { iosTrending, applyIosTrending, clearIosTrending } = useTickerTape()
 
   const [activeSection, setActiveSection] = useState('screener')
   const [screenerSort, setScreenerSort] = useState('trending')
@@ -420,9 +422,27 @@ export default function IOSTools() {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                 Columns
               </button>
-              {appliedFilters && (
-                <button type="button" onClick={() => { setAppliedFilters(null); setAdvFilters({ priceMin: '', priceMax: '', volumeMin: '', volumeMax: '', marketCapMin: '', marketCapMax: '', watchersMin: '', watchersMax: '', sentimentScore: 0 }) }} className="text-[10px] text-red-400 font-medium ml-auto">
-                  Clear filters
+              <button
+                type="button"
+                onClick={() => {
+                  const tickers = sortedRows.map((r) => ({
+                    ticker: r.ticker,
+                    name: r.name,
+                    price: r.price,
+                    pct: r.pctChange,
+                    spark: r.spark || [r.price * 0.97, r.price * 0.98, r.price * 0.99, r.price, r.price * 1.01, r.price * 0.995, r.price * 1.005, r.price],
+                  }))
+                  applyIosTrending(tickers)
+                  navigate('/homeios')
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#2196F3] text-white"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                Apply to Trending
+              </button>
+              {(appliedFilters || iosTrending) && (
+                <button type="button" onClick={() => { setAppliedFilters(null); setAdvFilters({ priceMin: '', priceMax: '', volumeMin: '', volumeMax: '', marketCapMin: '', marketCapMax: '', watchersMin: '', watchersMax: '', sentimentScore: 0 }); clearIosTrending() }} className="text-[10px] text-red-400 font-medium ml-auto">
+                  Clear{appliedFilters ? ' filters' : ''}{appliedFilters && iosTrending ? ' &' : ''}{iosTrending ? ' trending' : ''}
                 </button>
               )}
             </div>

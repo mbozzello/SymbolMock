@@ -10,16 +10,14 @@ function clsx(...v) { return v.filter(Boolean).join(' ') }
    OVERVIEW DATA  (mirrored from Homepage3 Market Overview)
    ══════════════════════════════════════════════════════════════ */
 const TRENDING_NOW = [
-  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 15.84, comments: '12.8K', sentiment: 75, whyBlurb: 'Cybertruck production ramp and full self-driving rollout are driving the conversation.' },
-  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 48.93, comments: '15.2K', sentiment: 82, whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume.' },
-  { ticker: 'AAPL', name: 'Apple', price: 185.92, pct: -8.25, comments: '8.9K', sentiment: 45, whyBlurb: 'China sales and services growth are in focus as the street looks for iPhone stability.' },
-  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 24.67, comments: '9.2K', sentiment: 78, whyBlurb: 'MI300 adoption and data center share gains are in the spotlight.' },
-  { ticker: 'AMZN', name: 'Amazon', price: 172.65, pct: 18.32, comments: '6.1K', sentiment: 68, whyBlurb: 'AWS reacceleration and advertising growth have reignited interest.' },
-  { ticker: 'META', name: 'Meta', price: 412.50, pct: 8.50, comments: '5.2K', sentiment: 72, whyBlurb: 'Reality Labs spend and AI investment are in focus.' },
-  { ticker: 'MSFT', name: 'Microsoft', price: 348.90, pct: 12.45, comments: '4.8K', sentiment: 65, whyBlurb: 'Azure growth and Copilot monetization are driving the conversation.' },
-  { ticker: 'GOOGL', name: 'Alphabet', price: 142.30, pct: -12.34, comments: '4.1K', sentiment: 58, whyBlurb: 'Search and YouTube ad trends, plus Gemini and cloud trajectory.' },
+  { ticker: 'CCCX', name: 'Churchill Capital Corp X', price: 14.22, pct: 12.40, comments: '12.8K', sentiment: 75, whyBlurb: 'Churchill Capital Corp X (CCCX) is actively discussed as its merger with quantum technology company InfleQtion approaches, with a shareholder vote schedule\u2026' },
+  { ticker: 'VKTX', name: 'Viking Therapeutics', price: 31.00, pct: 7.88, comments: '15.2K', sentiment: 82, whyBlurb: 'Viking Therapeutics is trending after announcing its oral obesity drug, VK2735, will advance to Phase 3 trials, accelerating the development timeline and\u2026' },
+  { ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 48.93, comments: '9.4K', sentiment: 85, whyBlurb: 'Data center AI demand and the Blackwell chip ramp are driving record volume.' },
+  { ticker: 'TSLA', name: 'Tesla', price: 242.18, pct: 15.84, comments: '8.9K', sentiment: 72, whyBlurb: 'Cybertruck production ramp and full self-driving rollout are driving the conversation.' },
   { ticker: 'PLTR', name: 'Palantir', price: 28.45, pct: 36.21, comments: '6.5K', sentiment: 81, whyBlurb: 'AIP bootcamp pipeline and government demand driving record volume.' },
+  { ticker: 'AMD', name: 'AMD', price: 156.43, pct: 24.67, comments: '9.2K', sentiment: 78, whyBlurb: 'MI300 adoption and data center share gains are in the spotlight.' },
   { ticker: 'GME', name: 'GameStop', price: 29.96, pct: 22.56, comments: '8.2K', sentiment: 62, whyBlurb: 'Retail interest and turnaround execution are in focus.' },
+  { ticker: 'META', name: 'Meta', price: 412.50, pct: 8.50, comments: '5.2K', sentiment: 72, whyBlurb: 'Reality Labs spend and AI investment are in focus.' },
 ]
 
 const TOP_TOPICS = [
@@ -324,7 +322,6 @@ export default function IOSExplore() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
-  const [trendingTicker, setTrendingTicker] = useState('TSLA')
   const [wtfCat, setWtfCat] = useState('Trending')
   const [sectorFilter, setSectorFilter] = useState('Technology')
   const [earningsFilter, setEarningsFilter] = useState('upcoming')
@@ -373,8 +370,6 @@ export default function IOSExplore() {
       return next
     })
   }, [])
-
-  const selectedTrending = TRENDING_NOW.find(t => t.ticker === trendingTicker) || TRENDING_NOW[0]
 
   const filteredEarnings = earningsFilter === 'upcoming'
     ? EARNINGS_CALENDAR.filter(e => !e.reported)
@@ -703,38 +698,53 @@ export default function IOSExplore() {
 
             {/* Trending */}
             <section>
-              <h2 className="text-base font-bold mb-2">Trending</h2>
-              <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
-                {TRENDING_NOW.map(s => (
-                  <button
-                    key={s.ticker}
-                    type="button"
-                    onClick={() => setTrendingTicker(s.ticker)}
-                    className={clsx(
-                      'flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs transition-colors',
-                      trendingTicker === s.ticker ? 'border-[#2196F3] bg-[#2196F3]/15 text-[#2196F3]' : 'border-white/10 text-white/70'
-                    )}
-                  >
-                    {getTickerLogo(s.ticker) ? (
-                      <img src={getTickerLogo(s.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
-                    ) : (
-                      <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">{s.ticker[0]}</span>
-                    )}
-                    <span className="font-semibold">{s.ticker}</span>
-                    <span className={clsx('tabular-nums', s.pct >= 0 ? 'text-green-400' : 'text-red-400')}>
-                      {s.pct >= 0 ? '+' : ''}{s.pct.toFixed(1)}%
-                    </span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold">Trending</h2>
+                  <button type="button" className="flex items-center gap-0.5 text-xs text-white/50">
+                    All <svg className="w-3 h-3" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
                   </button>
-                ))}
-              </div>
-              {/* Why trending card */}
-              <div className="rounded-xl p-3 mt-1" style={{ background: 'linear-gradient(135deg, rgba(254,215,170,0.15), rgba(250,204,211,0.12), rgba(139,92,246,0.12))' }}>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-white/60">Why ${selectedTrending.ticker} Is Trending</h3>
-                <p className="text-[13px] text-white/70 mt-1 leading-relaxed">{selectedTrending.whyBlurb}</p>
-                <div className="flex items-center gap-3 mt-2 text-[11px] text-white/40">
-                  <span>{selectedTrending.comments} messages</span>
-                  <span>Sentiment: {selectedTrending.sentiment}%</span>
                 </div>
+                <button type="button" className="p-1">
+                  <svg className="w-5 h-5 text-white/50" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+                {TRENDING_NOW.map((s, idx) => {
+                  const logo = getTickerLogo(s.ticker)
+                  const isUp = s.pct >= 0
+                  return (
+                    <button
+                      key={s.ticker}
+                      type="button"
+                      onClick={() => navigate(`/symbol/${s.ticker}`)}
+                      className="shrink-0 w-[260px] rounded-xl border border-white/10 bg-white/5 p-3.5 text-left"
+                    >
+                      {/* Top row: logo + ticker info + rank badge */}
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2.5">
+                          {logo ? (
+                            <img src={logo} alt="" className="w-9 h-9 rounded-full object-cover bg-white/10" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">{s.ticker[0]}</div>
+                          )}
+                          <div>
+                            <span className="text-sm font-bold block">{s.ticker}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-white/50">${s.price.toFixed(2)}</span>
+                              <span className={clsx('text-xs font-semibold', isUp ? 'text-green-400' : 'text-red-400')}>
+                                {isUp ? '↑' : '↓'} {Math.abs(s.pct).toFixed(2)}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-2xl font-black text-white/15 leading-none">#{idx + 1}</span>
+                      </div>
+                      {/* Description */}
+                      <p className="text-[12px] text-white/50 leading-relaxed line-clamp-4">{s.whyBlurb}</p>
+                    </button>
+                  )
+                })}
               </div>
             </section>
 

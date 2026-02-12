@@ -1,7 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
+import { useTickerTape } from '../contexts/TickerTapeContext.jsx'
 import IOSBottomNav from '../components/IOSBottomNav.jsx'
 import IOSShareSheet from '../components/IOSShareSheet.jsx'
 
@@ -71,6 +73,7 @@ const FOLLOWING_RECOMMENDED = [...FOLLOWING_FEED].sort((a, b) => (b.likes + b.co
 const FOLLOWING_LATEST = [...FOLLOWING_FEED].sort((a, b) => a.ts - b.ts)
 
 export default function HomeIOS() {
+  const navigate = useNavigate()
   const {
     watchlist,
     watchlists,
@@ -84,6 +87,9 @@ export default function HomeIOS() {
     renameWatchlist,
   } = useWatchlist()
   const { getQuote } = useLiveQuotesContext()
+  const { iosTrending, clearIosTrending } = useTickerTape()
+
+  const trendingData = iosTrending && iosTrending.length > 0 ? iosTrending : TRENDING
 
   const [mainTab, setMainTab] = useState('watchlist') // 'watchlist' | 'following'
   const [followingSort, setFollowingSort] = useState('recommended') // 'recommended' | 'latest'
@@ -249,17 +255,25 @@ export default function HomeIOS() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-base font-bold">Trending</span>
-              <button type="button" className="flex items-center gap-0.5 text-xs text-white/60">
-                All <svg className="w-3 h-3" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
-              </button>
+              {iosTrending && iosTrending.length > 0 ? (
+                <button type="button" onClick={clearIosTrending} className="flex items-center gap-1 text-[10px] text-[#2196F3] font-semibold px-2 py-0.5 rounded-full bg-[#2196F3]/15">
+                  Custom
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              ) : (
+                <button type="button" className="flex items-center gap-0.5 text-xs text-white/60">
+                  All <svg className="w-3 h-3" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
+                </button>
+              )}
             </div>
-            <button type="button" className="p-1">
-              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+            <button type="button" onClick={() => navigate('/iostools')} className="flex items-center gap-0.5 text-xs text-[#2196F3] font-semibold">
+              Customize
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
-            {TRENDING.map((stock) => {
+            {trendingData.map((stock) => {
               const logo = getTickerLogo(stock.ticker)
               const isUp = stock.pct >= 0
               return (

@@ -5,6 +5,9 @@ const TickerTapeContext = createContext(null)
 export function TickerTapeProvider({ children }) {
   const [customTickers, setCustomTickers] = useState(null)
 
+  // iOS-specific: custom trending tickers for /homeios
+  const [iosTrending, setIosTrending] = useState(null)
+
   const applyCustomTickers = (tickers) => {
     setCustomTickers(tickers)
   }
@@ -13,12 +16,23 @@ export function TickerTapeProvider({ children }) {
     setCustomTickers(null)
   }
 
+  const applyIosTrending = (tickers) => {
+    setIosTrending(tickers)
+  }
+
+  const clearIosTrending = () => {
+    setIosTrending(null)
+  }
+
   return (
     <TickerTapeContext.Provider
       value={{
         customTickers,
         applyCustomTickers,
         clearCustomTickers,
+        iosTrending,
+        applyIosTrending,
+        clearIosTrending,
       }}
     >
       {children}
