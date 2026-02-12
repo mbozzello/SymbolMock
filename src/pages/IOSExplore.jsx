@@ -7,6 +7,40 @@ import { getTickerLogo } from '../constants/tickerLogos.js'
 function clsx(...v) { return v.filter(Boolean).join(' ') }
 
 /* ══════════════════════════════════════════════════════════════
+   SEARCH TYPEAHEAD DATA  (mirrored from TopNavigation)
+   ══════════════════════════════════════════════════════════════ */
+const SEARCH_STOCKS = [
+  { ticker: 'TSLA', name: 'Tesla Inc', pctChange: 3.64, inWatchlist: true },
+  { ticker: 'AAPL', name: 'Apple Inc', pctChange: 0.29, inWatchlist: true },
+  { ticker: 'NVDA', name: 'NVIDIA Corp', pctChange: 2.45, inWatchlist: false },
+  { ticker: 'GME', name: 'GameStop Corp', pctChange: -1.2, inWatchlist: false },
+  { ticker: 'AA', name: 'Alcoa Corp', pctChange: 1.06, inWatchlist: false },
+  { ticker: 'AABB', name: 'Asia Broadband Inc', pctChange: -9.91, inWatchlist: false },
+  { ticker: 'AAL', name: 'American Airlines Group Inc', pctChange: 0.5, inWatchlist: false },
+  { ticker: 'HOOD', name: 'Robinhood Markets', pctChange: 2.35, inWatchlist: false },
+  { ticker: 'PLTR', name: 'Palantir Technologies', pctChange: 5.67, inWatchlist: false },
+  { ticker: 'AMD', name: 'Advanced Micro Devices', pctChange: 1.89, inWatchlist: false },
+]
+const SEARCH_CRYPTO = [
+  { ticker: 'BTC', name: 'Bitcoin', pctChange: 1.24 },
+  { ticker: 'ETH', name: 'Ethereum', pctChange: 2.45 },
+  { ticker: 'SOL', name: 'Solana', pctChange: 3.67 },
+  { ticker: 'DOGE', name: 'Dogecoin', pctChange: -1.23 },
+  { ticker: 'AABBG', name: 'AABG Token', pctChange: null },
+  { ticker: 'AAVE', name: 'AAVE', pctChange: -1.18 },
+  { ticker: 'GHST', name: 'Aavegotchi', pctChange: -2.91 },
+  { ticker: 'AAA', name: 'Moon Rabbit', pctChange: -2.38 },
+]
+const SEARCH_PEOPLE = [
+  { handle: 'howardlindzon', displayName: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', verified: true },
+  { handle: 'steeletwits', displayName: 'Michele Steele', avatar: '/avatars/michele-steele.png', verified: true },
+  { handle: '0xkolten', displayName: 'Kolten', avatar: '/avatars/ross-cameron.png', verified: false },
+  { handle: 'AAAple', displayName: 'This My Only Account', avatar: '/avatars/michael-bolling.png', verified: false },
+  { handle: 'techtrader', displayName: 'Tech Trader', avatar: '/avatars/top-voice-1.png', verified: false },
+  { handle: 'cryptoqueen', displayName: 'Crypto Queen', avatar: '/avatars/top-voice-3.png', verified: true },
+]
+
+/* ══════════════════════════════════════════════════════════════
    OVERVIEW DATA  (mirrored from Homepage3 Market Overview)
    ══════════════════════════════════════════════════════════════ */
 const TRENDING_NOW = [
@@ -368,6 +402,7 @@ export default function IOSExplore() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
+  const [searchExpanded, setSearchExpanded] = useState(false)
   const [wtfCat, setWtfCat] = useState('Trending')
   const [sectorFilter, setSectorFilter] = useState('Technology')
   const [earningsFilter, setEarningsFilter] = useState('upcoming')
@@ -458,10 +493,19 @@ export default function IOSExplore() {
     ? EARNINGS_CALENDAR.filter(e => !e.reported)
     : EARNINGS_CALENDAR.filter(e => e.reported)
 
-  /* ── search filter across tickers ── */
-  const searchResults = search.trim().length > 0
-    ? TRENDING_NOW.filter(t => t.ticker.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase()))
+  /* ── search filter across tickers, crypto, and people ── */
+  const q = search.trim().toLowerCase()
+  const stocksFiltered = q.length > 0
+    ? SEARCH_STOCKS.filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
     : []
+  const cryptoFiltered = q.length > 0
+    ? SEARCH_CRYPTO.filter(c => c.ticker.toLowerCase().includes(q) || c.name.toLowerCase().includes(q))
+    : []
+  const peopleFiltered = q.length > 0
+    ? SEARCH_PEOPLE.filter(p => p.handle.toLowerCase().includes(q) || p.displayName.toLowerCase().includes(q))
+    : []
+  
+  const hasTypeaheadResults = stocksFiltered.length > 0 || cryptoFiltered.length > 0 || peopleFiltered.length > 0
 
   return (
     <div className="mx-auto max-w-[430px] h-screen flex flex-col overflow-hidden bg-black text-white relative" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif' }}>
@@ -484,60 +528,287 @@ export default function IOSExplore() {
         </div>
       </div>
 
-      {/* ── Top Bar: hamburger + search + chat ── */}
+      {/* ── Top Bar: hamburger + search + chat (or expanded search with Cancel) ── */}
       <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-white/10">
-        {/* Hamburger */}
-        <button type="button" className="p-1 shrink-0">
-          <svg className="w-5 h-5" fill="none" stroke="white" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-
-        {/* Search bar */}
-        <div className="flex-1 relative">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input
-            ref={searchRef}
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search symbols, people, topics..."
-            className="w-full bg-white/10 rounded-full pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:ring-1 focus:ring-[#2196F3]/50"
-          />
-          {search && (
-            <button type="button" onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/></svg>
+        {!searchExpanded ? (
+          <>
+            {/* Hamburger */}
+            <button type="button" className="p-1 shrink-0">
+              <svg className="w-5 h-5" fill="none" stroke="white" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
-          )}
-        </div>
 
-        {/* Chat icon */}
-        <button type="button" className="p-1 shrink-0">
-          <svg className="w-5 h-5" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-        </button>
+            {/* Search bar (collapsed) */}
+            <div className="flex-1 relative">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onFocus={() => setSearchExpanded(true)}
+                placeholder="Search symbols, people, topics..."
+                className="w-full bg-white/10 rounded-full pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:ring-1 focus:ring-[#2196F3]/50"
+              />
+            </div>
+
+            {/* Chat icon */}
+            <button type="button" className="p-1 shrink-0">
+              <svg className="w-5 h-5" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Expanded search bar */}
+            <div className="flex-1 relative">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && search.trim()) navigate(`/iossearch?q=${encodeURIComponent(search)}`) }}
+                placeholder="Search symbols, people, topics..."
+                className="w-full bg-white/10 rounded-full pl-8 pr-10 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:ring-1 focus:ring-[#2196F3]/50"
+                autoFocus
+              />
+              {search && (
+                <button type="button" onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/></svg>
+                </button>
+              )}
+            </div>
+
+            {/* Cancel button */}
+            <button
+              type="button"
+              onClick={() => { setSearchExpanded(false); setSearch('') }}
+              className="text-sm font-medium text-[#2196F3] active:opacity-60 shrink-0"
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
 
-      {/* ── Search Results Overlay ── */}
-      {search.trim().length > 0 && (
-        <div className="absolute top-[105px] left-0 right-0 bottom-0 bg-black z-30 overflow-y-auto px-4 pt-3">
-          {searchResults.length === 0 ? (
-            <p className="text-sm text-white/40 text-center py-8">No results for "{search}"</p>
-          ) : (
-            searchResults.map(t => (
-              <button key={t.ticker} type="button" onClick={() => { setSearch(''); navigate(`/symbol?ticker=${t.ticker}`) }} className="flex items-center gap-3 w-full py-3 border-b border-white/5 active:bg-white/5">
-                {getTickerLogo(t.ticker) ? (
-                  <img src={getTickerLogo(t.ticker)} alt="" className="w-8 h-8 rounded-full object-cover bg-white/10" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">{t.ticker[0]}</div>
-                )}
-                <div className="text-left flex-1 min-w-0">
-                  <div className="text-sm font-semibold">{t.ticker}</div>
-                  <div className="text-xs text-white/40">{t.name}</div>
+      {/* ── Search Expanded Overlay (Recently Viewed + Recent Searches + Popular) ── */}
+      {searchExpanded && (
+        <div className="absolute left-0 right-0 bg-[#0a0a0a] z-30 overflow-y-auto" style={{ top: '94px', bottom: '260px' }}>
+          {search.trim().length === 0 ? (
+            <div className="px-4 pt-3 pb-6">
+              {/* Recently Viewed */}
+              <section className="mb-5">
+                <h3 className="text-xs font-bold text-white/40 uppercase tracking-wide mb-2">Recently Viewed</h3>
+                <div className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                  {[
+                    { type: 'symbol', ticker: 'HOOD', name: 'Robinhood', price: 46.64, pct: 2.35 },
+                    { type: 'person', handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', verified: true },
+                    { type: 'symbol', ticker: 'NVDA', name: 'NVIDIA', price: 875.32, pct: 3.87 },
+                    { type: 'person', handle: 'steeletwits', name: 'Michele Steele', avatar: '/avatars/michele-steele.png', verified: true },
+                    { type: 'symbol', ticker: 'TSLA', name: 'Tesla', price: 442.56, pct: 6.07 },
+                  ].map((item, i) => (
+                    item.type === 'symbol' ? (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setSearchExpanded(false); setSearch(''); navigate(`/symbol?ticker=${item.ticker}`) }}
+                        className="shrink-0 w-[110px] rounded-xl border border-white/10 bg-white/5 p-2.5 active:bg-white/10"
+                      >
+                        {getTickerLogo(item.ticker) ? (
+                          <img src={getTickerLogo(item.ticker)} alt="" className="w-10 h-10 mx-auto rounded-full object-cover mb-2" />
+                        ) : (
+                          <div className="w-10 h-10 mx-auto rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white/60 mb-2">{item.ticker[0]}</div>
+                        )}
+                        <div className="text-xs font-bold text-center">{item.ticker}</div>
+                        <div className="text-[10px] text-white/40 text-center truncate">{item.name}</div>
+                        {item.pct != null && (
+                          <div className={clsx('text-[10px] font-semibold text-center mt-0.5', item.pct >= 0 ? 'text-green-400' : 'text-red-400')}>
+                            {item.pct >= 0 ? '+' : ''}{item.pct}%
+                          </div>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setSearchExpanded(false); setSearch(''); navigate(`/profile/${item.handle}`) }}
+                        className="shrink-0 w-[110px] rounded-xl border border-white/10 bg-white/5 p-2.5 active:bg-white/10"
+                      >
+                        <img src={item.avatar} alt="" className="w-10 h-10 mx-auto rounded-full object-cover mb-2" />
+                        <div className="text-xs font-bold text-center truncate">{item.name}</div>
+                        <div className="text-[10px] text-white/40 text-center">@{item.handle}</div>
+                        {item.verified && (
+                          <div className="flex justify-center mt-1">
+                            <svg className="w-3 h-3 text-[#2196F3]" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  ))}
                 </div>
-                <span className={clsx('text-xs font-semibold', t.pct >= 0 ? 'text-green-400' : 'text-red-400')}>
-                  {t.pct >= 0 ? '+' : ''}{t.pct.toFixed(2)}%
-                </span>
-              </button>
-            ))
+              </section>
+
+              {/* Popular Searches */}
+              <section>
+                <h3 className="text-xs font-bold text-white/40 uppercase tracking-wide mb-2">Popular</h3>
+                <div className="space-y-0">
+                  {[
+                    { label: 'Palantir earnings', query: 'PLTR earnings', icon: '🔍' },
+                    { label: 'Elon Musk', query: 'Elon Musk', icon: '👤' },
+                    { label: 'NVIDIA stock split', query: 'NVDA stock split', icon: '🔍' },
+                    { label: 'Bitcoin ETF flows', query: 'BTC ETF', icon: '🔍' },
+                    { label: 'GameStop squeeze', query: 'GME squeeze', icon: '🔍' },
+                    { label: 'Fed rate decision', query: 'Fed rate decision', icon: '🔍' },
+                    { label: 'AI chip demand', query: 'AI chip demand', icon: '🔍' },
+                  ].map((item, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => { setSearch(item.query); navigate(`/iossearch?q=${encodeURIComponent(item.query)}`) }}
+                      className="flex items-center gap-3 w-full py-2.5 active:bg-white/5 transition-colors"
+                    >
+                      <span className="text-base">{item.icon}</span>
+                      <span className="flex-1 text-left text-sm">{item.label}</span>
+                      <svg className="w-4 h-4 text-white/20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+          ) : (
+            // User is typing - show stocks, crypto, and people typeahead
+            <div className="px-4 pt-3 pb-6">
+              {!hasTypeaheadResults ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-white/40 mb-3">No quick results for "{search}"</p>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/iossearch?q=${encodeURIComponent(search)}`)}
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-[#2196F3] text-white active:opacity-80"
+                  >
+                    Search for "{search}"
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Stocks Section */}
+                  {stocksFiltered.length > 0 && (
+                    <section className="mb-4">
+                      <h3 className="text-xs font-bold text-white/40 uppercase tracking-wide mb-2 px-1">Stocks</h3>
+                      <div className="space-y-0">
+                        {stocksFiltered.map(stock => (
+                          <button
+                            key={stock.ticker}
+                            type="button"
+                            onClick={() => { setSearch(''); setSearchExpanded(false); navigate(`/symbol?ticker=${stock.ticker}`) }}
+                            className="flex items-center gap-3 w-full py-3 border-b border-white/5 active:bg-white/5"
+                          >
+                            {getTickerLogo(stock.ticker) ? (
+                              <img src={getTickerLogo(stock.ticker)} alt="" className="w-10 h-10 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold">{stock.ticker[0]}</div>
+                            )}
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="text-sm font-semibold">${stock.ticker}</div>
+                              <div className="text-xs text-white/40 truncate">{stock.name}</div>
+                            </div>
+                            {stock.pctChange != null && (
+                              <span className={clsx('text-xs font-semibold tabular-nums', stock.pctChange >= 0 ? 'text-green-400' : 'text-red-400')}>
+                                {stock.pctChange >= 0 ? '+' : ''}{stock.pctChange.toFixed(2)}%
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Crypto Section */}
+                  {cryptoFiltered.length > 0 && (
+                    <section className="mb-4">
+                      <h3 className="text-xs font-bold text-white/40 uppercase tracking-wide mb-2 px-1">Crypto</h3>
+                      <div className="space-y-0">
+                        {cryptoFiltered.map(crypto => (
+                          <button
+                            key={crypto.ticker}
+                            type="button"
+                            onClick={() => { setSearch(''); setSearchExpanded(false); navigate(`/symbol?ticker=${crypto.ticker}`) }}
+                            className="flex items-center gap-3 w-full py-3 border-b border-white/5 active:bg-white/5"
+                          >
+                            {getTickerLogo(crypto.ticker) ? (
+                              <img src={getTickerLogo(crypto.ticker)} alt="" className="w-10 h-10 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold">{crypto.ticker[0]}</div>
+                            )}
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="text-sm font-semibold">${crypto.ticker}</div>
+                              <div className="text-xs text-white/40 truncate">{crypto.name}</div>
+                            </div>
+                            {crypto.pctChange != null && (
+                              <span className={clsx('text-xs font-semibold tabular-nums', crypto.pctChange >= 0 ? 'text-green-400' : 'text-red-400')}>
+                                {crypto.pctChange >= 0 ? '+' : ''}{crypto.pctChange.toFixed(2)}%
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* People Section */}
+                  {peopleFiltered.length > 0 && (
+                    <section className="mb-4">
+                      <h3 className="text-xs font-bold text-white/40 uppercase tracking-wide mb-2 px-1">People</h3>
+                      <div className="space-y-0">
+                        {peopleFiltered.map(person => (
+                          <button
+                            key={person.handle}
+                            type="button"
+                            onClick={() => { setSearch(''); setSearchExpanded(false); navigate(`/profile/${person.handle}`) }}
+                            className="flex items-center gap-3 w-full py-3 border-b border-white/5 active:bg-white/5"
+                          >
+                            <img src={person.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-semibold truncate">{person.displayName}</span>
+                                {person.verified && (
+                                  <svg className="w-3.5 h-3.5 text-[#2196F3] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                                )}
+                              </div>
+                              <div className="text-xs text-white/40">@{person.handle}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Search button */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/iossearch?q=${encodeURIComponent(search)}`)}
+                    className="w-full mt-2 px-4 py-2.5 rounded-full text-sm font-semibold bg-[#2196F3] text-white active:opacity-80"
+                  >
+                    Search for "{search}"
+                  </button>
+                </>
+              )}
+            </div>
           )}
+        </div>
+      )}
+
+      {/* iOS keyboard (only when search expanded) */}
+      {searchExpanded && (
+        <div className="fixed bottom-0 left-0 right-0 z-40" style={{ maxWidth: 430, margin: '0 auto' }}>
+          <div className="relative">
+            <img src="/images/ios-keyboard.png" alt="" className="w-full" style={{ display: 'block' }} />
+            {/* Blue search button overlay when typing */}
+            {search.trim().length > 0 && (
+              <div className="absolute right-[14px] bg-[#007AFF] rounded-lg px-6 py-3 flex items-center justify-center" style={{ bottom: '74px', width: 90, height: 42 }}>
+                <span className="text-white text-[17px] font-normal">search</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
