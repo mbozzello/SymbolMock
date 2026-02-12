@@ -8,8 +8,8 @@ const TABS = [
   { id: 'home', label: 'Home', path: '/homeios', icon: (a) => (
     <svg className="w-6 h-6" fill={a ? '#2196F3' : 'none'} stroke={a ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
   )},
-  { id: 'leaderboard', label: 'Leaderboard', path: null, icon: (a) => (
-    <svg className="w-6 h-6" fill={a ? '#2196F3' : 'none'} stroke={a ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12v4a6 6 0 01-6 6 6 6 0 01-6-6V3zM4 3h1M19 3h1M4 3a2 2 0 00-2 2v1a4 4 0 004 4M20 3a2 2 0 012 2v1a4 4 0 01-4 4M9 17h6M10 21h4M12 13v4"/></svg>
+  { id: 'foryou', label: 'For You', path: '/iosforyou', icon: (a) => (
+    <svg className="w-6 h-6" fill={a ? '#2196F3' : 'none'} stroke={a ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
   )},
   { id: 'explore', label: 'Explore', path: '/exploreios', icon: (a) => (
     <svg className="w-6 h-6" fill="none" stroke={a ? '#2196F3' : 'white'} strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
@@ -26,7 +26,7 @@ export default function IOSBottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const activeId = location.pathname === '/iostools' ? 'tools' : location.pathname === '/iosnotifications' ? 'notifications' : location.pathname === '/exploreios' ? 'explore' : location.pathname === '/homeios' ? 'home' : 'home'
+  const activeId = location.pathname === '/iosforyou' ? 'foryou' : location.pathname === '/iostools' ? 'tools' : location.pathname === '/iosnotifications' ? 'notifications' : location.pathname === '/exploreios' ? 'explore' : location.pathname === '/homeios' ? 'home' : 'home'
 
   return (
     <div className="shrink-0 bg-black border-t border-white/10 pb-5 pt-2 px-2">

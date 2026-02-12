@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import IOSBottomNav from '../components/IOSBottomNav.jsx'
 import IOSShareSheet from '../components/IOSShareSheet.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
@@ -400,13 +400,16 @@ function formatCount(n) {
    ══════════════════════════════════════════════════════════════ */
 export default function IOSExplore() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('overview')
+  const location = useLocation()
+  const isForYouPage = location.pathname === '/iosforyou'
+  const startOnForYou = location.state?.tab === 'foryou' || isForYouPage
+  const [activeTab, setActiveTab] = useState(startOnForYou ? 'foryou' : 'overview')
   const [search, setSearch] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [wtfCat, setWtfCat] = useState('Trending')
   const [sectorFilter, setSectorFilter] = useState('Technology')
   const [earningsFilter, setEarningsFilter] = useState('upcoming')
-  const [forYouUnlocked, setForYouUnlocked] = useState(false)
+  const [forYouUnlocked, setForYouUnlocked] = useState(startOnForYou ? true : false)
   const [fyCurrentIndex, setFyCurrentIndex] = useState(0)
   const [fyLiked, setFyLiked] = useState(() => new Set())
   const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'steeletwits'])) // some users already followed
@@ -510,7 +513,45 @@ export default function IOSExplore() {
   return (
     <div className="mx-auto max-w-[430px] h-screen flex flex-col overflow-hidden bg-black text-white relative" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif' }}>
 
-      {/* ── iOS Status Bar ── */}
+      {/* ── For You Page: HomeIOS-style header ── */}
+      {isForYouPage && (
+        <div className="shrink-0 border-b border-white/10">
+          {/* iOS Status Bar */}
+          <div className="flex items-center justify-between px-6 pt-3 pb-1">
+            <span className="text-sm font-semibold">5:13</span>
+            <div className="flex items-center gap-1.5">
+              <svg className="w-4 h-3" viewBox="0 0 20 14" fill="white"><rect x="0" y="8" width="3" height="6" rx="0.5" opacity="0.4"/><rect x="5" y="5" width="3" height="9" rx="0.5" opacity="0.4"/><rect x="10" y="2" width="3" height="12" rx="0.5" opacity="0.7"/><rect x="15" y="0" width="3" height="14" rx="0.5"/></svg>
+              <svg className="w-4 h-3" viewBox="0 0 16 12" fill="white"><path d="M8 2.4C10.8 2.4 13.2 3.6 14.8 5.6L16 4.4C14 2 11.2 0.4 8 0.4S2 2 0 4.4L1.2 5.6C2.8 3.6 5.2 2.4 8 2.4ZM8 6.4C9.6 6.4 11 7.2 12 8.4L13.2 7.2C11.8 5.6 10 4.4 8 4.4S4.2 5.6 2.8 7.2L4 8.4C5 7.2 6.4 6.4 8 6.4ZM8 10.4C8.8 10.4 9.4 10.8 9.8 11.4L8 13.6L6.2 11.4C6.6 10.8 7.2 10.4 8 10.4Z"/></svg>
+              <div className="flex items-center gap-0.5">
+                <div className="w-7 h-3.5 rounded-sm border border-white/30 flex items-center p-px">
+                  <div className="h-full rounded-[1px] bg-green-400" style={{ width: '90%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Top Navigation */}
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <button type="button" className="p-1">
+              <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div className="flex items-center gap-1">
+              <span className="text-lg font-bold italic tracking-tight">stocktwits</span>
+              <svg className="w-3.5 h-3.5 opacity-60" fill="white" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
+            </div>
+            <div className="flex items-center gap-2">
+              <button type="button" className="p-1">
+                <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12v4a6 6 0 01-6 6 6 6 0 01-6-6V3zM4 3h1M19 3h1M4 3a2 2 0 00-2 2v1a4 4 0 004 4M20 3a2 2 0 012 2v1a4 4 0 01-4 4M9 17h6M10 21h4M12 13v4"/></svg>
+              </button>
+              <button type="button" className="p-1">
+                <svg className="w-6 h-6" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Explore Page: iOS Status Bar ── */}
+      {!isForYouPage && (
       <div className="shrink-0 flex items-center justify-between px-6 pt-3 pb-1 text-[12px] font-semibold">
         <span>9:41</span>
         <div className="flex items-center gap-1.5">
@@ -527,8 +568,10 @@ export default function IOSExplore() {
           </button>
         </div>
       </div>
+      )}
 
       {/* ── Top Bar: hamburger + search + chat (or expanded search with Cancel) ── */}
+      {!isForYouPage && (
       <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-white/10">
         {!searchExpanded ? (
           <>
@@ -589,9 +632,10 @@ export default function IOSExplore() {
           </>
         )}
       </div>
+      )}
 
       {/* ── Search Expanded Overlay (Recently Viewed + Recent Searches + Popular) ── */}
-      {searchExpanded && (
+      {!isForYouPage && searchExpanded && (
         <div className="absolute left-0 right-0 bg-[#0a0a0a] z-30 overflow-y-auto" style={{ top: '94px', bottom: '260px' }}>
           {search.trim().length === 0 ? (
             <div className="px-4 pt-3 pb-6">
@@ -798,7 +842,7 @@ export default function IOSExplore() {
       )}
 
       {/* iOS keyboard (only when search expanded) */}
-      {searchExpanded && (
+      {!isForYouPage && searchExpanded && (
         <div className="fixed bottom-0 left-0 right-0 z-40" style={{ maxWidth: 430, margin: '0 auto' }}>
           <div className="relative">
             <img src="/images/ios-keyboard.png" alt="" className="w-full" style={{ display: 'block' }} />
@@ -812,22 +856,24 @@ export default function IOSExplore() {
         </div>
       )}
 
-      {/* ── Section Tabs ── */}
-      <div className="shrink-0 flex border-b border-white/10">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={clsx(
-              'flex-1 py-2.5 text-sm font-semibold text-center transition-colors border-b-2',
-              activeTab === tab.id ? 'text-white border-white' : 'text-white/40 border-transparent'
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* ── Section Tabs (hidden on For You page) ── */}
+      {!isForYouPage && (
+        <div className="shrink-0 flex border-b border-white/10">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={clsx(
+                'flex-1 py-2.5 text-sm font-semibold text-center transition-colors border-b-2',
+                activeTab === tab.id ? 'text-white border-white' : 'text-white/40 border-transparent'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Scrollable Content ── */}
       <div className={clsx('flex-1', activeTab === 'foryou' ? 'overflow-hidden' : 'overflow-y-auto')}>

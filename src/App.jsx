@@ -771,6 +771,7 @@ export default function App() {
         <Route path="/iostools" element={<IOSTools />} />
         <Route path="/iosnotifications" element={<IOSNotifications />} />
         <Route path="/exploreios" element={<IOSExplore />} />
+        <Route path="/iosforyou" element={<IOSExplore />} />
         <Route path="/iossearch" element={<IOSSearch />} />
         <Route path="/newpage" element={<NewPage />} />
       </Routes>
