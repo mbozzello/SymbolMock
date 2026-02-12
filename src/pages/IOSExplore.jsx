@@ -132,9 +132,9 @@ const WTF_PEOPLE = {
    NEWS DATA  (mirrored from News.jsx)
    ══════════════════════════════════════════════════════════════ */
 const COMMUNITY_FOCUS = [
-  { image: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=600&h=300&fit=crop', headline: 'Tesla Stock Surges 12% After Record Q4 Deliveries', author: 'Michael Bolling', avatar: '/avatars/who-follow-1.png', time: '11 days ago', ticker: 'TSLA', pct: 12.0, video: true },
+  { image: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=600&h=300&fit=crop', headline: 'Tesla Stock Surges 12% After Record Q4 Deliveries', author: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', time: '11 days ago', ticker: 'TSLA', pct: 12.0, video: true },
   { image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600&h=300&fit=crop', headline: 'Market Open: Tech Stocks Rally After Fed Comments', author: 'Jon Morgan', avatar: '/avatars/top-voice-1.png', time: '5 days ago', ticker: null, pct: null },
-  { image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=300&fit=crop', headline: 'Is $TSLA finally breaking out?', author: 'Michael Bolling', avatar: '/avatars/who-follow-1.png', time: '12 days ago', ticker: 'TSLA', pct: 2.4 },
+  { image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=300&fit=crop', headline: 'Is $TSLA finally breaking out?', author: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', time: '12 days ago', ticker: 'TSLA', pct: 2.4 },
   { image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=300&fit=crop', headline: 'Options Flow: What Smart Money Is Buying', author: 'Tom Bruni', avatar: '/avatars/top-voice-1.png', time: '1 day ago', ticker: null, pct: null, video: true },
   { image: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=600&h=300&fit=crop', headline: 'Bitcoin Approaches $35K as ETF Flows Surge', author: 'Cryptotwits', avatar: '/avatars/top-voice-2.png', time: '2 days ago', ticker: 'BTC', pct: 5.8 },
   { image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600&h=300&fit=crop', headline: 'Fed Signals Further Rate Cuts in Q2', author: 'Michele Steele', avatar: '/avatars/top-voice-1.png', time: '1 day ago', ticker: null, pct: null },
@@ -215,7 +215,9 @@ const FYF_ITEMS = [
   {
     id: 1, type: 'video',
     user: { handle: 'shahh', name: 'shah', avatar: '/avatars/top-voice-1.png', verified: true },
+    ticker: 'MSTR', price: 312.45, pctChange: -4.23,
     caption: 'oh boy we might actually be in trouble',
+    videoSrc: 'https://videos.pexels.com/video-files/3945057/3945057-sd_506_960_25fps.mp4',
     videoThumb: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=430&h=760&fit=crop',
     overlay: 'Michael Saylor says credit risk over Strategy overblown',
     duration: '00:43', elapsed: '00:05',
@@ -225,7 +227,7 @@ const FYF_ITEMS = [
   {
     id: 2, type: 'message',
     user: { handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', verified: true, badge: 'EDGE' },
-    ticker: 'HOOD', sentiment: 'bullish',
+    ticker: 'HOOD', sentiment: 'bullish', price: 46.64, pctChange: 2.35,
     body: '$HOOD updated robinhood cheat sheet',
     embed: { source: 'EquityResearch...', sourceIcon: '📊', date: '2/10/26, 8:15 PM', title: '$HOOD 4Q25 - The SuperApp Nobody\'s Pricing In. Robinhood\'s 2026 Roadmap Is Insane. Bull $175', domain: 'open.substack.com', hasChart: true },
     comments: 1, reposts: 0, likes: 7,
@@ -233,8 +235,10 @@ const FYF_ITEMS = [
   },
   {
     id: 3, type: 'video',
-    user: { handle: 'MickeyMarkets', name: 'Michael Bolling', avatar: '/avatars/who-follow-1.png', verified: true },
-    caption: '$NVDA Blackwell ramp is real. Jensen just confirmed another quarter of insane demand.',
+    user: { handle: 'MickeyMarkets', name: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', verified: true },
+    ticker: 'NVDA', price: 875.32, pctChange: 3.87,
+    caption: '$NVDA Blackwell ramp is real. Jensen confirmed another quarter of insane demand.',
+    videoSrc: 'https://videos.pexels.com/video-files/7579953/7579953-sd_506_960_25fps.mp4',
     videoThumb: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=430&h=760&fit=crop',
     overlay: 'NVIDIA CEO confirms Blackwell demand far exceeds supply',
     duration: '01:22', elapsed: '00:15',
@@ -242,18 +246,29 @@ const FYF_ITEMS = [
     time: '3h',
   },
   {
-    id: 4, type: 'message',
-    user: { handle: 'TechTrader', name: 'TechTrader', avatar: '/avatars/top-voice-2.png', verified: false },
-    ticker: 'TSLA', sentiment: 'bullish',
-    body: 'Cybertruck production numbers just leaked. Way higher than expected. This is going to send it. Full self-driving v12.5 rollout expanding to 100% of fleet by March.',
+    id: 15, type: 'message',
+    user: { handle: 'EquityPilot', name: 'Equity Pilot', avatar: '/avatars/michael-bolling.png', verified: true, badge: 'TOP' },
+    ticker: 'TSLA', sentiment: 'bullish', price: 442.56, pctChange: 68.41,
+    body: 'Full $TSLA Thesis Update — Q4 Earnings Breakdown\n\nDeliveries came in at 495K, beating the 483K street estimate. Automotive gross margin expanded to 18.9% ex-credits, up 230bps QoQ. Energy storage deployed 14.7 GWh, a record quarter.\n\nKey catalysts ahead:\n• FSD v13.2 wide release in March — step-change in intervention rates\n• Robotaxi unveil event confirmed for June in Austin\n• China factory Model Y refresh ramp hitting full production\n• Megapack backlog now $32B, up 4x YoY\n\nValuation: At $442 we\'re trading 85x 2025E earnings, which sounds rich until you model the software + energy + autonomy revenue streams separately. DCF on auto alone supports $180. FSD subscription at 30% take-rate adds $120. Energy gets you another $90. Optimus is free call option.\n\nPT: $650 by year end. Adding to my position on every dip below $420. This is the most asymmetric large-cap setup I\'ve seen since 2020.',
     embed: null,
-    comments: 45, reposts: 12, likes: 234,
+    comments: 1847, reposts: 623, likes: 8920,
     time: '2h',
+  },
+  {
+    id: 4, type: 'message',
+    user: { handle: 'BearishDave', name: 'Bearish Dave', avatar: '/avatars/top-voice-3.png', verified: false },
+    ticker: 'SMCI', sentiment: 'bearish', price: 28.92, pctChange: -34.18,
+    body: 'Called this one weeks ago. Accounting issues, auditor resignation, and now delisting risk. $SMCI is a zero.',
+    embed: null,
+    comments: 312, reposts: 87, likes: 1450,
+    time: '4h',
   },
   {
     id: 5, type: 'video',
     user: { handle: 'CNBCClips', name: 'CNBC Clips', avatar: '/avatars/top-voice-3.png', verified: true },
-    caption: 'Fed Chair Powell: "We are in no hurry to cut rates"',
+    ticker: 'SPY', price: 502.18, pctChange: -0.42,
+    caption: '"We are in no hurry to cut rates"',
+    videoSrc: 'https://videos.pexels.com/video-files/6801517/6801517-sd_506_960_25fps.mp4',
     videoThumb: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=430&h=760&fit=crop',
     overlay: 'Powell speaks on rate policy and inflation trajectory',
     duration: '02:15', elapsed: '00:32',
@@ -263,16 +278,27 @@ const FYF_ITEMS = [
   {
     id: 6, type: 'message',
     user: { handle: 'QuantQueen', name: 'QuantQueen', avatar: '/avatars/top-voice-2.png', verified: false },
-    ticker: 'AMD', sentiment: 'bullish',
-    body: 'MI300X allocations completely sold out through Q3. Lisa Su just confirmed on the call that inference demand is accelerating faster than training. $AMD is about to have its moment.',
-    embed: null,
+    ticker: 'AMD', sentiment: 'bullish', price: 156.43, pctChange: 6.12,
+    body: '$AMD MI300X allocations completely sold out through Q3. Inference demand accelerating faster than training.',
+    embed: { source: 'AMD Technical Analysis', sourceIcon: '📈', date: '2/3/26', title: '$AMD breaking out of 6-month consolidation. Cup & handle pattern with volume confirmation. Next resistance at $165.', domain: 'tradingview.com', hasChart: true },
     comments: 89, reposts: 34, likes: 567,
     time: '45m',
   },
   {
+    id: 11, type: 'message',
+    user: { handle: 'ShortSeller101', name: 'Short Seller 101', avatar: '/avatars/ross-cameron.png', verified: false },
+    ticker: 'RIVN', sentiment: 'bearish', price: 11.23, pctChange: -18.74,
+    body: '$RIVN Full Bear Case — Why This Goes to $5\n\nThe numbers don\'t lie. Rivian burned $1.8B in cash last quarter alone. At this rate they have maybe 4-5 quarters of runway before another dilutive capital raise.\n\nProduction reality check:\n• Q4 deliveries: 14,183 (missed 15,500 target)\n• R2 pushed to 2026H2 from 2026H1\n• Georgia factory "paused" indefinitely — that\'s $5B in capex with zero return\n• Amazon reduced their van order by 30% quietly in December\n\nThe competitive landscape is brutal. Tesla cut Model Y prices AGAIN. Chinese EVs flooding every market. Rivian\'s ASP is dropping while costs aren\'t.\n\nManagement credibility is shot. Third guidance cut in 12 months. CFO departure in November was a massive red flag nobody talked about.\n\nAdded to my short at $12.50. PT $5. This is a slow-motion bankruptcy.',
+    embed: { source: 'RIVN Bear Thesis', sourceIcon: '🐻', date: '2/2/26', title: '$RIVN cash burn analysis — 4 quarters of runway at current rate. Death cross on daily chart confirmed.', domain: 'seekingalpha.com', hasChart: true },
+    comments: 203, reposts: 45, likes: 892,
+    time: '3h',
+  },
+  {
     id: 7, type: 'video',
     user: { handle: 'rosscameron', name: 'Ross Cameron', avatar: '/avatars/ross-cameron.png', verified: true },
-    caption: 'Day trading $GME — caught the breakout for +$8,400 in 12 minutes',
+    ticker: 'GME', price: 29.96, pctChange: 8.41,
+    caption: '+$8,400 in 12 minutes 🔥',
+    videoSrc: 'https://videos.pexels.com/video-files/6266434/6266434-sd_506_960_25fps.mp4',
     videoThumb: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=430&h=760&fit=crop',
     overlay: 'Live trade: GME breakout above $31 resistance',
     duration: '03:45', elapsed: '01:02',
@@ -280,18 +306,20 @@ const FYF_ITEMS = [
     time: '1h',
   },
   {
-    id: 8, type: 'message',
-    user: { handle: 'CryptoBull', name: 'CryptoBull', avatar: '/avatars/user-avatar.png', verified: false },
-    ticker: 'BTC', sentiment: 'bullish',
-    body: 'Bitcoin ETF inflows just hit a new daily record. Over $1.2B in a single day. Institutions are not slowing down. The supply shock is coming.',
+    id: 12, type: 'message',
+    user: { handle: 'OptionsFlow', name: 'Options Flow', avatar: '/avatars/top-voice-3.png', verified: true },
+    ticker: 'NKLA', sentiment: 'bearish', price: 0.82, pctChange: -67.45,
+    body: 'Bankruptcy filing imminent. SEC investigation ongoing. This was always a fraud.',
     embed: null,
-    comments: 156, reposts: 78, likes: 1200,
-    time: '30m',
+    comments: 534, reposts: 178, likes: 2340,
+    time: '6h',
   },
   {
     id: 9, type: 'video',
     user: { handle: 'steeletwits', name: 'Michele Steele', avatar: '/avatars/michele-steele.png', verified: true },
-    caption: 'Why the earnings revision cycle is just getting started for big tech',
+    ticker: 'TSLA', price: 442.56, pctChange: 6.07,
+    caption: 'Earnings revision cycle is just getting started for big tech',
+    videoSrc: 'https://videos.pexels.com/video-files/5849612/5849612-sd_506_960_25fps.mp4',
     videoThumb: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=430&h=760&fit=crop',
     overlay: 'Big Tech earnings revisions accelerating into Q2',
     duration: '04:12', elapsed: '00:48',
@@ -301,11 +329,29 @@ const FYF_ITEMS = [
   {
     id: 10, type: 'message',
     user: { handle: 'AlphaSeeker', name: 'AlphaSeeker', avatar: '/avatars/top-voice-1.png', verified: false },
-    ticker: 'PLTR', sentiment: 'bullish',
-    body: 'Palantir AIP bootcamp pipeline is absolutely insane. Every Fortune 500 company wants in. This is going to be a $100B company within 2 years. Commercial revenue inflection is HERE.',
+    ticker: 'PLTR', sentiment: 'bullish', price: 28.45, pctChange: 12.31,
+    body: 'AIP bootcamp pipeline is insane. Every Fortune 500 wants in. Commercial revenue inflection is HERE.',
     embed: null,
     comments: 67, reposts: 23, likes: 345,
     time: '1h',
+  },
+  {
+    id: 13, type: 'message',
+    user: { handle: 'MacroMike', name: 'Macro Mike', avatar: '/avatars/michele-steele.png', verified: false },
+    ticker: 'INTC', sentiment: 'bearish', price: 21.14, pctChange: -42.87,
+    body: '$INTC foundry losses widening every quarter. Market share erosion to AMD and ARM is accelerating. No turnaround in sight.',
+    embed: null,
+    comments: 178, reposts: 56, likes: 1120,
+    time: '2h',
+  },
+  {
+    id: 14, type: 'message',
+    user: { handle: 'VIXTrader', name: 'VIX Trader', avatar: '/avatars/top-voice-2.png', verified: true },
+    ticker: 'SNAP', sentiment: 'bearish', price: 8.41, pctChange: -11.52,
+    body: 'Ad revenue miss, user growth stalling, and now losing creators to TikTok. $SNAP heading to single digits.',
+    embed: null,
+    comments: 96, reposts: 31, likes: 478,
+    time: '5h',
   },
 ]
 
@@ -328,6 +374,8 @@ export default function IOSExplore() {
   const [forYouUnlocked, setForYouUnlocked] = useState(false)
   const [fyCurrentIndex, setFyCurrentIndex] = useState(0)
   const [fyLiked, setFyLiked] = useState(() => new Set())
+  const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'shahh'])) // some users already followed
+  const [fyWatchlist, setFyWatchlist] = useState(() => new Set(['TSLA', 'NVDA', 'HOOD'])) // some tickers already in watchlist
   const [fyPlaying, setFyPlaying] = useState(true)
   const [shareSheetOpen, setShareSheetOpen] = useState(false)
   const searchRef = useRef(null)
@@ -354,7 +402,24 @@ export default function IOSExplore() {
     const dy = fyTouchStartY.current - e.changedTouches[0].clientY
     const dt = Date.now() - fyTouchStartTime.current
     const velocity = Math.abs(dy) / dt
-    // Swipe up → next, swipe down → prev (threshold: 50px or fast flick)
+    if (dy > 50 || (dy > 20 && velocity > 0.3)) {
+      setFyCurrentIndex(prev => Math.min(prev + 1, FYF_ITEMS.length - 1))
+    } else if (dy < -50 || (dy < -20 && velocity > 0.3)) {
+      setFyCurrentIndex(prev => Math.max(prev - 1, 0))
+    }
+  }, [])
+
+  /* Mouse-based swipe for desktop testing */
+  const handleFyMouseDown = useCallback((e) => {
+    fyTouchStartY.current = e.clientY
+    fyTouchStartTime.current = Date.now()
+  }, [])
+
+  const handleFyMouseUp = useCallback((e) => {
+    if (!fyTouchStartTime.current) return
+    const dy = fyTouchStartY.current - e.clientY
+    const dt = Date.now() - fyTouchStartTime.current
+    const velocity = Math.abs(dy) / dt
     if (dy > 50 || (dy > 20 && velocity > 0.3)) {
       setFyCurrentIndex(prev => Math.min(prev + 1, FYF_ITEMS.length - 1))
     } else if (dy < -50 || (dy < -20 && velocity > 0.3)) {
@@ -367,6 +432,24 @@ export default function IOSExplore() {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
+      return next
+    })
+  }, [])
+
+  const toggleFyFollow = useCallback((handle) => {
+    setFyFollowed(prev => {
+      const next = new Set(prev)
+      if (next.has(handle)) next.delete(handle)
+      else next.add(handle)
+      return next
+    })
+  }, [])
+
+  const toggleFyWatchlist = useCallback((ticker) => {
+    setFyWatchlist(prev => {
+      const next = new Set(prev)
+      if (next.has(ticker)) next.delete(ticker)
+      else next.add(ticker)
       return next
     })
   }, [])
@@ -482,29 +565,44 @@ export default function IOSExplore() {
         {activeTab === 'foryou' && (
           <div
             ref={fyContainerRef}
-            className="h-full w-full relative bg-black select-none"
+            className="h-full w-full relative bg-black select-none cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
             onTouchStart={handleFyTouchStart}
             onTouchEnd={handleFyTouchEnd}
+            onMouseDown={handleFyMouseDown}
+            onMouseUp={handleFyMouseUp}
           >
             {/* ── Video Item ── */}
             {fyItem.type === 'video' && (
               <div className="absolute inset-0 flex flex-col">
-                {/* Video background */}
+                {/* Video background — actual short clip */}
                 <div className="absolute inset-0">
-                  <img src={fyItem.videoThumb} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/30" />
+                  {fyItem.videoSrc ? (
+                    <video
+                      src={fyItem.videoSrc}
+                      poster={fyItem.videoThumb}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img src={fyItem.videoThumb} alt="" className="w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 </div>
 
-                {/* Overlay text on video */}
-                <div className="absolute bottom-28 left-0 right-14 px-4 z-10">
+                {/* Overlay text on video — pinned near bottom */}
+                <div className="absolute bottom-4 left-0 right-14 px-4 z-10">
                   <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 mb-3 inline-block">
                     <p className="text-sm font-semibold leading-snug">{fyItem.overlay}</p>
                   </div>
-                  {/* Progress bar */}
+                  {/* Animated progress bar */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-[10px] text-white/60 tabular-nums">{fyItem.elapsed}</span>
                     <div className="flex-1 h-0.5 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-white rounded-full" style={{ width: '12%' }} />
+                      <div className="h-full bg-white rounded-full animate-[progressGrow_8s_ease-in-out_infinite]" style={{ width: '12%' }} />
                     </div>
                     <span className="text-[10px] text-white/60 tabular-nums">{fyItem.duration}</span>
                   </div>
@@ -523,10 +621,34 @@ export default function IOSExplore() {
                   </div>
                   <p className="text-[13px] text-white/90 mt-2 leading-snug">{fyItem.caption}</p>
                   <span className="text-[11px] text-white/40 mt-1 block">{fyItem.time}</span>
+
+                  {/* Ticker + price pill */}
+                  {fyItem.ticker && (
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10">
+                        {getTickerLogo(fyItem.ticker) ? (
+                          <img src={getTickerLogo(fyItem.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[9px] font-bold">{fyItem.ticker[0]}</div>
+                        )}
+                        <span className="text-sm font-bold">{fyItem.ticker}</span>
+                        {fyItem.price != null && (
+                          <span className="text-sm font-semibold text-white/70 tabular-nums">
+                            ${fyItem.price >= 1000 ? fyItem.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fyItem.price.toFixed(2)}
+                          </span>
+                        )}
+                        {fyItem.pctChange != null && (
+                          <span className={clsx('text-sm font-semibold tabular-nums', fyItem.pctChange >= 0 ? 'text-green-400' : 'text-red-400')}>
+                            ({fyItem.pctChange >= 0 ? '+' : ''}{fyItem.pctChange.toFixed(2)}%)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Right side action buttons — matches /symbol web icons */}
-                <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5 z-10">
+                {/* Right side action buttons */}
+                <div className="absolute right-3 bottom-8 flex flex-col items-center gap-5 z-10">
                   {/* Comment */}
                   <button type="button" onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-0.5">
                     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
@@ -561,20 +683,303 @@ export default function IOSExplore() {
               </div>
             )}
 
-            {/* ── Message Item ── */}
-            {fyItem.type === 'message' && (
-              <div className="absolute inset-0 flex flex-col bg-black">
+            {/* ── Message Item WITH image → full-bleed layout (like video) ── */}
+            {fyItem.type === 'message' && fyItem.image && (
+              <div className="absolute inset-0 flex flex-col">
+                {/* Full-bleed image background */}
+                <div className="absolute inset-0">
+                  <img src={fyItem.image} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                </div>
+
                 {/* Pagination dots */}
-                <div className="shrink-0 flex justify-center gap-1 pt-3 pb-2">
+                <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 z-10">
                   {FYF_ITEMS.map((_, i) => (
                     <div key={i} className={clsx('h-0.5 rounded-full transition-all', i === fyCurrentIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/30')} />
                   ))}
                 </div>
 
-                {/* Message card centered */}
-                <div className="flex-1 flex items-center justify-center px-4">
-                  <div className="w-full rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-                    {/* User header */}
+                {/* Overlay content at the bottom */}
+                <div className="absolute bottom-4 left-0 right-14 px-4 z-10">
+                  {/* Ticker + sentiment pill */}
+                  {fyItem.ticker && (
+                    <div className="flex items-center gap-2 mb-2">
+                      {getTickerLogo(fyItem.ticker) && (
+                        <img src={getTickerLogo(fyItem.ticker)} alt="" className="w-6 h-6 rounded-full object-cover border border-white/20" />
+                      )}
+                      <span className="text-[#2196F3] text-sm font-bold">${fyItem.ticker}</span>
+                      {fyItem.sentiment === 'bullish' && (
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold">Bullish</span>
+                      )}
+                      {fyItem.sentiment === 'bearish' && (
+                        <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold">Bearish</span>
+                      )}
+                    </div>
+                  )}
+                  {/* User info */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="relative">
+                      <img src={fyItem.user.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-white/20" />
+                      {fyItem.user.badge && (
+                        <span className="absolute -bottom-1 -left-1 bg-[#2196F3] text-white text-[6px] font-bold px-0.5 py-px rounded leading-none">{fyItem.user.badge}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold">{fyItem.user.name}</span>
+                      {fyItem.user.verified && (
+                        <svg className="w-3.5 h-3.5 text-[#2196F3]" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                      )}
+                    </div>
+                    <button type="button" className="ml-auto px-3 py-1 rounded-full text-xs font-semibold border border-white/30 text-white active:bg-white/10">
+                      Follow
+                    </button>
+                  </div>
+                  {/* Message body */}
+                  <p className="text-[14px] text-white/90 leading-snug">{fyItem.body}</p>
+                  <span className="text-[11px] text-white/40 mt-1 block">{fyItem.time}</span>
+                </div>
+
+                {/* Right side action buttons */}
+                <div className="absolute right-3 bottom-8 flex flex-col items-center gap-5 z-10">
+                  <button type="button" onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-0.5">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyItem.comments)}</span>
+                  </button>
+                  <button type="button" className="flex flex-col items-center gap-0.5">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyItem.reposts)}</span>
+                  </button>
+                  <button type="button" onClick={() => toggleFyLike(fyItem.id)} className="flex flex-col items-center gap-0.5">
+                    <svg className={clsx('w-7 h-7', fyLiked.has(fyItem.id) ? 'text-red-500' : 'text-white')} fill={fyLiked.has(fyItem.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyLiked.has(fyItem.id) ? fyItem.likes + 1 : fyItem.likes)}</span>
+                  </button>
+                  <button type="button" onClick={() => setShareSheetOpen(true)} className="flex flex-col items-center gap-0.5">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                  </button>
+                  <button type="button" className="flex flex-col items-center gap-0.5">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z"/></svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Message Item FULL-SCREEN layout → chart fills 90%, text overlay at bottom ── */}
+            {fyItem.type === 'message' && fyItem.layout === 'full' && (() => {
+              const seed = (fyItem.ticker || 'X').split('').reduce((s, c) => s + c.charCodeAt(0), 0)
+              const chartPts = Array.from({ length: 48 }, (_, i) => {
+                const base = 50 + Math.sin(seed + i * 0.35) * 25 + Math.cos(seed * 0.6 + i * 0.2) * 18
+                return Math.max(8, Math.min(92, base + (Math.sin(i * 1.1 + seed) * 10)))
+              })
+              const polyline = chartPts.map((y, i) => `${(i / 47) * 430},${100 - y}`).join(' ')
+              const areaFill = polyline + ' 430,100 0,100'
+              const isBull = (fyItem.pctChange ?? 0) >= 0
+              const gradId = `fyFullGrad_${fyItem.id}`
+              const chartColor = isBull ? '#22c55e' : '#ef4444'
+              return (
+              <div className="absolute inset-0 flex flex-col bg-black">
+                {/* Full-screen chart background */}
+                <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 50% 45%, ${isBull ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)'} 0%, transparent 65%)` }} />
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 430 100" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={chartColor} stopOpacity="0.4" />
+                      <stop offset="100%" stopColor={chartColor} stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  {[15, 30, 45, 60, 75, 90].map(y => (
+                    <line key={y} x1="0" y1={y} x2="430" y2={y} stroke="white" strokeOpacity="0.04" strokeWidth="0.5" />
+                  ))}
+                  <polygon points={areaFill} fill={`url(#${gradId})`} />
+                  <polyline points={polyline} fill="none" stroke={chartColor} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" opacity="0.7" />
+                </svg>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+
+                {/* Pagination dots */}
+                <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 z-10">
+                  {FYF_ITEMS.map((_, i) => (
+                    <div key={i} className={clsx('h-0.5 rounded-full transition-all', i === fyCurrentIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/30')} />
+                  ))}
+                </div>
+
+                {/* Centered "Price Since Post" — takes up the main area */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6" style={{ paddingBottom: '30%' }}>
+                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/50 mb-4">Price Since Post</span>
+                  <div className="flex items-center gap-3 mb-3">
+                    {getTickerLogo(fyItem.ticker) ? (
+                      <img src={getTickerLogo(fyItem.ticker)} alt="" className="w-16 h-16 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold text-white/60">{(fyItem.ticker || '?')[0]}</div>
+                    )}
+                    <div>
+                      <span className="text-3xl font-black tracking-tight text-white/90 block">${fyItem.ticker}</span>
+                      {fyItem.price != null && (
+                        <span className="text-base font-semibold tabular-nums text-white/50">
+                          ${fyItem.price >= 1000 ? fyItem.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fyItem.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {fyItem.pctChange != null && (
+                    <span className={clsx('font-black tabular-nums tracking-tight', isBull ? 'text-green-400' : 'text-red-400')} style={{ fontSize: '5.5rem', lineHeight: 1 }}>
+                      {isBull ? '+' : ''}{fyItem.pctChange.toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+
+                {/* Bottom overlay: user + text + engagement — pinned near bottom */}
+                <div className="absolute bottom-4 left-0 right-14 px-4 z-10">
+                  {/* Ticker sentiment pill */}
+                  {fyItem.ticker && fyItem.sentiment && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={clsx('px-2.5 py-0.5 rounded-full text-[10px] font-bold', fyItem.sentiment === 'bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400')}>
+                        {fyItem.sentiment === 'bullish' ? '▲ Bullish' : '▼ Bearish'}
+                      </span>
+                    </div>
+                  )}
+                  {/* User info */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <img src={fyItem.user.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-white/20" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold">{fyItem.user.name}</span>
+                      {fyItem.user.verified && (
+                        <svg className="w-3.5 h-3.5 text-[#2196F3]" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-white/40">· {fyItem.time}</span>
+                  </div>
+                  <p className="text-[14px] text-white/90 leading-snug">{fyItem.body}</p>
+                </div>
+
+                {/* Right side action buttons */}
+                <div className="absolute right-3 bottom-8 flex flex-col items-center gap-5 z-10">
+                  <button type="button" onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-0.5">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyItem.comments)}</span>
+                  </button>
+                  <button type="button" className="flex flex-col items-center gap-0.5">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyItem.reposts)}</span>
+                  </button>
+                  <button type="button" onClick={() => toggleFyLike(fyItem.id)} className="flex flex-col items-center gap-0.5">
+                    <svg className={clsx('w-7 h-7', fyLiked.has(fyItem.id) ? 'text-red-500' : 'text-white')} fill={fyLiked.has(fyItem.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    <span className="text-[10px] font-semibold">{formatCount(fyLiked.has(fyItem.id) ? fyItem.likes + 1 : fyItem.likes)}</span>
+                  </button>
+                  <button type="button" onClick={() => setShareSheetOpen(true)} className="flex flex-col items-center gap-0.5">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                  </button>
+                  <button type="button" className="flex flex-col items-center gap-0.5">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z"/></svg>
+                  </button>
+                </div>
+              </div>
+              )})()}
+
+            {/* ── Message Item WITHOUT image → Price Since Post + sparkline + solid card + fixed engagement ── */}
+            {fyItem.type === 'message' && !fyItem.image && fyItem.layout !== 'full' && (() => {
+              const seed = (fyItem.ticker || 'X').split('').reduce((s, c) => s + c.charCodeAt(0), 0)
+              const chartPts = Array.from({ length: 32 }, (_, i) => {
+                const base = 40 + Math.sin(seed + i * 0.4) * 20 + Math.cos(seed * 0.7 + i * 0.25) * 15
+                return Math.max(5, Math.min(95, base + (Math.sin(i * 1.2 + seed) * 8)))
+              })
+              const sparkPolyline = chartPts.map((y, i) => `${(i / 31) * 390},${60 - (y / 100) * 50}`).join(' ')
+              const sparkArea = sparkPolyline + ' 390,60 0,60'
+              const isBull = fyItem.sentiment === 'bullish'
+              const sparkGradId = `fySpark_${fyItem.id}`
+              const chartColor = isBull ? '#22c55e' : '#ef4444'
+              const isFollowed = fyFollowed.has(fyItem.user.handle)
+              const inWatchlist = fyWatchlist.has(fyItem.ticker)
+              return (
+              <div className="absolute inset-0 flex flex-col bg-[#0a0a0a]">
+
+                {/* ── TOP: Pagination dots ── */}
+                <div className="shrink-0 flex justify-center gap-1 pt-3 pb-1">
+                  {FYF_ITEMS.map((_, i) => (
+                    <div key={i} className={clsx('h-0.5 rounded-full transition-all', i === fyCurrentIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/30')} />
+                  ))}
+                </div>
+
+                {/* ── TOP: Compact horizontal Price Since Post ── */}
+                {fyItem.ticker && (
+                  <div className="shrink-0 flex items-center gap-3 px-5 py-3">
+                    {/* Ticker logo with + watchlist button */}
+                    <div className="relative shrink-0">
+                      {getTickerLogo(fyItem.ticker) ? (
+                        <img src={getTickerLogo(fyItem.ticker)} alt="" className="w-11 h-11 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold text-white/60">{fyItem.ticker[0]}</div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => toggleFyWatchlist(fyItem.ticker)}
+                        className={clsx('absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-[#0a0a0a] transition-colors', inWatchlist ? 'bg-green-500 text-white' : 'bg-[#2196F3] text-white')}
+                      >
+                        {inWatchlist ? (
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 5v14M5 12h14" /></svg>
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-black tracking-tight text-white">${fyItem.ticker}</span>
+                        {fyItem.price != null && (
+                          <span className="text-sm font-semibold tabular-nums text-white/40">
+                            ${fyItem.price >= 1000 ? fyItem.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fyItem.price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Price Since Post</span>
+                    </div>
+                    {fyItem.pctChange != null && (
+                      <span className={clsx('font-black tabular-nums tracking-tight shrink-0', isBull ? 'text-green-400' : 'text-red-400')} style={{ fontSize: '2rem', lineHeight: 1 }}>
+                        {isBull ? '+' : ''}{fyItem.pctChange.toFixed(2)}%
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Sparkline chart (between Price Since Post and card) ── */}
+                <div className="shrink-0 px-4">
+                  <svg className="w-full" viewBox="0 0 390 65" preserveAspectRatio="none" style={{ height: 60 }}>
+                    <defs>
+                      <linearGradient id={sparkGradId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={chartColor} stopOpacity="0.3" />
+                        <stop offset="100%" stopColor={chartColor} stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <polygon points={sparkArea} fill={`url(#${sparkGradId})`} />
+                    <polyline points={sparkPolyline} fill="none" stroke={chartColor} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                  </svg>
+                </div>
+
+                {/* ── SPACER: pushes card to bottom for short posts ── */}
+                <div className="flex-1" />
+
+                {/* ── MIDDLE: Scrollable card body (max 70%) with scroll-more indicator ── */}
+                <div className="shrink-0 px-4 relative" style={{ maxHeight: '70%', display: 'flex', flexDirection: 'column' }}>
+                  <div
+                    className="flex-1 overflow-y-auto rounded-t-2xl border border-b-0 border-white/10 bg-[#1a1a1a]"
+                    style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent' }}
+                    onScroll={(e) => {
+                      const el = e.currentTarget
+                      const fade = el.parentElement?.querySelector('[data-scroll-fade]')
+                      if (fade) {
+                        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 8
+                        fade.style.opacity = atBottom ? '0' : '1'
+                      }
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        // Show fade only if content overflows
+                        requestAnimationFrame(() => {
+                          const fade = el.parentElement?.querySelector('[data-scroll-fade]')
+                          if (fade) fade.style.opacity = el.scrollHeight > el.clientHeight + 8 ? '1' : '0'
+                        })
+                      }
+                    }}
+                  >
+                    {/* User header with Follow button */}
                     <div className="flex items-center gap-3 p-4 pb-3">
                       <div className="relative">
                         <img src={fyItem.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover border border-white/20" />
@@ -595,12 +1000,15 @@ export default function IOSExplore() {
                           <span>{fyItem.time}</span>
                         </div>
                       </div>
-                      <button type="button" className="text-white/30">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                      <button
+                        type="button"
+                        onClick={() => toggleFyFollow(fyItem.user.handle)}
+                        className={clsx('px-3 py-1 rounded-full text-xs font-semibold transition-colors', isFollowed ? 'bg-white/10 text-white/60 border border-white/20' : 'bg-[#2196F3] text-white')}
+                      >
+                        {isFollowed ? 'Following' : 'Follow'}
                       </button>
                     </div>
-
-                    {/* Ticker + sentiment */}
+                    {/* Ticker sentiment tag */}
                     {fyItem.ticker && (
                       <div className="px-4 pb-2 flex items-center gap-2">
                         {fyItem.sentiment === 'bullish' && (
@@ -608,18 +1016,21 @@ export default function IOSExplore() {
                             <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-[10px]">↑</span>
                           </span>
                         )}
+                        {fyItem.sentiment === 'bearish' && (
+                          <span className="inline-flex items-center gap-1 text-red-400 text-xs font-semibold">
+                            <span className="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[10px]">↓</span>
+                          </span>
+                        )}
                         <span className="text-[#2196F3] text-sm font-semibold">${fyItem.ticker}</span>
                       </div>
                     )}
-
-                    {/* Message body */}
+                    {/* Body text */}
                     <div className="px-4 pb-3">
-                      <p className="text-[15px] leading-relaxed">{fyItem.body}</p>
+                      <p className="text-[15px] leading-relaxed whitespace-pre-line text-white/90">{fyItem.body}</p>
                     </div>
-
-                    {/* Embed card */}
+                    {/* Embed if present */}
                     {fyItem.embed && (
-                      <div className="mx-4 mb-3 rounded-xl border border-white/10 overflow-hidden bg-white/5">
+                      <div className="mx-4 mb-3 rounded-xl border border-white/10 overflow-hidden bg-black/40">
                         <div className="flex items-center gap-2 p-3 border-b border-white/5">
                           <span className="text-sm">{fyItem.embed.sourceIcon}</span>
                           <span className="text-xs font-semibold text-white/70">{fyItem.embed.source}</span>
@@ -632,7 +1043,6 @@ export default function IOSExplore() {
                           <p className="text-[13px] leading-snug font-medium">{fyItem.embed.title}</p>
                           {fyItem.embed.hasChart && (
                             <div className="mt-3 h-32 bg-black rounded-lg border border-white/10 flex items-center justify-center">
-                              {/* Fake candlestick chart */}
                               <svg className="w-full h-full p-3" viewBox="0 0 300 100" preserveAspectRatio="none">
                                 {[0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285].map((x, i) => {
                                   const vals = [20,22,18,25,30,28,35,32,38,42,40,45,50,48,55,60,65,70,75,72]
@@ -655,9 +1065,26 @@ export default function IOSExplore() {
                         </div>
                       </div>
                     )}
+                  </div>
+                  {/* Scroll-more fade + chevron indicator */}
+                  <div
+                    data-scroll-fade
+                    className="pointer-events-none absolute bottom-0 left-4 right-4 flex flex-col items-center transition-opacity duration-300"
+                    style={{ opacity: 0 }}
+                  >
+                    <div className="w-full h-10 bg-gradient-to-t from-[#1a1a1a] to-transparent" />
+                    <div className="w-full bg-[#1a1a1a] flex justify-center pb-1">
+                      <div className="flex flex-col items-center animate-bounce">
+                        <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                    {/* Engagement bar — matches /symbol web */}
-                    <div className="flex items-center justify-between px-4 py-3 border-t border-white/5 text-white/40">
+                {/* ── BOTTOM: Fixed engagement bar (always visible) ── */}
+                <div className="shrink-0 px-4 pb-2">
+                  <div className="w-full rounded-b-2xl border border-t-0 border-white/10 bg-[#1a1a1a] overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 text-white/40">
                       <button type="button" onClick={() => navigate('/notifications')} className="flex items-center gap-1.5 active:text-white/70 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                         <span className="text-xs">{fyItem.comments}</span>
@@ -680,15 +1107,8 @@ export default function IOSExplore() {
                   </div>
                 </div>
 
-                {/* Swipe hint */}
-                {fyCurrentIndex === 0 && (
-                  <div className="shrink-0 pb-4 flex flex-col items-center text-white/20 animate-bounce">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
-                    <span className="text-[10px]">Swipe up</span>
-                  </div>
-                )}
               </div>
-            )}
+              )})()}
           </div>
         )}
 
@@ -1182,6 +1602,13 @@ export default function IOSExplore() {
 
       {/* ── Bottom Navigation ── */}
       <IOSBottomNav />
+
+      <style>{`
+        @keyframes progressGrow {
+          0% { width: 5%; }
+          100% { width: 35%; }
+        }
+      `}</style>
     </div>
   )
 }
