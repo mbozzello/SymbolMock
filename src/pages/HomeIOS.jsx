@@ -572,7 +572,7 @@ export default function HomeIOS() {
                 onClick={() => setFollowingSort('recommended')}
                 className={clsx(
                   'pb-2 text-sm font-semibold transition-colors border-b-2',
-                  followingSort === 'recommended' ? 'text-white border-white' : 'text-white/40 border-transparent'
+                  followingSort === 'recommended' ? 'text-white border-[#2196F3]' : 'text-white/40 border-transparent'
                 )}
               >
                 Recommended
@@ -582,7 +582,7 @@ export default function HomeIOS() {
                 onClick={() => setFollowingSort('latest')}
                 className={clsx(
                   'pb-2 text-sm font-semibold transition-colors border-b-2',
-                  followingSort === 'latest' ? 'text-white border-white' : 'text-white/40 border-transparent'
+                  followingSort === 'latest' ? 'text-white border-[#2196F3]' : 'text-white/40 border-transparent'
                 )}
               >
                 Latest

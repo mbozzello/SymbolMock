@@ -5,16 +5,16 @@ import { getTickerLogo } from '../constants/tickerLogos'
 const TOTAL_STEPS = 7
 
 const STREAM_MESSAGES = [
-  { user: 'TechBull', avatar: '/avatars/who-follow-1.png', body: 'Breaking above the 20 EMA on strong volume $', time: 'now' },
-  { user: 'MomentumKing', avatar: '/avatars/who-follow-2.png', body: 'Earnings beat could send this to new ATH', time: '1m' },
-  { user: 'ChartReader', avatar: '/avatars/who-follow-3.png', body: 'Bullish divergence forming on the 4H', time: '2m' },
-  { user: 'OptionsFlow', avatar: '/avatars/who-follow-4.png', body: 'Big call sweep just went through 250 strike', time: '3m' },
-  { user: 'AlphaSeeker', avatar: '/avatars/who-follow-1.png', body: 'Institutional accumulation last 3 days', time: '4m' },
-  { user: 'SwingTrader', avatar: '/avatars/who-follow-2.png', body: 'Holding for the breakout above 420', time: '5m' },
-  { user: 'RetailWatch', avatar: '/avatars/who-follow-3.png', body: 'Sentiment shifting bullish in the stream', time: '6m' },
-  { user: 'VolumeAlert', avatar: '/avatars/who-follow-4.png', body: 'Volume 2x average – something’s moving', time: '7m' },
-  { user: 'LevelsPro', avatar: '/avatars/who-follow-1.png', body: 'Support at 398 held, watching for bounce', time: '8m' },
-  { user: 'EarningsFan', avatar: '/avatars/who-follow-2.png', body: 'Guidance raise would be huge for next leg', time: '9m' },
+  { user: 'TechBull', avatar: '/avatars/top-voice-1.png', body: 'Breaking above the 20 EMA on strong volume $', time: 'now' },
+  { user: 'MomentumKing', avatar: '/avatars/top-voice-2.png', body: 'Earnings beat could send this to new ATH', time: '1m' },
+  { user: 'ChartReader', avatar: '/avatars/top-voice-3.png', body: 'Bullish divergence forming on the 4H', time: '2m' },
+  { user: 'OptionsFlow', avatar: '/avatars/howard-lindzon.png', body: 'Big call sweep just went through 250 strike', time: '3m' },
+  { user: 'AlphaSeeker', avatar: '/avatars/top-voice-1.png', body: 'Institutional accumulation last 3 days', time: '4m' },
+  { user: 'SwingTrader', avatar: '/avatars/top-voice-2.png', body: 'Holding for the breakout above 420', time: '5m' },
+  { user: 'RetailWatch', avatar: '/avatars/top-voice-3.png', body: 'Sentiment shifting bullish in the stream', time: '6m' },
+  { user: 'VolumeAlert', avatar: '/avatars/howard-lindzon.png', body: 'Volume 2x average – something’s moving', time: '7m' },
+  { user: 'LevelsPro', avatar: '/avatars/top-voice-1.png', body: 'Support at 398 held, watching for bounce', time: '8m' },
+  { user: 'EarningsFan', avatar: '/avatars/top-voice-2.png', body: 'Guidance raise would be huge for next leg', time: '9m' },
 ]
 
 const TRENDING_SYMBOLS = [
@@ -87,15 +87,15 @@ const TRADING_STYLES = [
 ]
 
 const RECOMMENDED_TRADERS = [
-  { id: '1', handle: 'MomoTrader', initial: 'M', avatar: '/avatars/who-follow-1.png', followers: '245K', style: 'Momentum Plays', talkingAbout: [{ icon: 'rocket', label: 'Momentum Surge' }, { icon: 'cloud', label: 'High Volume' }, { icon: 'chart', label: 'Price Action' }] },
-  { id: '2', handle: 'BreakoutHunter', initial: 'B', avatar: '/avatars/who-follow-2.png', followers: '178K', style: 'Breakout Trading', talkingAbout: [{ icon: 'star', label: 'Breakout Alert' }, { icon: 'bars', label: 'Volume Breakout' }] },
-  { id: '3', handle: 'TechAnalyst', initial: 'T', avatar: '/avatars/who-follow-3.png', followers: '312K', style: 'Technical', talkingAbout: [{ icon: 'chart', label: 'Support & Resistance' }, { icon: 'trend', label: 'Trend Lines' }] },
-  { id: '4', handle: 'ValueViking', initial: 'V', avatar: '/avatars/who-follow-4.png', followers: '156K', style: 'Value Investor', talkingAbout: [{ icon: 'doc', label: 'Earnings' }, { icon: 'cash', label: 'DCF' }] },
-  { id: '5', handle: 'SwingQueen', initial: 'S', avatar: '/avatars/who-follow-1.png', followers: '89K', style: 'Swing Trader', talkingAbout: [{ icon: 'wave', label: 'Swing Setups' }, { icon: 'clock', label: 'Hold Periods' }] },
-  { id: '6', handle: 'DayTraderPro', initial: 'D', avatar: '/avatars/who-follow-2.png', followers: '201K', style: 'Day Trader', talkingAbout: [{ icon: 'flash', label: 'Scalping' }, { icon: 'volume', label: 'Intraday Vol' }] },
-  { id: '7', handle: 'OptionsOwl', initial: 'O', avatar: '/avatars/who-follow-3.png', followers: '267K', style: 'Options', talkingAbout: [{ icon: 'strike', label: 'Strike Selection' }, { icon: 'theta', label: 'Theta Decay' }] },
-  { id: '8', handle: 'FundamentalFan', initial: 'F', avatar: '/avatars/who-follow-4.png', followers: '134K', style: 'Fundamental', talkingAbout: [{ icon: 'doc', label: '10-K Deep Dive' }, { icon: 'ratio', label: 'Ratios' }] },
-  { id: '9', handle: 'howardlindzon', initial: 'H', avatar: '/avatars/who-follow-2.png', followers: '412K', style: 'Momentum Plays', talkingAbout: [{ icon: 'rocket', label: 'Momentum' }, { icon: 'chart', label: 'Markets' }, { icon: 'cloud', label: 'Community' }] },
+  { id: '1', handle: 'MomoTrader', initial: 'M', avatar: '/avatars/top-voice-1.png', followers: '245K', style: 'Momentum Plays', talkingAbout: [{ icon: 'rocket', label: 'Momentum Surge' }, { icon: 'cloud', label: 'High Volume' }, { icon: 'chart', label: 'Price Action' }] },
+  { id: '2', handle: 'BreakoutHunter', initial: 'B', avatar: '/avatars/top-voice-2.png', followers: '178K', style: 'Breakout Trading', talkingAbout: [{ icon: 'star', label: 'Breakout Alert' }, { icon: 'bars', label: 'Volume Breakout' }] },
+  { id: '3', handle: 'TechAnalyst', initial: 'T', avatar: '/avatars/top-voice-3.png', followers: '312K', style: 'Technical', talkingAbout: [{ icon: 'chart', label: 'Support & Resistance' }, { icon: 'trend', label: 'Trend Lines' }] },
+  { id: '4', handle: 'ValueViking', initial: 'V', avatar: '/avatars/howard-lindzon.png', followers: '156K', style: 'Value Investor', talkingAbout: [{ icon: 'doc', label: 'Earnings' }, { icon: 'cash', label: 'DCF' }] },
+  { id: '5', handle: 'SwingQueen', initial: 'S', avatar: '/avatars/top-voice-1.png', followers: '89K', style: 'Swing Trader', talkingAbout: [{ icon: 'wave', label: 'Swing Setups' }, { icon: 'clock', label: 'Hold Periods' }] },
+  { id: '6', handle: 'DayTraderPro', initial: 'D', avatar: '/avatars/top-voice-2.png', followers: '201K', style: 'Day Trader', talkingAbout: [{ icon: 'flash', label: 'Scalping' }, { icon: 'volume', label: 'Intraday Vol' }] },
+  { id: '7', handle: 'OptionsOwl', initial: 'O', avatar: '/avatars/top-voice-3.png', followers: '267K', style: 'Options', talkingAbout: [{ icon: 'strike', label: 'Strike Selection' }, { icon: 'theta', label: 'Theta Decay' }] },
+  { id: '8', handle: 'FundamentalFan', initial: 'F', avatar: '/avatars/howard-lindzon.png', followers: '134K', style: 'Fundamental', talkingAbout: [{ icon: 'doc', label: '10-K Deep Dive' }, { icon: 'ratio', label: 'Ratios' }] },
+  { id: '9', handle: 'howardlindzon', initial: 'H', avatar: '/avatars/top-voice-2.png', followers: '412K', style: 'Momentum Plays', talkingAbout: [{ icon: 'rocket', label: 'Momentum' }, { icon: 'chart', label: 'Markets' }, { icon: 'cloud', label: 'Community' }] },
 ]
 
 const STYLE_MATCH = {
@@ -127,10 +127,10 @@ const LIVE_EARNINGS_CALLS = [
 ]
 
 const FOLLOWERS_SAYING = [
-  { id: '1', username: 'MomoTrader', avatar: '/avatars/who-follow-1.png', followers: '245K', recentTopics: ['Momentum', 'Breakouts', 'Volume'] },
-  { id: '2', username: 'TechAnalyst', avatar: '/avatars/who-follow-2.png', followers: '312K', recentTopics: ['Technical', 'Support & Resistance', 'Earnings'] },
-  { id: '3', username: 'OptionsOwl', avatar: '/avatars/who-follow-3.png', followers: '267K', recentTopics: ['Options', 'Strike Selection', 'IV'] },
-  { id: '4', username: 'ValueViking', avatar: '/avatars/who-follow-4.png', followers: '156K', recentTopics: ['Value', 'DCF', '10-K'] },
+  { id: '1', username: 'MomoTrader', avatar: '/avatars/top-voice-1.png', followers: '245K', recentTopics: ['Momentum', 'Breakouts', 'Volume'] },
+  { id: '2', username: 'TechAnalyst', avatar: '/avatars/top-voice-2.png', followers: '312K', recentTopics: ['Technical', 'Support & Resistance', 'Earnings'] },
+  { id: '3', username: 'OptionsOwl', avatar: '/avatars/top-voice-3.png', followers: '267K', recentTopics: ['Options', 'Strike Selection', 'IV'] },
+  { id: '4', username: 'ValueViking', avatar: '/avatars/howard-lindzon.png', followers: '156K', recentTopics: ['Value', 'DCF', '10-K'] },
 ]
 
 function ChartIcon({ className }) {
@@ -942,7 +942,7 @@ export default function Onboarding() {
             <div className="flex flex-col items-center mb-6">
               <button
                 type="button"
-                onClick={() => setStep2AvatarUrl(step2AvatarUrl ? null : '/avatars/who-follow-1.png')}
+                onClick={() => setStep2AvatarUrl(step2AvatarUrl ? null : '/avatars/top-voice-1.png')}
                 className="flex flex-col items-center gap-2 group"
               >
                 <div className="w-20 h-20 rounded-full overflow-hidden bg-[#1e293b] border-2 border-dashed border-[rgba(255,255,255,0.2)] flex items-center justify-center group-hover:border-[#38bdf8]/50 transition-colors">

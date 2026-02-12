@@ -18,7 +18,8 @@ export default function IOSSearch() {
   const [beforeDate, setBeforeDate] = useState('')
   const [fromProfile, setFromProfile] = useState('')
   const [withTicker, setWithTicker] = useState('')
-  const [priceFilter, setPriceFilter] = useState('')
+  const [priceSincePostOperator, setPriceSincePostOperator] = useState('>') // '>' or '<'
+  const [priceSincePostPct, setPriceSincePostPct] = useState('')
   const [tagFilter, setTagFilter] = useState('')
 
   const TABS = ['Top', 'Latest', 'People', 'Media']
@@ -95,6 +96,18 @@ export default function IOSSearch() {
       ticker: 'BTC',
       pctChange: 1.24,
     },
+    // Elon Musk–related messages: ~half above 100%, half below (some negative). Price since post shown only after user types in filter (e.g. 100).
+    { id: 'em1', username: 'TSLAfangirl', displayName: 'Mrs. Santos', avatar: '/avatars/michele-steele.png', verified: false, body: 'Elon Musk delivery numbers are insane. $TSLA shorts getting crushed. This is why you don’t bet against Elon.', time: '1d', comments: 892, reposts: 234, likes: 4200, tags: ['bullish'], ticker: 'TSLA', pctChange: 156.2 },
+    { id: 'em2', username: 'SpaceXTrader', displayName: 'SpaceX Trader', avatar: '/avatars/ross-cameron.png', verified: true, body: 'Elon Musk and the FSD rollout have completely changed the narrative on $TSLA.', time: '2d', comments: 445, reposts: 189, likes: 3100, tags: ['bullish', 'breakingnews'], ticker: 'TSLA', pctChange: 128.5 },
+    { id: 'em3', username: 'MuskWatcher', displayName: 'Musk Watcher', avatar: '/avatars/michael-bolling.png', verified: false, body: 'When Elon Musk tweets, markets move. $TSLA up over 100% since I posted this. NFA but the trend is your friend.', time: '3d', comments: 567, reposts: 312, likes: 2800, tags: ['bullish'], ticker: 'TSLA', pctChange: 212.0 },
+    { id: 'em4', username: 'EVBull', displayName: 'EV Bull', avatar: '/avatars/top-voice-1.png', verified: true, body: 'Elon Musk robotaxi announcement was the catalyst. $TSLA running.', time: '5d', comments: 234, reposts: 98, likes: 1900, tags: ['bullish'], ticker: 'TSLA', pctChange: 178.4 },
+    { id: 'em5', username: 'TechElon', displayName: 'Tech Elon', avatar: '/avatars/top-voice-2.png', verified: false, body: 'Everybody doubted Elon Musk and FSD. Now look at $TSLA — price since post over 100% for everyone who held.', time: '1w', comments: 678, reposts: 445, likes: 5200, tags: ['bullish'], ticker: 'TSLA', pctChange: 305.7 },
+    // Below 100% or negative
+    { id: 'em6', username: 'SkepticElon', displayName: 'Skeptic Elon', avatar: '/avatars/top-voice-3.png', verified: false, body: 'Elon Musk FSD timeline keeps slipping. $TSLA valuation still rich. Taking some off the table.', time: '4h', comments: 234, reposts: 89, likes: 456, tags: ['bearish'], ticker: 'TSLA', pctChange: -18.5 },
+    { id: 'em7', username: 'MacroView', displayName: 'Macro View', avatar: '/avatars/howard-lindzon.png', verified: true, body: 'Elon Musk and Tesla execution solid but macro headwinds. $TSLA holding up better than most.', time: '8h', comments: 123, reposts: 45, likes: 890, tags: ['bullish'], ticker: 'TSLA', pctChange: 42.3 },
+    { id: 'em8', username: 'BearTrader', displayName: 'Bear Trader', avatar: '/avatars/michael-bolling.png', verified: false, body: 'Elon Musk sold again. $TSLA retail getting squeezed. Price since post not pretty for bulls.', time: '1d', comments: 567, reposts: 234, likes: 1200, tags: ['bearish'], ticker: 'TSLA', pctChange: -32.1 },
+    { id: 'em9', username: 'TSLAOptions', displayName: 'TSLA Options', avatar: '/avatars/ross-cameron.png', verified: false, body: 'Elon Musk tweet sent $TSLA flying. Took profits too early — still up since post but missed the big move.', time: '2d', comments: 89, reposts: 34, likes: 345, tags: ['bullish'], ticker: 'TSLA', pctChange: 18.7 },
+    { id: 'em10', username: 'ContrarianMusk', displayName: 'Contrarian Musk', avatar: '/avatars/michele-steele.png', verified: false, body: 'Elon Musk robotaxi delay. $TSLA down hard since my post. Staying patient but this hurts.', time: '3d', comments: 445, reposts: 167, likes: 678, tags: ['bearish'], ticker: 'TSLA', pctChange: -24.0 },
   ]
 
   const MOCK_PEOPLE = [
@@ -132,9 +145,17 @@ export default function IOSSearch() {
     },
   ]
 
-  // Filter messages based on filters
+  // Filter messages based on search query and filters
   const filteredMessages = useMemo(() => {
     let filtered = [...MOCK_MESSAGES]
+    
+    if (query.trim()) {
+      const q = query.trim().toLowerCase()
+      filtered = filtered.filter(m => {
+        const text = [m.body, m.displayName, m.username].filter(Boolean).join(' ').toLowerCase()
+        return text.includes(q)
+      })
+    }
     
     if (fromProfile) {
       filtered = filtered.filter(m => m.username.toLowerCase().includes(fromProfile.toLowerCase()))
@@ -144,10 +165,13 @@ export default function IOSSearch() {
       filtered = filtered.filter(m => m.ticker && m.ticker.toLowerCase() === withTicker.toLowerCase())
     }
     
-    if (priceFilter === 'gainers') {
-      filtered = filtered.filter(m => m.pctChange && m.pctChange > 0)
-    } else if (priceFilter === 'losers') {
-      filtered = filtered.filter(m => m.pctChange && m.pctChange < 0)
+    const pctNum = priceSincePostPct.trim() !== '' ? parseFloat(priceSincePostPct) : NaN
+    if (!Number.isNaN(pctNum) && priceSincePostPct.trim() !== '') {
+      if (priceSincePostOperator === '>') {
+        filtered = filtered.filter(m => m.pctChange != null && m.pctChange > pctNum)
+      } else {
+        filtered = filtered.filter(m => m.pctChange != null && m.pctChange < pctNum)
+      }
     }
     
     if (tagFilter) {
@@ -155,7 +179,7 @@ export default function IOSSearch() {
     }
     
     return filtered
-  }, [fromProfile, withTicker, priceFilter, tagFilter])
+  }, [query, fromProfile, withTicker, priceSincePostOperator, priceSincePostPct, tagFilter])
 
   const filteredPeople = useMemo(() => {
     return MOCK_PEOPLE.filter(p => 
@@ -164,14 +188,15 @@ export default function IOSSearch() {
     )
   }, [query])
 
-  const hasActiveFilters = Boolean(afterDate || beforeDate || fromProfile || withTicker || priceFilter || tagFilter)
+  const hasActiveFilters = Boolean(afterDate || beforeDate || fromProfile || withTicker || priceSincePostPct.trim() || tagFilter)
 
   const clearFilters = () => {
     setAfterDate('')
     setBeforeDate('')
     setFromProfile('')
     setWithTicker('')
-    setPriceFilter('')
+    setPriceSincePostOperator('>')
+    setPriceSincePostPct('')
     setTagFilter('')
   }
 
@@ -260,14 +285,43 @@ export default function IOSSearch() {
               <input type="text" value={withTicker} onChange={e => setWithTicker(e.target.value.toUpperCase())} placeholder="e.g. NVDA" className="w-full bg-white/10 rounded px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:ring-1 focus:ring-[#2196F3]/50" />
             </div>
 
-            {/* Price since post */}
+            {/* Price since post: > or < + % input (same as web) */}
             <div>
               <label className="text-xs text-white/40 block mb-1">Price since post</label>
-              <select value={priceFilter} onChange={e => setPriceFilter(e.target.value)} className="w-full bg-white/10 rounded px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[#2196F3]/50">
-                <option value="">Any</option>
-                <option value="gainers">Gainers only</option>
-                <option value="losers">Losers only</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex rounded-lg overflow-hidden border border-white/20 bg-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setPriceSincePostOperator('>')}
+                    className={clsx('px-3 py-2 text-sm font-bold transition-colors', priceSincePostOperator === '>' ? 'bg-[#2196F3] text-white' : 'text-white/60 hover:text-white')}
+                    aria-label="Greater than"
+                  >
+                    &gt;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPriceSincePostOperator('<')}
+                    className={clsx('px-3 py-2 text-sm font-bold transition-colors', priceSincePostOperator === '<' ? 'bg-[#2196F3] text-white' : 'text-white/60 hover:text-white')}
+                    aria-label="Less than"
+                  >
+                    &lt;
+                  </button>
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={priceSincePostPct}
+                  onChange={(e) => setPriceSincePostPct(e.target.value.replace(/[^0-9.-]/g, ''))}
+                  placeholder="%"
+                  className="flex-1 min-w-0 w-16 bg-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:ring-1 focus:ring-[#2196F3]/50 tabular-nums"
+                  aria-label="Price since post %"
+                />
+                {priceSincePostPct.trim() !== '' && !Number.isNaN(parseFloat(priceSincePostPct)) && (
+                  <span className={clsx('text-sm font-semibold tabular-nums shrink-0', parseFloat(priceSincePostPct) >= 0 ? 'text-green-400' : 'text-red-400')}>
+                    {(parseFloat(priceSincePostPct) >= 0 ? '+' : '') + parseFloat(priceSincePostPct)}%
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Tags */}
@@ -307,7 +361,7 @@ export default function IOSSearch() {
                         <span>{msg.time}</span>
                       </div>
                     </div>
-                    {msg.ticker && msg.pctChange != null && (
+                    {msg.ticker && msg.pctChange != null && priceSincePostPct.trim() !== '' && (
                       <span className={clsx('text-xs font-semibold shrink-0', msg.pctChange >= 0 ? 'text-green-400' : 'text-red-400')}>
                         {msg.pctChange >= 0 ? '+' : ''}{msg.pctChange}%
                       </span>
