@@ -1192,6 +1192,39 @@ export default function IOSExplore() {
               </div>
             </section>
 
+            {/* Top News */}
+            <section>
+              <h2 className="text-base font-bold mb-2">Top News</h2>
+              <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+                {TRENDING_NEWS.map((art, i) => {
+                  const up = (art.pct ?? 0) >= 0
+                  return (
+                    <div key={`overview-news-${i}`} className="shrink-0 w-[220px] rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                      <div className="relative aspect-video bg-white/5">
+                        <img src={art.image} alt="" className="w-full h-full object-cover" />
+                        {art.video && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-black ml-px" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                            </div>
+                          </div>
+                        )}
+                        {art.ticker && (
+                          <span className={clsx('absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold', up ? 'bg-green-500/90 text-white' : 'bg-red-500/90 text-white')}>
+                            ${art.ticker} {up ? '+' : ''}{art.pct}%
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-2.5">
+                        <h4 className="text-xs font-semibold line-clamp-2 leading-snug">{art.title}</h4>
+                        <p className="text-[10px] text-white/40 mt-0.5">{art.meta}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
             {/* Who to Follow */}
             <section>
               <h2 className="text-base font-bold mb-2">Who to Follow</h2>
@@ -1226,6 +1259,27 @@ export default function IOSExplore() {
                     <button type="button" className="w-full py-1.5 rounded-full text-[11px] font-semibold bg-[#2196F3] text-white active:opacity-80 transition-opacity">
                       Follow
                     </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Top Watchlist Adds */}
+            <section>
+              <h2 className="text-base font-bold mb-2">Top Watchlist Adds</h2>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+                {TOP_WATCHLIST_ADDS.map(w => (
+                  <div key={w.ticker} className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                    {getTickerLogo(w.ticker) && (
+                      <img src={getTickerLogo(w.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
+                    )}
+                    <div>
+                      <div className="text-xs font-bold">{w.ticker}</div>
+                      <div className="text-[10px] text-white/40">+{w.adds} adds</div>
+                    </div>
+                    <span className={clsx('text-[10px] font-semibold ml-1', w.pct >= 0 ? 'text-green-400' : 'text-red-400')}>
+                      {w.pct >= 0 ? '+' : ''}{w.pct}%
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1278,27 +1332,6 @@ export default function IOSExplore() {
                       <span className="text-sm font-semibold">@{p.handle}</span>
                     </div>
                     <span className="text-xs font-semibold text-green-400">{p.value} pts</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Top Watchlist Adds */}
-            <section>
-              <h2 className="text-base font-bold mb-2">Top Watchlist Adds</h2>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
-                {TOP_WATCHLIST_ADDS.map(w => (
-                  <div key={w.ticker} className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                    {getTickerLogo(w.ticker) && (
-                      <img src={getTickerLogo(w.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
-                    )}
-                    <div>
-                      <div className="text-xs font-bold">{w.ticker}</div>
-                      <div className="text-[10px] text-white/40">+{w.adds} adds</div>
-                    </div>
-                    <span className={clsx('text-[10px] font-semibold ml-1', w.pct >= 0 ? 'text-green-400' : 'text-red-400')}>
-                      {w.pct >= 0 ? '+' : ''}{w.pct}%
-                    </span>
                   </div>
                 ))}
               </div>
