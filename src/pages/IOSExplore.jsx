@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import IOSBottomNav from '../components/IOSBottomNav.jsx'
 import IOSShareSheet from '../components/IOSShareSheet.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
+import { useWatchlist } from '../contexts/WatchlistContext.jsx'
+import { WEEK_DAYS, EARNINGS_BY_DATE, DAY_PREVIEW, LIVE_EARNINGS } from '../constants/earningsCalendar.js'
 
 function clsx(...v) { return v.filter(Boolean).join(' ') }
 
@@ -63,17 +65,6 @@ const TOP_TOPICS = [
   { emoji: '☁️', label: 'AWS Reacceleration', count: '31.5K', color: '#f97316', tickers: ['AMZN', 'MSFT', 'GOOGL'] },
   { emoji: '🚀', label: 'Merging Ambitions', count: '28.4K', color: '#ef4444', tickers: ['TSLA'] },
   { emoji: '🔷', label: 'MI300 Adoption', count: '26.8K', color: '#3b82f6', tickers: ['AMD', 'NVDA'] },
-]
-
-const LIVE_EARNINGS = [
-  { ticker: 'AAPL', listeners: 240, started: '21m ago' },
-  { ticker: 'NVDA', listeners: 192, started: '14m ago' },
-  { ticker: 'TSLA', listeners: 156, started: '8m ago' },
-  { ticker: 'AMD', listeners: 320, started: '32m ago' },
-  { ticker: 'MSFT', listeners: 278, started: '5m ago' },
-  { ticker: 'GOOGL', listeners: 234, started: '18m ago' },
-  { ticker: 'AMZN', listeners: 412, started: '25m ago' },
-  { ticker: 'PLTR', listeners: 189, started: '41m ago' },
 ]
 
 const TOP_WATCHLIST_ADDS = [
@@ -222,24 +213,6 @@ const SHOWS = [
   { image: '/images/cryptotwits-podcast.png', title: 'Cryptotwits Podcast', desc: 'Crypto and macro' },
   { image: '/images/retail-edge.png', title: 'RetailEDG Show', desc: 'Retail and options flow' },
   { image: '/images/board-room.png', title: 'Board Room Exclusives', desc: 'Premium content' },
-]
-
-/* ══════════════════════════════════════════════════════════════
-   EARNINGS DATA
-   ══════════════════════════════════════════════════════════════ */
-const EARNINGS_CALENDAR = [
-  { ticker: 'AAPL', name: 'Apple Inc.', date: 'Feb 6', time: 'AMC', epsEst: '$2.10', revEst: '$124.1B', sentiment: 68 },
-  { ticker: 'AMZN', name: 'Amazon', date: 'Feb 6', time: 'AMC', epsEst: '$1.48', revEst: '$187.3B', sentiment: 72 },
-  { ticker: 'GOOGL', name: 'Alphabet', date: 'Feb 4', time: 'AMC', epsEst: '$1.89', revEst: '$86.1B', sentiment: 65, reported: true, epsBeat: true },
-  { ticker: 'MSFT', name: 'Microsoft', date: 'Jan 29', time: 'AMC', epsEst: '$3.12', revEst: '$68.8B', sentiment: 71, reported: true, epsBeat: true },
-  { ticker: 'META', name: 'Meta', date: 'Jan 29', time: 'AMC', epsEst: '$6.73', revEst: '$46.9B', sentiment: 74, reported: true, epsBeat: true },
-  { ticker: 'TSLA', name: 'Tesla', date: 'Jan 29', time: 'AMC', epsEst: '$0.71', revEst: '$25.6B', sentiment: 58, reported: true, epsBeat: false },
-  { ticker: 'AMD', name: 'AMD', date: 'Feb 4', time: 'AMC', epsEst: '$1.09', revEst: '$7.53B', sentiment: 78, reported: true, epsBeat: true },
-  { ticker: 'NVDA', name: 'NVIDIA', date: 'Feb 26', time: 'AMC', epsEst: '$0.84', revEst: '$38.2B', sentiment: 82 },
-  { ticker: 'PLTR', name: 'Palantir', date: 'Feb 3', time: 'AMC', epsEst: '$0.11', revEst: '$778M', sentiment: 80, reported: true, epsBeat: true },
-  { ticker: 'HOOD', name: 'Robinhood', date: 'Feb 12', time: 'AMC', epsEst: '$0.42', revEst: '$682M', sentiment: 55 },
-  { ticker: 'SNAP', name: 'Snap Inc.', date: 'Feb 4', time: 'AMC', epsEst: '$0.08', revEst: '$1.36B', sentiment: 42, reported: true, epsBeat: false },
-  { ticker: 'DIS', name: 'Disney', date: 'Feb 5', time: 'BMO', epsEst: '$1.44', revEst: '$24.6B', sentiment: 60 },
 ]
 
 /* ══════════════════════════════════════════════════════════════
@@ -401,13 +374,15 @@ function formatCount(n) {
 export default function IOSExplore() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { toggleWatch, isWatched } = useWatchlist()
   const isForYouPage = location.pathname === '/iosforyou'
   const [activeTab, setActiveTab] = useState(isForYouPage ? 'foryou' : 'overview')
   const [search, setSearch] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [wtfCat, setWtfCat] = useState('Trending')
   const [sectorFilter, setSectorFilter] = useState('Technology')
-  const [earningsFilter, setEarningsFilter] = useState('upcoming')
+  const [earningsSelectedDate, setEarningsSelectedDate] = useState('2026-02-12')
+  const [earningsWatchersSortDesc, setEarningsWatchersSortDesc] = useState(true)
   const [fyCurrentIndex, setFyCurrentIndex] = useState(0)
   const [fyLiked, setFyLiked] = useState(() => new Set())
   const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'steeletwits']))
@@ -545,9 +520,10 @@ export default function IOSExplore() {
     })
   }, [])
 
-  const filteredEarnings = earningsFilter === 'upcoming'
-    ? EARNINGS_CALENDAR.filter(e => !e.reported)
-    : EARNINGS_CALENDAR.filter(e => e.reported)
+  const earningsDayRows = useMemo(() => {
+    const rows = EARNINGS_BY_DATE[earningsSelectedDate] || []
+    return [...rows].sort((a, b) => (earningsWatchersSortDesc ? b.watchers - a.watchers : a.watchers - b.watchers))
+  }, [earningsSelectedDate, earningsWatchersSortDesc])
 
   /* ── search filter across tickers, crypto, and people ── */
   const q = search.trim().toLowerCase()
@@ -1886,113 +1862,141 @@ export default function IOSExplore() {
           </div>
         )}
 
-        {/* ═══════════  EARNINGS TAB  ═══════════ */}
+        {/* ═══════════  EARNINGS TAB — Calendar  ═══════════ */}
         {activeTab === 'earnings' && (
           <div className="px-3 py-4 space-y-4">
+            {/* Live Earnings Calls carousel */}
+            <section>
+              <h2 className="text-sm font-bold mb-2 flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                Live Calls
+              </h2>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+                {LIVE_EARNINGS.map((e) => (
+                  <Link
+                    key={e.ticker}
+                    to={`/symbol/${e.ticker}`}
+                    className="shrink-0 w-[130px] rounded-xl border border-white/10 bg-white/5 p-2.5"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {getTickerLogo(e.ticker) && (
+                        <img src={getTickerLogo(e.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
+                      )}
+                      <span className="text-xs font-bold text-white">{e.ticker}</span>
+                    </div>
+                    <div className="text-[10px] text-white/40">🎧 {e.listeners} listening</div>
+                    <div className="text-[10px] text-white/30">Started {e.started}</div>
+                  </Link>
+                ))}
+              </div>
+            </section>
 
-            {/* Upcoming / Reported toggle */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setEarningsFilter('upcoming')}
-                className={clsx(
-                  'flex-1 py-2 rounded-full text-xs font-semibold transition-colors',
-                  earningsFilter === 'upcoming' ? 'bg-[#2196F3] text-white' : 'bg-white/10 text-white/50'
-                )}
-              >
-                Upcoming
-              </button>
-              <button
-                type="button"
-                onClick={() => setEarningsFilter('reported')}
-                className={clsx(
-                  'flex-1 py-2 rounded-full text-xs font-semibold transition-colors',
-                  earningsFilter === 'reported' ? 'bg-[#2196F3] text-white' : 'bg-white/10 text-white/50'
-                )}
-              >
-                Reported
-              </button>
+            {/* Header: Month + Week */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-white">February 2026</span>
+              <div className="flex items-center gap-1.5">
+                <button type="button" className="p-1 rounded-lg text-white/50" aria-label="Previous week">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <span className="text-[11px] font-medium text-white/70">Week of 2/09/2026</span>
+                <button type="button" className="p-1 rounded-lg text-white/50" aria-label="Next week">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
             </div>
 
-            {/* Live Earnings Calls */}
-            {earningsFilter === 'upcoming' && (
-              <section>
-                <h2 className="text-sm font-bold mb-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5 animate-pulse" />
-                  Live Calls
-                </h2>
-                <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
-                  {LIVE_EARNINGS.map(e => (
-                    <div key={e.ticker} className="shrink-0 w-[130px] rounded-xl border border-white/10 bg-white/5 p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        {getTickerLogo(e.ticker) && (
-                          <img src={getTickerLogo(e.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
-                        )}
-                        <span className="text-xs font-bold">{e.ticker}</span>
-                      </div>
-                      <div className="text-[10px] text-white/40">🎧 {e.listeners} listening</div>
-                      <div className="text-[10px] text-white/30">Started {e.started}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Earnings Calendar List */}
-            <section>
-              <h2 className="text-sm font-bold mb-2">{earningsFilter === 'upcoming' ? 'Upcoming Earnings' : 'Recently Reported'}</h2>
-              <div className="divide-y divide-white/5">
-                {filteredEarnings.map(e => (
-                  <div key={e.ticker} className="py-3 flex items-center gap-3">
-                    {getTickerLogo(e.ticker) ? (
-                      <img src={getTickerLogo(e.ticker)} alt="" className="w-8 h-8 rounded-full object-cover bg-white/10" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">{e.ticker[0]}</div>
+            {/* Weekly calendar strip */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>
+              {WEEK_DAYS.map((day) => {
+                const isSelected = earningsSelectedDate === day.dateStr
+                const preview = DAY_PREVIEW[day.dateStr] || { tickers: [], total: 0 }
+                const tickerText = preview.tickers.length > 0
+                  ? `${preview.tickers.join(', ')}${preview.total > 3 ? ` and ${preview.total - 3} more` : ''}`
+                  : 'No earnings'
+                return (
+                  <button
+                    key={day.dateStr}
+                    type="button"
+                    onClick={() => setEarningsSelectedDate(day.dateStr)}
+                    className={clsx(
+                      'shrink-0 w-[130px] rounded-xl border p-2.5 text-left transition-colors',
+                      isSelected ? 'bg-[#2196F3] border-[#2196F3]' : 'bg-white/5 border-white/10'
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">{e.ticker}</span>
-                        <span className="text-[10px] text-white/30">{e.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-white/40">
-                        <span>{e.date}</span>
-                        <span className="text-white/20">•</span>
-                        <span>{e.time === 'AMC' ? 'After Close' : 'Before Open'}</span>
-                      </div>
+                  >
+                    <div className={clsx('text-[9px] font-bold uppercase tracking-wider mb-0.5', isSelected ? 'text-white/90' : 'text-white/50')}>{day.label}</div>
+                    <div className={clsx('text-xl font-bold', isSelected ? 'text-white' : 'text-white')}>{day.date}</div>
+                    <div className={clsx('text-[10px] leading-tight line-clamp-2 mt-1', isSelected ? 'text-white/80' : 'text-white/40')}>
+                      {tickerText} {preview.total > 0 && `reporting`}
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-[11px] text-white/50">
-                        EPS Est. <span className="text-white/70 font-medium">{e.epsEst}</span>
-                      </div>
-                      <div className="text-[11px] text-white/50">
-                        Rev Est. <span className="text-white/70 font-medium">{e.revEst}</span>
-                      </div>
-                      {e.reported && (
-                        <div className={clsx('text-[10px] font-semibold mt-0.5', e.epsBeat ? 'text-green-400' : 'text-red-400')}>
-                          {e.epsBeat ? '✓ Beat' : '✗ Missed'}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                    <div className={clsx('text-[10px] font-semibold mt-1', isSelected ? 'text-white/70' : 'text-white/40')}>{preview.total} reporting</div>
+                  </button>
+                )
+              })}
+            </div>
 
-            {/* Sentiment around earnings */}
-            <section>
-              <h2 className="text-sm font-bold mb-2">Earnings Sentiment</h2>
-              <div className="space-y-2">
-                {EARNINGS_CALENDAR.slice(0, 6).map(e => (
-                  <div key={e.ticker} className="flex items-center gap-3">
-                    <span className="text-xs font-bold w-10">{e.ticker}</span>
-                    <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                      <div className="h-full rounded-full bg-green-400" style={{ width: `${e.sentiment}%` }} />
-                    </div>
-                    <span className="text-[11px] font-semibold text-white/50 w-8 text-right">{e.sentiment}%</span>
-                  </div>
-                ))}
+            {/* Earnings table — compact for mobile */}
+            <div className="rounded-xl border border-white/10 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      <th className="text-left py-2 px-2 font-semibold text-white/90">Symbol</th>
+                      <th className="text-right py-2 px-2 font-semibold text-white/90">Price</th>
+                      <th className="text-right py-2 px-2 font-semibold text-white/90">%Chg</th>
+                      <th className="text-right py-2 px-2 font-semibold text-white/90">
+                        <button type="button" onClick={() => setEarningsWatchersSortDesc((d) => !d)} className="inline-flex items-center gap-0.5">
+                          Watchers
+                          <svg className={clsx('w-3 h-3', !earningsWatchersSortDesc && 'rotate-180')} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                      </th>
+                      <th className="text-left py-2 px-2 font-semibold text-white/90">Report</th>
+                      <th className="text-center py-2 px-2 w-10">+</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {earningsDayRows.map((row) => {
+                      const watched = isWatched(row.ticker)
+                      return (
+                        <tr key={row.ticker} className="border-b border-white/5 last:border-0">
+                          <td className="py-2.5 px-2">
+                            <Link to={`/symbol/${row.ticker}`} className="flex items-center gap-1.5">
+                              {getTickerLogo(row.ticker) ? (
+                                <img src={getTickerLogo(row.ticker)} alt="" className="w-5 h-5 rounded-full object-cover" />
+                              ) : (
+                                <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold">{row.ticker[0]}</div>
+                              )}
+                              <span className="font-semibold text-white">{row.ticker}</span>
+                            </Link>
+                          </td>
+                          <td className="py-2.5 px-2 text-right text-white/90">${row.price.toFixed(2)}</td>
+                          <td className={clsx('py-2.5 px-2 text-right font-medium', row.pctChange >= 0 ? 'text-green-400' : 'text-red-400')}>
+                            {row.pctChange >= 0 ? '↑' : '↓'}{Math.abs(row.pctChange).toFixed(2)}%
+                          </td>
+                          <td className="py-2.5 px-2 text-right text-white/50">{row.watchers.toLocaleString()}</td>
+                          <td className="py-2.5 px-2 text-white/50">{row.reporting}</td>
+                          <td className="py-2.5 px-2 text-center">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); toggleWatch(row.ticker, row.name); }}
+                              className={clsx(
+                                'inline-flex items-center justify-center w-7 h-7 rounded-full',
+                                watched ? 'bg-[#2196F3] text-white' : 'bg-white/10 text-white/50'
+                              )}
+                            >
+                              {watched ? (
+                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                              ) : (
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
-            </section>
+            </div>
           </div>
         )}
 

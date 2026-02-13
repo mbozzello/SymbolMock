@@ -17,6 +17,7 @@ import Search from './pages/Search.jsx'
 import Bookmarks from './pages/Bookmarks.jsx'
 import Notifications from './pages/Notifications.jsx'
 import News from './pages/News.jsx'
+import Earnings from './pages/Earnings.jsx'
 import Article from './pages/Article.jsx'
 import Markets from './pages/Markets.jsx'
 import Scheduled from './pages/Scheduled.jsx'
@@ -759,6 +760,7 @@ export default function App() {
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/news" element={<News />} />
+        <Route path="/earnings" element={<Earnings />} />
         <Route path="/article/:slug" element={<Article />} />
         <Route path="/markets" element={<Markets />} />
         <Route path="/scheduled" element={<Scheduled />} />

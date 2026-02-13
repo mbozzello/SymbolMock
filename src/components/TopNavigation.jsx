@@ -103,6 +103,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
   const location = useLocation()
   const navigate = useNavigate()
   const isNewsPage = location.pathname === '/news'
+  const isEarningsPage = location.pathname === '/earnings'
   const isMarketsPage = location.pathname === '/markets'
   const isHomePage = location.pathname === '/home'
 
@@ -766,8 +767,9 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
         <div className="flex items-center gap-2 shrink-0">
           {navItems.map((item) => {
             const isNews = item === 'News'
+            const isEarnings = item === 'Earnings'
             const isMarkets = item === 'Social Tools'
-            const isActive = isNews ? isNewsPage : isMarkets ? isMarketsPage : activeTab === item
+            const isActive = isNews ? isNewsPage : isEarnings ? isEarningsPage : isMarkets ? isMarketsPage : activeTab === item
             const content = (
               <span
                 className={clsx(
@@ -781,6 +783,13 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
             if (isNews) {
               return (
                 <Link key={item} to="/news" onClick={() => setActiveTab(null)}>
+                  {content}
+                </Link>
+              )
+            }
+            if (isEarnings) {
+              return (
+                <Link key={item} to="/earnings" onClick={() => setActiveTab(null)}>
                   {content}
                 </Link>
               )

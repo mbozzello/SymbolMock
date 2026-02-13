@@ -1129,6 +1129,86 @@ export default function Markets() {
   // Multi-column sort: array of { colId, dir } in priority order
   const [colSorts, setColSorts] = useState([])
 
+  // Saved screeners — persisted to localStorage
+  const [savedScreeners, setSavedScreeners] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('st_saved_screeners') || '[]') } catch { return [] }
+  })
+  const [showSaveScreenerModal, setShowSaveScreenerModal] = useState(false)
+  const [saveScreenerName, setSaveScreenerName] = useState('')
+  const [activeScreenerId, setActiveScreenerId] = useState(null) // id of currently loaded screener
+  const [showLoadScreenerDropdown, setShowLoadScreenerDropdown] = useState(false)
+  const loadScreenerDropdownRef = useRef(null)
+
+  // Persist saved screeners
+  useEffect(() => {
+    localStorage.setItem('st_saved_screeners', JSON.stringify(savedScreeners))
+  }, [savedScreeners])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (loadScreenerDropdownRef.current && !loadScreenerDropdownRef.current.contains(e.target)) {
+        setShowLoadScreenerDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const handleSaveScreener = () => {
+    if (!saveScreenerName.trim()) return
+    const screener = {
+      id: Date.now().toString(),
+      name: saveScreenerName.trim(),
+      activeSort,
+      assetFilter,
+      symbolFilter,
+      advancedFilters: { ...advancedFilters },
+      appliedFilters: appliedFilters ? { ...appliedFilters } : null,
+      visibleColumns: [...visibleColumns],
+      colSorts: colSorts.map((s) => ({ ...s })),
+      createdAt: new Date().toISOString(),
+    }
+    setSavedScreeners((prev) => [...prev, screener])
+    setActiveScreenerId(screener.id)
+    setSaveScreenerName('')
+    setShowSaveScreenerModal(false)
+  }
+
+  const handleLoadScreener = (screener) => {
+    setActiveSort(screener.activeSort || 'trending')
+    setAssetFilter(screener.assetFilter || 'All')
+    setSymbolFilter(screener.symbolFilter || '')
+    setAdvancedFilters(screener.advancedFilters || { priceMin: '', priceMax: '', volumeMin: '', volumeMax: '', marketCapMin: '', marketCapMax: '', watchersMin: '', watchersMax: '', followersMin: '', followersMax: '', sentimentScore: 0 })
+    setAppliedFilters(screener.appliedFilters || null)
+    setVisibleColumns(screener.visibleColumns || DEFAULT_VISIBLE_COLUMNS)
+    setColSorts(screener.colSorts || [])
+    setActiveScreenerId(screener.id)
+    setShowLoadScreenerDropdown(false)
+  }
+
+  const handleDeleteScreener = (id) => {
+    setSavedScreeners((prev) => prev.filter((s) => s.id !== id))
+    if (activeScreenerId === id) setActiveScreenerId(null)
+  }
+
+  const handleUpdateScreener = () => {
+    if (!activeScreenerId) return
+    setSavedScreeners((prev) => prev.map((s) => {
+      if (s.id !== activeScreenerId) return s
+      return {
+        ...s,
+        activeSort,
+        assetFilter,
+        symbolFilter,
+        advancedFilters: { ...advancedFilters },
+        appliedFilters: appliedFilters ? { ...appliedFilters } : null,
+        visibleColumns: [...visibleColumns],
+        colSorts: colSorts.map((cs) => ({ ...cs })),
+      }
+    }))
+  }
+
   const handleScreenerColumnSort = (colId) => {
     if (colId === 'watch' || colId === 'chart') return
     setColSorts((prev) => {
@@ -1479,6 +1559,92 @@ export default function Markets() {
                     className="px-4 py-2 rounded-lg text-sm font-medium border border-border bg-surface text-text hover:bg-surface-muted"
                   >
                     Remove Custom
+                  </button>
+                )}
+
+                {/* Divider */}
+                <div className="w-px h-6 bg-border mx-1" />
+
+                {/* Save Screener */}
+                <button
+                  type="button"
+                  onClick={() => { setSaveScreenerName(''); setShowSaveScreenerModal(true); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border bg-surface text-text hover:bg-surface-muted"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                  </svg>
+                  Save Screener
+                </button>
+
+                {/* Load Screener dropdown */}
+                {savedScreeners.length > 0 && (
+                  <div className="relative" ref={loadScreenerDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowLoadScreenerDropdown((p) => !p)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border bg-surface text-text hover:bg-surface-muted"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                      My Screeners ({savedScreeners.length})
+                      <svg className={clsx('w-3 h-3 transition-transform', showLoadScreenerDropdown && 'rotate-180')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {showLoadScreenerDropdown && (
+                      <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-surface rounded-xl border border-border shadow-xl z-50 overflow-hidden">
+                        <div className="px-3 py-2 border-b border-border">
+                          <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Saved Screeners</span>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto">
+                          {savedScreeners.map((s) => (
+                            <div key={s.id} className={clsx('flex items-center gap-2 px-3 py-2.5 hover:bg-surface-muted/50 transition-colors cursor-pointer group', activeScreenerId === s.id && 'bg-primary/5')}>
+                              <button
+                                type="button"
+                                onClick={() => handleLoadScreener(s)}
+                                className="flex-1 min-w-0 text-left"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-text truncate">{s.name}</span>
+                                  {activeScreenerId === s.id && (
+                                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-text-muted mt-0.5">
+                                  {s.activeSort} · {s.visibleColumns?.length || 0} cols · {s.colSorts?.length || 0} sorts
+                                </div>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteScreener(s.id); }}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-text-muted hover:text-red-500 transition-all shrink-0"
+                                aria-label="Delete screener"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Update active screener */}
+                {activeScreenerId && (
+                  <button
+                    type="button"
+                    onClick={handleUpdateScreener}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Update "{savedScreeners.find((s) => s.id === activeScreenerId)?.name}"
                   </button>
                 )}
               </div>
@@ -2004,6 +2170,101 @@ export default function Markets() {
                 className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:opacity-90"
               >
                 Apply Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Screener Modal */}
+      {showSaveScreenerModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setShowSaveScreenerModal(false)}
+          role="dialog"
+        >
+          <div
+            className="bg-white dark:bg-surface rounded-2xl shadow-2xl border border-border w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="text-base font-bold text-text">Save Screener</h3>
+              <button
+                type="button"
+                onClick={() => setShowSaveScreenerModal(false)}
+                className="p-1 rounded-lg text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Body */}
+            <div className="px-5 py-5">
+              <label className="block text-sm font-medium text-text mb-1.5">Screener Name</label>
+              <input
+                type="text"
+                value={saveScreenerName}
+                onChange={(e) => setSaveScreenerName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveScreener() }}
+                placeholder="e.g. High Cap Bullish, Crypto Momentum…"
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                autoFocus
+              />
+              {/* Summary of what's being saved */}
+              <div className="mt-4 p-3 rounded-lg bg-surface-muted/40 border border-border">
+                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">This screener will save:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6" /></svg>
+                    Sort: {activeSort}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                    {visibleColumns.length} columns
+                  </span>
+                  {appliedFilters && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400 text-[11px] font-medium">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                      Filters active
+                    </span>
+                  )}
+                  {colSorts.length > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400 text-[11px] font-medium">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
+                      {colSorts.length} column sort{colSorts.length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {assetFilter !== 'All' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400 text-[11px] font-medium">
+                      {assetFilter}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setShowSaveScreenerModal(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-border bg-surface text-text hover:bg-surface-muted"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveScreener}
+                disabled={!saveScreenerName.trim()}
+                className={clsx(
+                  'px-5 py-2 rounded-lg text-sm font-semibold transition-colors',
+                  saveScreenerName.trim()
+                    ? 'bg-primary text-white hover:opacity-90'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                )}
+              >
+                Save
               </button>
             </div>
           </div>
