@@ -402,18 +402,16 @@ export default function IOSExplore() {
   const navigate = useNavigate()
   const location = useLocation()
   const isForYouPage = location.pathname === '/iosforyou'
-  const startOnForYou = location.state?.tab === 'foryou' || isForYouPage
-  const [activeTab, setActiveTab] = useState(startOnForYou ? 'foryou' : 'overview')
+  const [activeTab, setActiveTab] = useState(isForYouPage ? 'foryou' : 'overview')
   const [search, setSearch] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [wtfCat, setWtfCat] = useState('Trending')
   const [sectorFilter, setSectorFilter] = useState('Technology')
   const [earningsFilter, setEarningsFilter] = useState('upcoming')
-  const [forYouUnlocked, setForYouUnlocked] = useState(startOnForYou ? true : false)
   const [fyCurrentIndex, setFyCurrentIndex] = useState(0)
   const [fyLiked, setFyLiked] = useState(() => new Set())
-  const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'steeletwits'])) // some users already followed
-  const [fyWatchlist, setFyWatchlist] = useState(() => new Set(['TSLA', 'NVDA', 'HOOD'])) // some tickers already in watchlist
+  const [fyFollowed, setFyFollowed] = useState(() => new Set(['howardlindzon', 'steeletwits']))
+  const [fyWatchlist, setFyWatchlist] = useState(() => new Set(['TSLA', 'NVDA', 'HOOD']))
   const [fyPlaying, setFyPlaying] = useState(true)
   const [shareSheetOpen, setShareSheetOpen] = useState(false)
   const searchRef = useRef(null)
@@ -421,15 +419,70 @@ export default function IOSExplore() {
   const fyTouchStartY = useRef(0)
   const fyTouchStartTime = useRef(0)
 
+  // Sync activeTab with route — prevent stale state when switching between /iosforyou and /exploreios
+  useEffect(() => {
+    if (isForYouPage) {
+      setActiveTab('foryou')
+    } else if (activeTab === 'foryou') {
+      setActiveTab('overview')
+    }
+  }, [location.pathname]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Live price simulation — slow, realistic ticks every 2-4s
+  const [fyLivePrices, setFyLivePrices] = useState(() => {
+    const map = {}
+    FYF_ITEMS.forEach(item => {
+      if (item.price != null) {
+        map[item.id] = { price: item.price, pctChange: item.pctChange }
+      }
+    })
+    return map
+  })
+
+  useEffect(() => {
+    if (activeTab !== 'foryou') return
+    const interval = setInterval(() => {
+      setFyLivePrices(prev => {
+        const next = { ...prev }
+        // Only tick the current item + a couple random others for realism
+        const idsToTick = [FYF_ITEMS[fyCurrentIndex]?.id]
+        // Also tick 2 random items so prices change even before you see them
+        for (let i = 0; i < 2; i++) {
+          const ri = Math.floor(Math.random() * FYF_ITEMS.length)
+          if (FYF_ITEMS[ri]?.price != null) idsToTick.push(FYF_ITEMS[ri].id)
+        }
+        for (const id of idsToTick) {
+          if (!id || !next[id]) continue
+          const entry = next[id]
+          // Tiny drift: ±0.01% to ±0.08% of price
+          const drift = entry.price * (Math.random() * 0.0008 - 0.0004)
+          const newPrice = Math.max(0.01, entry.price + drift)
+          // Recalculate pctChange based on original base price
+          const orig = FYF_ITEMS.find(f => f.id === id)
+          if (!orig || orig.price == null) continue
+          const basePrice = orig.price / (1 + orig.pctChange / 100)
+          const newPct = ((newPrice - basePrice) / basePrice) * 100
+          next[id] = { price: newPrice, pctChange: newPct }
+        }
+        return next
+      })
+    }, 2500 + Math.random() * 1500) // tick every 2.5–4s
+    return () => clearInterval(interval)
+  }, [activeTab, fyCurrentIndex])
+
+  // Explore page tabs — never includes "For You"
   const TABS = [
-    ...(forYouUnlocked ? [{ id: 'foryou', label: 'For You' }] : []),
     { id: 'overview', label: 'Overview' },
     { id: 'news', label: 'News' },
     { id: 'earnings', label: 'Earnings' },
   ]
 
   /* ── For You swipe handling ── */
-  const fyItem = FYF_ITEMS[fyCurrentIndex] || FYF_ITEMS[0]
+  const rawFyItem = FYF_ITEMS[fyCurrentIndex] || FYF_ITEMS[0]
+  // Merge live prices into the current item
+  const fyItem = fyLivePrices[rawFyItem.id]
+    ? { ...rawFyItem, price: fyLivePrices[rawFyItem.id].price, pctChange: fyLivePrices[rawFyItem.id].pctChange }
+    : rawFyItem
 
   const handleFyTouchStart = useCallback((e) => {
     fyTouchStartY.current = e.touches[0].clientY
@@ -557,15 +610,11 @@ export default function IOSExplore() {
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4" fill="white" viewBox="0 0 24 24"><path d="M1 9l2 2c3.9-3.9 10.1-3.9 14 0l2-2C14.1 4.1 5.9 4.1 1 9zm8 8l3 3 3-3a4.2 4.2 0 00-6 0zm-4-4l2 2a7 7 0 019.9 0l2-2C14.1 8.1 9.9 8.1 5 13z" /></svg>
           <svg className="w-4 h-4" fill="white" viewBox="0 0 24 24"><path d="M2 22h20V2z" opacity="0.3" /><path d="M2 22h20V2L2 22zm18-2H6.83L20 6.83V20z" /></svg>
-          <button
-            type="button"
-            onClick={() => { if (!forYouUnlocked) { setForYouUnlocked(true); setActiveTab('foryou') } }}
-            className="relative"
-          >
-            <div className={clsx('w-6 h-3 rounded-sm border relative overflow-hidden transition-colors', forYouUnlocked ? 'border-[#2196F3]' : 'border-white/40')}>
-              <div className={clsx('absolute inset-y-0.5 left-0.5 right-1 rounded-[1px]', forYouUnlocked ? 'bg-[#2196F3]' : 'bg-white')} style={{ width: '70%' }} />
+          <div className="flex items-center gap-0.5">
+            <div className="w-7 h-3.5 rounded-sm border border-white/30 flex items-center p-px">
+              <div className="h-full rounded-[1px] bg-white" style={{ width: '70%' }} />
             </div>
-          </button>
+          </div>
         </div>
       </div>
       )}

@@ -463,12 +463,13 @@ function HeadphoneIcon({ className }) {
   )
 }
 
-function LiveEarningsCallCard({ call }) {
+function LiveEarningsCallCard({ call, selected, onSelect }) {
   const logoUrl = getTickerLogo(call.ticker)
   return (
     <button
       type="button"
-      className="flex flex-col gap-2 p-4 rounded-xl bg-[#1e293b] border border-[rgba(255,255,255,0.08)] min-w-[140px] shrink-0 text-left hover:border-white/20 transition-colors"
+      onClick={() => onSelect && onSelect(call.ticker)}
+      className={`flex flex-col gap-2 p-4 rounded-xl min-w-[140px] shrink-0 text-left transition-colors ${selected ? 'bg-[#2196F3]/20 border-[#2196F3] border-2' : 'bg-[#1e293b] border border-[rgba(255,255,255,0.08)] hover:border-white/20'}`}
     >
       <div className="flex items-center gap-3">
         {logoUrl ? (
@@ -495,9 +496,13 @@ function LiveEarningsCallCard({ call }) {
   )
 }
 
-function FollowerSayingCard({ person }) {
+function FollowerSayingCard({ person, selected, onSelect }) {
   return (
-    <div className="flex flex-col rounded-xl bg-[#1e293b] border border-[rgba(255,255,255,0.08)] p-4 min-w-[200px] max-w-[240px] shrink-0">
+    <button
+      type="button"
+      onClick={() => onSelect && onSelect(person.id)}
+      className={`flex flex-col rounded-xl p-4 min-w-[200px] max-w-[240px] shrink-0 text-left transition-colors ${selected ? 'bg-[#2196F3]/20 border-[#2196F3] border-2' : 'bg-[#1e293b] border border-[rgba(255,255,255,0.08)]'}`}
+    >
       <div className="flex items-center gap-3 mb-3">
         <img
           src={person.avatar}
@@ -520,7 +525,7 @@ function FollowerSayingCard({ person }) {
           </span>
         ))}
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -572,6 +577,7 @@ export default function Onboarding() {
   const [followingTraderIds, setFollowingTraderIds] = useState([])
   const [search, setSearch] = useState('')
   const [selectedDestination, setSelectedDestination] = useState(null)
+  const [destinationType, setDestinationType] = useState(null) // 'symbol' | 'trending' | 'earnings' | 'followers'
   const [step2AvatarUrl, setStep2AvatarUrl] = useState(null)
   const [showPushPromptModal, setShowPushPromptModal] = useState(false)
   const [getStartedEmail, setGetStartedEmail] = useState('')
@@ -608,27 +614,33 @@ export default function Onboarding() {
 
   const handleContinue = () => {
     if (step < TOTAL_STEPS) setStep(step + 1)
-    else navigate('/home')
+    else navigate('/iosforyou')
   }
 
   const handleSkip = () => {
     if (step < TOTAL_STEPS) setStep(step + 1)
-    else navigate('/home')
+    else navigate('/iosforyou')
   }
 
   const handleAllowPush = () => {
     // In a real app would request Notification permission here
     if (step < TOTAL_STEPS) setStep(step + 1)
-    else navigate('/home')
+    else navigate('/iosforyou')
   }
 
-  const handleDestinationSelect = (ticker) => {
+  const handleDestinationSelect = (ticker, type = 'symbol') => {
     setSelectedDestination((prev) => (prev === ticker ? null : ticker))
+    setDestinationType((prev) => (selectedDestination === ticker ? null : type))
   }
 
   const handleLetsGo = () => {
-    // In a real app could navigate to /symbol/:ticker
-    navigate('/home')
+    // "See what your followers are saying" → For You page
+    if (destinationType === 'followers') {
+      navigate('/iosforyou')
+    } else {
+      // Symbols, trending, earnings → iOS Home
+      navigate('/homeios')
+    }
   }
 
   return (
@@ -1109,7 +1121,7 @@ export default function Onboarding() {
                 <YourSymbolsRow
                   symbols={selectedSymbols}
                   selectedTicker={selectedDestination}
-                  onSelect={handleDestinationSelect}
+                  onSelect={(ticker) => handleDestinationSelect(ticker, 'symbol')}
                 />
               </div>
 
@@ -1122,7 +1134,7 @@ export default function Onboarding() {
                         key={item.ticker}
                         item={item}
                         selected={selectedDestination === item.ticker}
-                        onSelect={handleDestinationSelect}
+                        onSelect={(ticker) => handleDestinationSelect(ticker, 'trending')}
                       />
                     ))}
                   </div>
@@ -1134,7 +1146,12 @@ export default function Onboarding() {
                 <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:-mx-5 sm:px-5 scrollbar-hide">
                   <div className="flex gap-3 pb-2" style={{ minWidth: 'min-content' }}>
                     {LIVE_EARNINGS_CALLS.map((call) => (
-                      <LiveEarningsCallCard key={call.ticker} call={call} />
+                      <LiveEarningsCallCard
+                        key={call.ticker}
+                        call={call}
+                        selected={selectedDestination === call.ticker}
+                        onSelect={(ticker) => handleDestinationSelect(ticker, 'earnings')}
+                      />
                     ))}
                   </div>
                 </div>
@@ -1145,7 +1162,12 @@ export default function Onboarding() {
                 <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:-mx-5 sm:px-5 scrollbar-hide">
                   <div className="flex gap-3 pb-2" style={{ minWidth: 'min-content' }}>
                     {FOLLOWERS_SAYING.map((person) => (
-                      <FollowerSayingCard key={person.id} person={person} />
+                      <FollowerSayingCard
+                        key={person.id}
+                        person={person}
+                        selected={selectedDestination === person.id}
+                        onSelect={(id) => handleDestinationSelect(id, 'followers')}
+                      />
                     ))}
                   </div>
                 </div>
