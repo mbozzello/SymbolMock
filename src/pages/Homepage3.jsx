@@ -36,6 +36,49 @@ const FOLLOWING_FEED = [
 const FOLLOWING_RECOMMENDED = [...FOLLOWING_FEED].sort((a, b) => (b.likes + b.comments * 2) - (a.likes + a.comments * 2))
 const FOLLOWING_LATEST = [...FOLLOWING_FEED].sort((a, b) => a.ts - b.ts)
 
+/** For You feed — algorithmic mix of posts, videos, and insights for the web stream */
+const FOR_YOU_FEED = [
+  { id: 'fy1', user: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', body: '$HOOD making new highs. This is the $SCHW of our generation — the next leg up is just starting. Robinhood has quietly become the platform of choice for a new wave of investors.', time: '4m', ticker: 'HOOD', priceSincePost: '+2.35%', priceSincePositive: true, comments: 84, reposts: 31, likes: 412, sentiment: 'Bullish' },
+  { id: 'fy2', user: 'QuantQueen', avatar: '/avatars/top-voice-2.png', body: 'The implied vol surface on $NVDA is screaming. Earnings straddle pricing at 8%. This move will be violent either direction — positioning accordingly.', time: '12m', ticker: 'NVDA', priceSincePost: '+5.12%', priceSincePositive: true, comments: 45, reposts: 18, likes: 267, sentiment: 'Bullish', hasImage: true },
+  { id: 'fy3', user: 'EquityPilot', avatar: '/avatars/ross-cameron.png', body: 'My $TSLA thesis in 3 points:\n1. FSD v12.5 is a game-changer\n2. Cybertruck ramp exceeding expectations\n3. Energy storage is the hidden gem\n\nTarget: $320 by EOY. The naysayers will be buying higher.', time: '18m', ticker: 'TSLA', priceSincePost: '+8.73%', priceSincePositive: true, comments: 156, reposts: 67, likes: 892, sentiment: 'Bullish' },
+  { id: 'fy4', user: 'SteeleTwits', avatar: '/avatars/michele-steele.png', body: 'BREAKING: Fed minutes show more officials leaning toward cuts. The pivot is here. Markets are repricing everything right now.', time: '2m', ticker: 'SPY', priceSincePost: '+1.24%', priceSincePositive: true, comments: 203, reposts: 89, likes: 1240, sentiment: 'Bullish', isVideo: true, videoThumb: '/images/powell-streaming.png' },
+  { id: 'fy5', user: 'CryptoBull', avatar: '/avatars/top-voice-3.png', body: '$BTC breaking $70K again. This run is different — ETF flows are massive and institutions are allocating in size. If you\'re not in, you\'re going to chase.', time: '8m', ticker: 'BTC', priceSincePost: '+12.4%', priceSincePositive: true, comments: 312, reposts: 124, likes: 2100, sentiment: 'Bullish' },
+  { id: 'fy6', user: 'ShortSeller101', avatar: '/avatars/michael-bolling.png', body: '$SMCI is the biggest house of cards I\'ve ever seen. Accounting irregularities, auditor resignation, and management that can\'t answer basic questions. This ends badly.', time: '25m', ticker: 'SMCI', priceSincePost: '-34.5%', priceSincePositive: false, comments: 89, reposts: 42, likes: 534, sentiment: 'Bearish' },
+  { id: 'fy7', user: 'OptionsFlow', avatar: '/avatars/top-voice-1.png', body: 'Massive $META call sweep just hit the tape. 10K March $550C at $8.20. Someone knows something about the AI monetization story.', time: '6m', ticker: 'META', priceSincePost: '+3.87%', priceSincePositive: true, comments: 67, reposts: 28, likes: 445, sentiment: 'Bullish', hasImage: true },
+  { id: 'fy8', user: 'AlphaSeeker', avatar: '/avatars/ross-cameron.png', body: 'Dave called this one weeks ago — $RIVN partnership with VW is transformative. Finally a credible path to profitability. This stock was left for dead but the turnaround story is real.', time: '32m', ticker: 'RIVN', priceSincePost: '-18.2%', priceSincePositive: false, comments: 34, reposts: 12, likes: 189, sentiment: 'Bearish' },
+  { id: 'fy9', user: 'MacroView', avatar: '/avatars/top-voice-2.png', body: 'The yield curve just un-inverted. Historically this is the danger zone, not the all-clear. Cash allocation up to 25%. Watch the labor market data closely.', time: '45m', ticker: 'TLT', priceSincePost: '-2.1%', priceSincePositive: false, comments: 78, reposts: 35, likes: 423, sentiment: 'Bearish' },
+  { id: 'fy10', user: 'RetailTrader42', avatar: '/avatars/top-voice-3.png', body: '$AMC just announced a new premium large format theater concept. Revenue diversification play that nobody is talking about. Shorts are sweating.', time: '1h', ticker: 'AMC', priceSincePost: '+4.21%', priceSincePositive: true, comments: 198, reposts: 76, likes: 1100, sentiment: 'Bullish' },
+  { id: 'fy11', user: 'ChipAnalyst', avatar: '/avatars/top-voice-1.png', body: '$INTC just secured a major DoD contract for domestic chip manufacturing. This is the turnaround catalyst that changes the narrative entirely.', time: '15m', ticker: 'INTC', priceSincePost: '+6.8%', priceSincePositive: true, comments: 56, reposts: 23, likes: 378, sentiment: 'Bullish', isVideo: true, videoThumb: '/images/chart-draw.png' },
+  { id: 'fy12', user: 'ETHMaxi', avatar: '/avatars/michael-bolling.png', body: 'Ethereum staking yields are outperforming treasuries. The merge was just the beginning. $ETH is the best risk-adjusted asset in crypto right now.', time: '20m', ticker: 'ETH', priceSincePost: '+9.3%', priceSincePositive: true, comments: 145, reposts: 58, likes: 823, sentiment: 'Bullish' },
+  { id: 'fy13', user: 'BearishDave', avatar: '/avatars/ross-cameron.png', body: '$NKLA is a zero. The truck deliveries are a fraction of what was promised, cash burn is accelerating, and dilution will keep coming. Avoid.', time: '55m', ticker: 'NKLA', priceSincePost: '-62.3%', priceSincePositive: false, comments: 42, reposts: 15, likes: 267, sentiment: 'Bearish' },
+  { id: 'fy14', user: 'GrowthInvestor', avatar: '/avatars/top-voice-2.png', body: '$SPOT just hit 600M MAUs. The podcast moat is real, margins are expanding, and price increases are sticking. This is a $400 stock.', time: '38m', ticker: 'SPOT', priceSincePost: '+11.2%', priceSincePositive: true, comments: 89, reposts: 34, likes: 567, sentiment: 'Bullish' },
+  { id: 'fy15', user: 'AIResearcher', avatar: '/avatars/top-voice-3.png', body: 'Just tested GPT-5 access through $MSFT Azure. The inference speed and accuracy improvements are staggering. Enterprise adoption of AI copilots is about to hockey-stick.', time: '28m', ticker: 'MSFT', priceSincePost: '+2.8%', priceSincePositive: true, comments: 112, reposts: 48, likes: 678, sentiment: 'Bullish' },
+]
+
+/** Extended For You feed — unlocked after sign-up / login */
+const FOR_YOU_FEED_EXTENDED = [
+  { id: 'fyx1', user: 'SwingTrader Pro', avatar: '/avatars/top-voice-1.png', body: '$GOOGL price action looks incredible here. Cloud revenue reacceleration + Gemini monetization = breakout setup. Adding to my position aggressively.', time: '3m', ticker: 'GOOGL', priceSincePost: '+4.56%', priceSincePositive: true, comments: 92, reposts: 38, likes: 521, sentiment: 'Bullish' },
+  { id: 'fyx2', user: 'DegenTrader', avatar: '/avatars/top-voice-3.png', body: '$DOGE community is sleeping on the payments integration news. Elon keeps hinting at X payments and $DOGE is the only crypto he\'s ever endorsed. This rips to $1.', time: '7m', ticker: 'DOGE', priceSincePost: '+28.4%', priceSincePositive: true, comments: 445, reposts: 198, likes: 3200, sentiment: 'Bullish' },
+  { id: 'fyx3', user: 'ValueHunter', avatar: '/avatars/michael-bolling.png', body: '$DIS at these levels is a generational buy. Parks record revenue, streaming turning profitable, ESPN bet launching. The turnaround is real and the street is still sleeping.', time: '22m', ticker: 'DIS', priceSincePost: '+7.2%', priceSincePositive: true, comments: 67, reposts: 29, likes: 412, sentiment: 'Bullish', hasImage: true },
+  { id: 'fyx4', user: 'TechInsider', avatar: '/avatars/ross-cameron.png', body: 'Talked to 3 enterprise CTOs this week — all moving to $PLTR AIP platform. The pipeline is massive and conversion rates are accelerating. This is a $50 stock in 12 months.', time: '14m', ticker: 'PLTR', priceSincePost: '+15.8%', priceSincePositive: true, comments: 134, reposts: 56, likes: 789, sentiment: 'Bullish' },
+  { id: 'fyx5', user: 'BearCave', avatar: '/avatars/top-voice-2.png', body: 'Nobody is talking about $SNAP ad revenue deceleration. The AI story is a band-aid on a broken model. User growth stalling in key demographics. Target: $8.', time: '31m', ticker: 'SNAP', priceSincePost: '-22.1%', priceSincePositive: false, comments: 56, reposts: 21, likes: 345, sentiment: 'Bearish' },
+  { id: 'fyx6', user: 'DividendKing', avatar: '/avatars/top-voice-1.png', body: '$AAPL raised dividend 4% and authorized $110B buyback. The capital return machine keeps churning. Services margin expansion is the real story here.', time: '42m', ticker: 'AAPL', priceSincePost: '+1.9%', priceSincePositive: true, comments: 78, reposts: 32, likes: 456, sentiment: 'Bullish' },
+  { id: 'fyx7', user: 'EarningsWhisperer', avatar: '/avatars/michele-steele.png', body: 'My channel checks on $AMZN AWS indicate a massive reacceleration. Enterprise migrations that paused in 2023 are flooding back. Q1 is going to blow estimates away.', time: '9m', ticker: 'AMZN', priceSincePost: '+6.3%', priceSincePositive: true, comments: 167, reposts: 72, likes: 934, sentiment: 'Bullish', isVideo: true, videoThumb: '/images/board-room.png' },
+  { id: 'fyx8', user: 'MomentumAlpha', avatar: '/avatars/top-voice-3.png', body: '$SOL ecosystem is on fire. TVL doubling every month, Jupiter DEX doing more volume than most CEXes. This is the Ethereum killer everyone was waiting for.', time: '16m', ticker: 'SOL', priceSincePost: '+19.7%', priceSincePositive: true, comments: 234, reposts: 98, likes: 1567, sentiment: 'Bullish' },
+  { id: 'fyx9', user: 'ContraBull', avatar: '/avatars/michael-bolling.png', body: 'Hot take: $QQQ is due for a 10-15% correction. RSI divergence, breadth narrowing, and credit spreads widening. Buying puts here for March expiry.', time: '48m', ticker: 'QQQ', priceSincePost: '-3.4%', priceSincePositive: false, comments: 89, reposts: 34, likes: 423, sentiment: 'Bearish' },
+  { id: 'fyx10', user: 'PharmaWatch', avatar: '/avatars/ross-cameron.png', body: 'Just got the Phase 3 readout. $LLY obesity drug data is even better than expected — weight loss sustained at 52 weeks with minimal side effects. Pipeline is unmatched.', time: '5m', ticker: 'LLY', priceSincePost: '+3.1%', priceSincePositive: true, comments: 189, reposts: 78, likes: 1023, sentiment: 'Bullish' },
+  { id: 'fyx11', user: 'SemiconductorSam', avatar: '/avatars/top-voice-2.png', body: 'The $AMD MI300X benchmarks are insane — matching H100 on inference at 40% lower cost. If hyperscalers diversify supply chain away from NVDA, this is a $250 stock.', time: '19m', ticker: 'AMD', priceSincePost: '+8.9%', priceSincePositive: true, comments: 112, reposts: 45, likes: 678, sentiment: 'Bullish', hasImage: true },
+  { id: 'fyx12', user: 'FinTechBull', avatar: '/avatars/top-voice-1.png', body: '$SQ just launched AI-powered lending for small businesses. Cash App is already printing money — if the lending book scales, this is a triple from here.', time: '33m', ticker: 'SQ', priceSincePost: '+5.6%', priceSincePositive: true, comments: 56, reposts: 23, likes: 334, sentiment: 'Bullish' },
+  { id: 'fyx13', user: 'EVBear', avatar: '/avatars/top-voice-3.png', body: '$LCID deliveries missed estimates again. The Saudi money won\'t last forever and competition is only getting fiercer. This goes below $2 before year end.', time: '1h 5m', ticker: 'LCID', priceSincePost: '-41.2%', priceSincePositive: false, comments: 67, reposts: 28, likes: 312, sentiment: 'Bearish' },
+  { id: 'fyx14', user: 'IPO Tracker', avatar: '/avatars/michele-steele.png', body: 'The IPO window is WIDE open. Reddit $RDDT trading at 15x revenue, Instacart stabilizing. My top upcoming IPO to watch: Stripe. Get ready.', time: '52m', ticker: 'RDDT', priceSincePost: '+32.5%', priceSincePositive: true, comments: 145, reposts: 62, likes: 856, sentiment: 'Bullish' },
+  { id: 'fyx15', user: 'GoldBug', avatar: '/avatars/michael-bolling.png', body: 'Central banks bought more gold in 2024 than any year in history. $GLD is breaking out of a 3-year consolidation. New ATH incoming. De-dollarization is the mega trend.', time: '1h 15m', ticker: 'GLD', priceSincePost: '+6.8%', priceSincePositive: true, comments: 98, reposts: 41, likes: 534, sentiment: 'Bullish' },
+  { id: 'fyx16', user: 'SpaceInvestor', avatar: '/avatars/ross-cameron.png', body: 'Starship Flight 4 was flawless. $RKLB is the best pure-play space stock and Neutron is on track for 2025. Peter Beck is building the next SpaceX.', time: '27m', ticker: 'RKLB', priceSincePost: '+42.1%', priceSincePositive: true, comments: 201, reposts: 87, likes: 1234, sentiment: 'Bullish' },
+  { id: 'fyx17', user: 'QuantStrategist', avatar: '/avatars/top-voice-2.png', body: 'My model is flashing a buy signal on $PYPL for the first time in 2 years. Active accounts stabilizing, Venmo monetization accelerating, and P/E at 15x is laughable for this business.', time: '36m', ticker: 'PYPL', priceSincePost: '+4.3%', priceSincePositive: true, comments: 78, reposts: 31, likes: 445, sentiment: 'Bullish' },
+  { id: 'fyx18', user: 'EnergyTrader', avatar: '/avatars/top-voice-1.png', body: 'AI power demand is real and $VST is the biggest beneficiary. Nuclear renaissance + data center contracts = earnings growth for the next decade. This is still early.', time: '11m', ticker: 'VST', priceSincePost: '+18.9%', priceSincePositive: true, comments: 134, reposts: 56, likes: 767, sentiment: 'Bullish', isVideo: true, videoThumb: '/images/chart-draw.png' },
+  { id: 'fyx19', user: 'ShortReport', avatar: '/avatars/top-voice-3.png', body: 'Released our deep dive on $MSTR. Buying Bitcoin at a premium with leverage is not a business model. When BTC corrects, this unwinds violently. Price target: $120.', time: '1h 30m', ticker: 'MSTR', priceSincePost: '-15.6%', priceSincePositive: false, comments: 312, reposts: 134, likes: 1890, sentiment: 'Bearish' },
+  { id: 'fyx20', user: 'TravelBull', avatar: '/avatars/michael-bolling.png', body: '$ABNB just reported record bookings and nights. International expansion is the untold story — Europe and Asia growing 40%+ YoY. Airbnb Rooms is a game-changer.', time: '43m', ticker: 'ABNB', priceSincePost: '+5.2%', priceSincePositive: true, comments: 67, reposts: 28, likes: 389, sentiment: 'Bullish' },
+]
+
 const DEFAULT_AVATAR = '/avatars/user-avatar.png'
 
 /** Random social-style images to show under message body (like a real feed) */
@@ -819,7 +862,10 @@ export default function Homepage3() {
   const location = useLocation()
   const [selectedTicker, setSelectedTicker] = useState(TRENDING_NOW[0].ticker)
   const [newPostCount, setNewPostCount] = useState(0)
-  const [homeTab, setHomeTab] = useState('trending') // 'trending' | 'market-overview' | 'following'
+  const [homeTab, setHomeTab] = useState('trending') // 'trending' | 'market-overview' | 'following' | 'foryou'
+  const [fyUnlocked, setFyUnlocked] = useState(false) // unlocked after login/signup from For You gate
+  const [fyGateVisible, setFyGateVisible] = useState(false) // true once user scrolls enough on For You (logged-out)
+  const fyGateSentinelRef = useRef(null)
   const [followingFeedSort, setFollowingFeedSort] = useState('recommended') // 'recommended' | 'latest'
   const [wtfCat, setWtfCat] = useState('All') // Who to Follow category filter (logged-out following tab)
   const [streamFilter, setStreamFilter] = useState(0) // 0 = first topic (default on /home) | 'latest' | 1 | 2 | 3 (topic index)
@@ -864,6 +910,28 @@ export default function Homepage3() {
     setStreamFilter(selectedTicker === 'AAPL' ? 'latest' : 0)
     setPrependedLatestMessages([])
   }, [selectedTicker])
+
+  /* For You gate — observe sentinel element to trigger modal once user scrolls far enough */
+  useEffect(() => {
+    if (isLoggedIn || fyUnlocked || homeTab !== 'foryou') { setFyGateVisible(false); return }
+    const el = fyGateSentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setFyGateVisible(true)
+    }, { threshold: 0.1 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [isLoggedIn, fyUnlocked, homeTab])
+
+  /* Lock body scroll when For You gate modal is visible */
+  useEffect(() => {
+    if (fyGateVisible) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [fyGateVisible])
 
   const SPARK_FALLBACK = {
     TSLA: [194, 195, 196, 197, 198, 199, 200, 201],
@@ -996,7 +1064,7 @@ export default function Homepage3() {
 
         {/* Middle + Right (3-column layout on /home like /symbol); 2-column on /home2 */}
         <div className={clsx('flex-1 min-w-0 flex', !isHome2 && 'gap-0')}>
-        <main className={clsx('flex-1 min-w-0 flex flex-col pl-0 pr-0 py-4 lg:pl-0 lg:pr-0 lg:py-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
+        <main className={clsx('flex-1 min-w-0 flex flex-col pl-0 pr-0 py-4 lg:pl-0 lg:pr-0 lg:py-6 gap-4', !isHome2 && (homeTab === 'trending' || homeTab === 'following' || homeTab === 'foryou') && 'w-[660px] max-w-[660px]', (isHome2 || homeTab === 'market-overview') && 'w-[660px] max-w-[660px]')}>
           {/* Header: Trending + Market Overview (on /home) / Market Overview only (on /home2) + Following / Watchlist (locked, sign-up to unlock) */}
           <div className="flex items-center gap-6 border-b-2 border-border pb-2 shrink-0 pl-4">
             {isHome2 ? (
@@ -1031,6 +1099,20 @@ export default function Homepage3() {
                 >
                   {homeTab === 'trending' && <span className="text-orange-500" aria-hidden>🔥</span>}
                   Trending
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHomeTab('foryou')}
+                  className={clsx(
+                    'text-base font-bold pb-0.5 -mb-0.5 transition-colors inline-flex items-center gap-1',
+                    homeTab === 'foryou'
+                      ? 'text-black border-b-2 border-black'
+                      : 'text-text-muted border-b-2 border-transparent hover:text-text'
+                  )}
+                  style={homeTab === 'foryou' ? { borderBottomWidth: 2 } : {}}
+                >
+                  {homeTab === 'foryou' && <span aria-hidden>⚡</span>}
+                  For You
                 </button>
               </>
             )}
@@ -1318,6 +1400,95 @@ export default function Homepage3() {
             </div>
           </div>
           )}
+
+          {/* For You stream — algorithmic feed of posts, videos, and insights */}
+          {!isHome2 && homeTab === 'foryou' && (() => {
+            const fyShowAll = isLoggedIn || fyUnlocked
+            const fyVisiblePosts = fyShowAll ? [...FOR_YOU_FEED, ...FOR_YOU_FEED_EXTENDED] : FOR_YOU_FEED
+            return (
+          <div className="shrink-0 relative">
+            <div className="divide-y divide-border">
+              {fyVisiblePosts.map((msg, idx) => {
+                const logo = getTickerLogo(msg.ticker)
+                return (
+                <Fragment key={msg.id}>
+                {/* Sentinel — placed after post 10 (logged-out) to trigger the gate modal */}
+                {!fyShowAll && idx === 10 && <div ref={fyGateSentinelRef} className="h-0" />}
+                <div className="flex gap-3 py-4">
+                  <img src={msg.avatar || DEFAULT_AVATAR} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-text">{msg.user}</span>
+                      {msg.sentiment && (
+                        <span className={clsx('text-[10px] font-bold px-1.5 py-0.5 rounded', msg.sentiment === 'Bullish' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')}>
+                          {msg.sentiment}
+                        </span>
+                      )}
+                      <span className="text-xs text-text-muted">{msg.time}</span>
+                    </div>
+                    <p className="text-sm text-text mt-1 leading-snug whitespace-pre-line"><TickerLinkedText text={msg.body} /></p>
+                    {/* Ticker pill with price since post */}
+                    {msg.ticker && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Link to={`/symbol/${msg.ticker}`} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-muted/40 border border-border hover:bg-surface-muted/60 transition-colors">
+                          {logo && <img src={logo} alt="" className="w-4 h-4 rounded object-cover" />}
+                          <span className="text-xs font-semibold text-text">${msg.ticker}</span>
+                          {msg.priceSincePost && (
+                            <span className={clsx('text-xs font-bold', msg.priceSincePositive ? 'text-green-600' : 'text-red-500')}>
+                              {msg.priceSincePost}
+                            </span>
+                          )}
+                        </Link>
+                        <span className="text-[10px] text-text-muted">since post</span>
+                      </div>
+                    )}
+                    {/* Video thumbnail */}
+                    {msg.isVideo && msg.videoThumb && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-border relative cursor-pointer group">
+                        <img src={msg.videoThumb} alt="" className="w-full aspect-video object-cover" />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                          <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {/* Image attachment */}
+                    {msg.hasImage && !msg.isVideo && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
+                        <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
+                      </div>
+                    )}
+                    {/* Engagement bar */}
+                    <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        {msg.comments ?? 0}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        {msg.reposts ?? 0}
+                      </button>
+                      <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        {msg.likes ?? 0}
+                      </button>
+                      <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Share">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                      </button>
+                      <button type="button" onClick={() => toggleBookmark(msg)} className={clsx('p-1 transition-colors', isBookmarked(msg.id) ? 'text-primary' : 'hover:text-text')} aria-label={isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'}>
+                        <svg className="w-4 h-4" fill={isBookmarked(msg.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                </Fragment>
+                )
+              })}
+            </div>
+          </div>
+            )
+          })()}
 
           {/* Trending: header above (only on /home2), then symbol tabs + content — show when Trending tab (on /home) or on /home2 */}
           {(isHome2 || homeTab === 'trending') && (
@@ -2402,6 +2573,82 @@ export default function Homepage3() {
         </div>
       </div>
       </div>
+
+      {/* For You gate modal — fixed center overlay triggered by scroll */}
+      {fyGateVisible && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          {/* Semi-transparent backdrop */}
+          <div className="absolute inset-0 bg-black/50" />
+          {/* Modal card */}
+          <div className="relative bg-white dark:bg-surface rounded-2xl shadow-2xl border border-gray-200 dark:border-border w-[380px] max-w-[90vw] px-8 py-8 text-center" style={{ animation: 'scaleIn 0.3s ease-out' }}>
+            {/* Stocktwits logo */}
+            <img src="/images/stocktwits-logo.png" alt="stocktwits" className="h-8 mx-auto mb-4" />
+            {/* CTA copy */}
+            <h3 className="text-lg font-extrabold text-text mb-1.5">Your Feed is Waiting</h3>
+            <p className="text-xs text-text-muted leading-relaxed mb-5 max-w-[300px] mx-auto">
+              Join 10M+ investors getting real-time sentiment, price predictions, and the trades that matter — personalized to what you care about.
+            </p>
+            {/* Email input */}
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full px-4 py-2.5 rounded-full border border-gray-300 dark:border-border bg-gray-50 dark:bg-surface-muted text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 mb-3"
+            />
+            {/* Sign Up button */}
+            <button
+              type="button"
+              onClick={() => { setIsLoggedIn(true); setFyUnlocked(true); setFyGateVisible(false); }}
+              className="w-full py-2.5 rounded-full bg-gray-300 dark:bg-gray-600 text-white text-sm font-bold hover:bg-primary hover:text-white transition-colors mb-4"
+            >
+              Sign Up
+            </button>
+            {/* Divider */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-gray-200 dark:bg-border" />
+              <span className="text-xs text-text-muted">or</span>
+              <div className="flex-1 h-px bg-gray-200 dark:bg-border" />
+            </div>
+            {/* Continue with Google */}
+            <button
+              type="button"
+              onClick={() => { setIsLoggedIn(true); setFyUnlocked(true); setFyGateVisible(false); }}
+              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-full border border-gray-300 dark:border-border bg-white dark:bg-surface hover:bg-gray-50 dark:hover:bg-surface-muted transition-colors mb-2.5"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              <span className="text-sm font-semibold text-text">Continue with Google</span>
+            </button>
+            {/* Continue with Apple */}
+            <button
+              type="button"
+              onClick={() => { setIsLoggedIn(true); setFyUnlocked(true); setFyGateVisible(false); }}
+              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-full border border-gray-300 dark:border-border bg-white dark:bg-surface hover:bg-gray-50 dark:hover:bg-surface-muted transition-colors mb-2.5"
+            >
+              <svg className="w-5 h-5 text-text" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+              <span className="text-sm font-semibold text-text">Continue with Apple</span>
+            </button>
+            {/* Create Account */}
+            <button
+              type="button"
+              onClick={() => { setIsLoggedIn(true); setFyUnlocked(true); setFyGateVisible(false); }}
+              className="w-full py-2.5 rounded-full border border-gray-300 dark:border-border bg-white dark:bg-surface hover:bg-gray-50 dark:hover:bg-surface-muted transition-colors text-sm font-semibold text-text mb-4"
+            >
+              Create Account
+            </button>
+            {/* Log in link */}
+            <button
+              type="button"
+              onClick={() => { setIsLoggedIn(true); setFyUnlocked(true); setFyGateVisible(false); }}
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              Log in to existing account
+            </button>
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
     </div>
   )
 }
