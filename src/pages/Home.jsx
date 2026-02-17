@@ -291,41 +291,6 @@ export default function Home() {
           {/* Main feed column */}
           <div className="flex-1 min-w-0 max-w-[660px] pl-0 pr-0">
             <SymbolHeaderAbovePostBox symbol={symbol} />
-            {/* Trending box — expandable summary above post box */}
-            <button
-              type="button"
-              onClick={() => setTrendingSummaryExpanded((e) => !e)}
-              className="w-full text-left rounded-2xl p-4 mb-3 flex items-start gap-4 transition-colors hover:opacity-95"
-              style={{
-                background: 'linear-gradient(to right, rgba(254, 215, 170, 0.6), rgba(250, 204, 211, 0.5), rgba(221, 214, 254, 0.5))',
-              }}
-              aria-expanded={trendingSummaryExpanded}
-            >
-              <div className="w-12 h-12 shrink-0 rounded-full bg-white/90 flex items-center justify-center text-2xl shadow-sm">
-                🔥
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-base font-bold text-text">Trending #1</span>
-                  <span className="shrink-0 text-text-muted" aria-hidden>
-                    {trendingSummaryExpanded ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                    )}
-                  </span>
-                </div>
-                {trendingSummaryExpanded ? (
-                  <p className="text-sm text-text mt-2 leading-relaxed">
-                    Tesla (TSLA) is trending as investors debate the stock&apos;s near-term outlook following mixed signals around AI monetization, rising capital expenditures, and competitive pressure in EVs and energy. Community discussion is focused on whether Tesla&apos;s heavy investment in FSD and robotics will translate into durable revenue growth, alongside concerns about margin compression and regulatory overhang. While some express frustration with perceived execution risk versus peers, others view recent consolidation as an opportunity given Tesla&apos;s scale, cash flow, and entrenched position in EVs and storage.
-                  </p>
-                ) : (
-                  <p className="text-sm text-text mt-0.5 truncate pr-6">
-                    Tesla (TSLA) is trending as investors debate the stock&apos;s near-term outlook following mixed si...
-                  </p>
-                )}
-              </div>
-            </button>
             <MessagePostBox placeholder="What're your thoughts on $TSLA?" onPost={handlePost} />
 
             {/* Feed controls */}
