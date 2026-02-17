@@ -835,7 +835,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                 type="button"
                 onClick={handlePost}
                 className={clsx(
-                  'px-6 py-2.5 rounded-full text-sm font-bold transition-colors min-w-[88px] border-0 focus:outline-none focus:ring-0',
+                  'px-6 py-2.5 rounded-full text-sm font-bold transition-colors min-w-[70px] border-0 focus:outline-none focus:ring-0',
                   isReadyToPost
                     ? 'bg-black text-white hover:opacity-90'
                     : 'bg-[#E5E5E5] text-white dark:bg-surface-muted dark:text-white'
