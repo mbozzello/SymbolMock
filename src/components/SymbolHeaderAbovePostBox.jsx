@@ -272,9 +272,36 @@ function ExpandedChart({ values, volumeBars, isUp }) {
   )
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange }) {
+function PredictionGauge({ value = 54, size = 52, strokeWidth = 5 }) {
+  const radius = (size - strokeWidth) / 2
+  const cx = size / 2
+  const cy = size / 2
+  const circumference = 2 * Math.PI * radius
+  const filled = (value / 100) * circumference
+  const color = '#f59e0b'
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} className="shrink-0" style={{ width: size, height: size }}>
+      <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference - filled} transform={`rotate(-90 ${cx} ${cy})`} />
+      <text x={cx} y={cy - 2} textAnchor="middle" fontSize="14" fontWeight="700" fill={color}>
+        {value}%
+      </text>
+      <text x={cx} y={cy + 11} textAnchor="middle" fontSize="8" fontWeight="600" fill="#9ca3af">
+        chance
+      </text>
+    </svg>
+  )
+}
+
+const DEFAULT_PREDICTION = {
+  question: 'How many jobless claims during the week ending Feb 14?',
+  chancePct: 54,
+}
+
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
+  const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
   const [floatingWatchers, setFloatingWatchers] = useState(null)
@@ -300,7 +327,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
   return (
     <div className="mb-1 px-4">
       {/* Row 1: Logo + Ticker/Name + Price/Change + Mini Chart */}
-      <div className="flex items-start gap-4 pb-4">
+      <div className="flex items-start gap-4 pb-3">
         <div className="relative shrink-0">
           <div className="w-[84px] h-[84px] rounded-2xl overflow-hidden bg-red-600 flex items-center justify-center shadow-sm">
             {logoUrl ? (
@@ -340,7 +367,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       </div>
 
       {/* Row 2: Earnings Call + Trending pills */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-full py-2 px-4 text-white text-sm font-semibold shadow-sm"
@@ -530,45 +557,94 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
         )}
       </div>
 
-      {/* Row 4: Sentiment */}
-      <div className="flex flex-wrap items-center gap-3 py-3 border-b border-border">
-        <SentimentGauge value={symbol.sentimentPct ?? 88} size={52} strokeWidth={5} />
-        <div className="min-w-0 flex-1">
-          <p className="text-base font-bold text-text">{symbol.sentimentLabel ?? 'Extremely Bullish'}</p>
-          <p className="text-sm text-text-muted">How do you feel about {symbol.ticker}?</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setSelectedSentiment('bullish')}
-            className={clsx(
-              'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors',
-              selectedSentiment === 'bullish'
-                ? 'bg-green-50 dark:bg-green-950/30 border-green-500 text-green-700 dark:text-green-400'
-                : 'bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/30'
-            )}
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M18 15l-6-6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Bullish
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedSentiment('bearish')}
-            className={clsx(
-              'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors',
-              selectedSentiment === 'bearish'
-                ? 'bg-red-50 dark:bg-red-950/30 border-red-500 text-red-700 dark:text-red-400'
-                : 'bg-red-50/50 dark:bg-red-950/10 border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30'
-            )}
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Bearish
-          </button>
-        </div>
+      {/* Row 4: Sentiment / Prediction content */}
+      <div className="border-b border-border">
+        {variant === 'predict' && (
+          <div className="flex justify-end pt-1 pb-0 -mb-1">
+            <div className="relative inline-grid grid-cols-2 items-center rounded-full bg-gray-300 p-1 overflow-hidden">
+              <span
+                aria-hidden="true"
+                className={clsx(
+                  'absolute top-1 bottom-1 left-1 w-[calc(50%_-_0.25rem)] rounded-full bg-white shadow-sm transition-transform duration-200 ease-out',
+                  sentimentMode === 'prediction' ? 'translate-x-0' : 'translate-x-full'
+                )}
+              />
+              <button
+                type="button"
+                onClick={() => setSentimentMode('prediction')}
+                className={clsx(
+                  'relative z-10 px-4 py-1.5 text-xs font-semibold transition-colors',
+                  sentimentMode === 'prediction' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                )}
+              >
+                Prediction
+              </button>
+              <button
+                type="button"
+                onClick={() => setSentimentMode('sentiment')}
+                className={clsx(
+                  'relative z-10 px-4 py-1.5 text-xs font-semibold transition-colors',
+                  sentimentMode === 'sentiment' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                )}
+              >
+                Sentiment
+              </button>
+            </div>
+          </div>
+        )}
+        {sentimentMode === 'sentiment' ? (
+          <div className="flex flex-wrap items-center gap-3 pt-2 pb-3">
+            <SentimentGauge value={symbol.sentimentPct ?? 88} size={52} strokeWidth={5} />
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-bold text-text">{symbol.sentimentLabel ?? 'Extremely Bullish'}</p>
+              <p className="text-sm text-text-muted">How do you feel about {symbol.ticker}?</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedSentiment('bullish')}
+                className={clsx(
+                  'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors',
+                  selectedSentiment === 'bullish'
+                    ? 'bg-green-50 dark:bg-green-950/30 border-green-500 text-green-700 dark:text-green-400'
+                    : 'bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/30'
+                )}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 15l-6-6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Bullish
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedSentiment('bearish')}
+                className={clsx(
+                  'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors',
+                  selectedSentiment === 'bearish'
+                    ? 'bg-red-50 dark:bg-red-950/30 border-red-500 text-red-700 dark:text-red-400'
+                    : 'bg-red-50/50 dark:bg-red-950/10 border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30'
+                )}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Bearish
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 pt-2 pb-3">
+            <PredictionGauge value={prediction.chancePct ?? 54} size={52} strokeWidth={5} />
+            <p className="min-w-0 flex-1 text-sm font-semibold text-text leading-snug">{prediction.question}</p>
+            <button
+              type="button"
+              className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
+              aria-label="Expand prediction"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Row 5: Tabs */}
