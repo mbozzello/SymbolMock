@@ -298,7 +298,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
   }, [])
 
   return (
-    <div className="mb-4 px-4">
+    <div className="mb-1 px-4">
       {/* Row 1: Logo + Ticker/Name + Price/Change + Mini Chart */}
       <div className="flex items-start gap-4 pb-4">
         <div className="relative shrink-0">
@@ -572,7 +572,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       </div>
 
       {/* Row 5: Tabs */}
-      <nav className="flex items-center gap-1 sm:gap-2 pt-1" aria-label="Symbol tabs">
+      <nav className="flex items-center gap-1 sm:gap-2 pt-0.5" aria-label="Symbol tabs">
         {TABS.map((tab) => {
           const isActive = activeTab === tab
           return (

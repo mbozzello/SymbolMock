@@ -291,7 +291,9 @@ export default function Home() {
           {/* Main feed column */}
           <div className="flex-1 min-w-0 max-w-[660px] pl-0 pr-0">
             <SymbolHeaderAbovePostBox symbol={symbol} />
-            <MessagePostBox placeholder="What're your thoughts on $TSLA?" onPost={handlePost} />
+            <div className="px-3">
+              <MessagePostBox placeholder="What're your thoughts on $TSLA?" onPost={handlePost} />
+            </div>
 
             {/* Feed controls */}
             <div className="flex flex-wrap items-center justify-between gap-2 py-2 border-b border-border">
