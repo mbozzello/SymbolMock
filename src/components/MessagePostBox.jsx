@@ -822,12 +822,12 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                     ? () => setShowScheduleModal(true)
                     : undefined
                 }
-                className="flex items-center gap-1.5 text-sm font-medium text-text hover:opacity-80 transition-opacity shrink-0"
+                className="group flex items-center gap-1.5 text-sm font-medium text-text hover:opacity-80 transition-all shrink-0"
                 style={{ color: action.color }}
                 aria-label={action.label}
               >
                 {actionIcons[action.key]}
-                {(action.key === 'predict' || action.key === 'chart' || action.key === 'reaction') && <span>{action.label}</span>}
+                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-[80px] group-hover:opacity-100 transition-all duration-200 whitespace-nowrap">{action.label}</span>
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2 shrink-0">
