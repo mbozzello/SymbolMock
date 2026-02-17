@@ -41,7 +41,6 @@ const POST_ACTIONS = [
   { key: 'emoji', label: 'Emoji', color: '#ea580c' },
   { key: 'chart', label: 'Chart', color: '#0891b2' },
   { key: 'predict', label: 'Predict', color: '#2563eb' },
-  { key: 'marketTags', label: 'Tags', color: '#eab308' },
   { key: 'reaction', label: 'Debate', color: '#16a34a' },
 ]
 
@@ -90,6 +89,8 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   const stampDragStart = useRef({ clientX: 0, clientY: 0, stampX: 0, stampY: 0 })
   const chartCanvasRef = useRef(null)
   const chartContainerRef = useRef(null)
+  const postBoxRef = useRef(null)
+  const inputRef = useRef(null)
   const chartSize = { w: 560, h: 320 }
   const STAMP_PADDING = 50
   const PRICE_SINCE_LABEL = '$TSLA +3.52%'
@@ -208,6 +209,17 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
     window.addEventListener('keydown', onEsc)
     return () => window.removeEventListener('keydown', onEsc)
   }, [showScheduleModal])
+
+  useEffect(() => {
+    const handleMouseDown = (e) => {
+      if (postBoxRef.current && !postBoxRef.current.contains(e.target)) {
+        setIsFocused(false)
+        inputRef.current?.blur()
+      }
+    }
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [])
 
   useEffect(() => {
     if (!showTagsModal) return
@@ -444,7 +456,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   }
 
   return (
-    <div className="px-0 py-4">
+    <div ref={postBoxRef} className="px-0 py-4">
       <div
           className={clsx(
             'rounded-2xl bg-surface border-2 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] overflow-hidden transition-colors',
@@ -459,15 +471,60 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
               className="h-10 w-10 rounded-full flex-shrink-0 object-cover border border-border"
             />
             <div className="flex-1 min-w-0 flex flex-col">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder={placeholder}
-                className="w-full px-4 py-3 rounded-full bg-[#F5F5F7] dark:bg-surface-muted border-0 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+              <div
+                className={clsx(
+                  'rounded-2xl transition-all',
+                  isFocused ? 'bg-[#F5F5F7] dark:bg-surface-muted p-3' : ''
+                )}
+              >
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  placeholder={placeholder}
+                  className={clsx(
+                    'w-full border-0 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-0',
+                    isFocused ? 'px-2 py-2 bg-transparent' : 'px-4 py-3 rounded-full bg-[#F5F5F7] dark:bg-surface-muted focus:ring-2 focus:ring-primary/30'
+                  )}
+                />
+                {isFocused && (
+                  <div className="mt-2 pt-2 flex flex-wrap items-center gap-1.5 border-t border-border/50">
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowTagsModal(true)}
+                      className="flex items-center gap-1.5 text-sm font-medium shrink-0"
+                      style={{ color: '#eab308' }}
+                      aria-label="Tags"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                      </svg>
+                      <span>Tags</span>
+                    </button>
+                    {selectedTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-surface dark:bg-surface-muted border border-border text-text"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => removeTag(tag)}
+                          className="p-0.5 -mr-0.5 rounded-full hover:bg-surface-muted dark:hover:bg-surface text-muted hover:text-text"
+                          aria-label={`Remove ${tag}`}
+                        >
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
               {isFocused && (
                 <div className="mt-2 flex items-center gap-2">
                   <button
@@ -640,26 +697,6 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                   </button>
                 </div>
               )}
-              {selectedTags.length > 0 && (
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {selectedTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-surface-muted border border-border text-text"
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="p-0.5 -mr-0.5 rounded-full hover:bg-surface text-muted hover:text-text"
-                        aria-label={`Remove ${tag}`}
-                      >
-                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
               {showPoll && (
                 <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 overflow-hidden">
                   <div className="p-3 flex flex-col gap-3">
@@ -751,6 +788,23 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
             </div>
           </div>
           <div className="flex items-center gap-4 flex-nowrap">
+            <div className="flex rounded-full bg-[#F2F2F2] dark:bg-surface-muted border border-border overflow-hidden shrink-0" role="group" aria-label="Sentiment">
+              <button
+                type="button"
+                onClick={() => setSentiment('bullish')}
+                className={clsx('px-3 py-1.5 text-xs font-medium transition-colors', sentiment === 'bullish' ? 'bg-success/15 text-success' : 'text-success hover:bg-surface')}
+              >
+                Bullish
+              </button>
+              <div className="w-px bg-border shrink-0" aria-hidden />
+              <button
+                type="button"
+                onClick={() => setSentiment('bearish')}
+                className={clsx('px-3 py-1.5 text-xs font-medium transition-colors', sentiment === 'bearish' ? 'bg-danger/15 text-danger' : 'text-danger hover:bg-surface')}
+              >
+                Bearish
+              </button>
+            </div>
             {POST_ACTIONS.map((action) => (
               <button
                 key={action.key}
@@ -766,8 +820,6 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                     ? () => setShowChartModal(true)
                     : action.key === 'scheduler'
                     ? () => setShowScheduleModal(true)
-                    : action.key === 'marketTags'
-                    ? () => setShowTagsModal(true)
                     : undefined
                 }
                 className="flex items-center gap-1.5 text-sm font-medium text-text hover:opacity-80 transition-opacity shrink-0"
@@ -775,27 +827,10 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                 aria-label={action.label}
               >
                 {actionIcons[action.key]}
-                {(action.key === 'predict' || action.key === 'marketTags' || action.key === 'reaction') && <span>{action.label}</span>}
+                {(action.key === 'predict' || action.key === 'chart' || action.key === 'reaction') && <span>{action.label}</span>}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2 shrink-0">
-              <div className="flex rounded-full bg-[#F2F2F2] dark:bg-surface-muted border border-border overflow-hidden" role="group" aria-label="Sentiment">
-                <button
-                  type="button"
-                  onClick={() => setSentiment('bullish')}
-                  className={clsx('px-3 py-1.5 text-xs font-medium transition-colors', sentiment === 'bullish' ? 'bg-success/15 text-success' : 'text-success hover:bg-surface')}
-                >
-                  Bullish
-                </button>
-                <div className="w-px bg-border shrink-0" aria-hidden />
-                <button
-                  type="button"
-                  onClick={() => setSentiment('bearish')}
-                  className={clsx('px-3 py-1.5 text-xs font-medium transition-colors', sentiment === 'bearish' ? 'bg-danger/15 text-danger' : 'text-danger hover:bg-surface')}
-                >
-                  Bearish
-                </button>
-              </div>
               <button
                 type="button"
                 onClick={handlePost}
