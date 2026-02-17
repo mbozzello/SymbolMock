@@ -8,6 +8,7 @@ import RelatedSymbols from '../components/RelatedSymbols.jsx'
 import PredictionLeaderboard from '../components/PredictionLeaderboard.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import TickerLinkedText from '../components/TickerLinkedText.jsx'
+import DebateBox from '../components/DebateBox.jsx'
 import { useLiveQuotesContext } from '../contexts/LiveQuotesContext.jsx'
 import { useBookmarks } from '../contexts/BookmarkContext.jsx'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
@@ -262,6 +263,7 @@ const STREAM_MESSAGES = {
     { id: 1, user: 'EVBull', avatar: '/avatars/top-voice-1.png', body: 'Cybertruck deliveries ramping. $TSLA demand story intact.', time: '1m', comments: 45, reposts: 11, likes: 278, topicIndex: 2 },
     { id: 2, user: 'ElonFan', avatar: '/avatars/top-voice-2.png', body: 'FSD rollout accelerating. This is the year Tesla becomes an AI company.', time: '4m', comments: 62, reposts: 19, likes: 391, topicIndex: 1 },
     { id: 3, user: 'AutoAnalyst', avatar: '/avatars/top-voice-3.png', body: 'Margins holding up better than expected. Long $TSLA.', time: '7m', comments: 22, reposts: 6, likes: 134, topicIndex: 3 },
+    { id: 3.5, user: 'BearCaseKing', avatar: '/avatars/michael-bolling.png', body: 'Tesla will go to zero by EOY because Elon is a clown. Fight me.', time: '9m', comments: 312, reposts: 87, likes: 1420, topicIndex: 3, hasReaction: true, debate: { thumbsUp: 186, thumbsDown: 891, upVoters: [{ id: 'u1', username: 'EVSkeptic', avatar: '/avatars/top-voice-1.png' }, { id: 'u2', username: 'ShortSeller', avatar: '/avatars/top-voice-2.png' }, { id: 'u3', username: 'BearishDave', avatar: '/avatars/ross-cameron.png' }, { id: 'u4', username: 'MacroBear', avatar: '/avatars/michael-bolling.png' }, { id: 'u5', username: 'RealityCheck', avatar: '/avatars/michele-steele.png' }], downVoters: [{ id: 'd1', username: 'ElonFan', avatar: '/avatars/top-voice-2.png' }, { id: 'd2', username: 'TeslaBull', avatar: '/avatars/howard-lindzon.png' }, { id: 'd3', username: 'FSDLover', avatar: '/avatars/top-voice-3.png' }, { id: 'd4', username: 'AIBeliever', avatar: '/avatars/top-voice-1.png' }, { id: 'd5', username: 'GrowthHawk', avatar: '/avatars/user-avatar.png' }] } },
     { id: 4, user: 'RobotaxiHopeful', avatar: '/avatars/howard-lindzon.png', body: 'Robotaxi timeline is the key. Regulatory approval could be a catalyst.', time: '12m', comments: 18, reposts: 5, likes: 89, topicIndex: 1 },
     { id: 4.5, user: 'ChartWizard', avatar: '/avatars/top-voice-3.png', body: 'The $250 level is the key. A daily close above on volume and I\'m adding. Below $230 and I\'m out.', time: '15m', comments: 15, reposts: 6, likes: 67, topicIndex: 3, articlePreview: { slug: 'tsla-breaking-out', headline: 'Is $TSLA finally breaking out?', description: 'Technical setup and sentiment point to a potential breakout above key resistance levels.', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=314&fit=crop', source: 'Stocktwits', ticker: 'TSLA', pctChange: 2.4 } },
     { id: 5, user: 'EVSkeptic', avatar: '/avatars/top-voice-1.png', body: 'Semi production ramping. Fleets are testing.', time: '18m', comments: 9, reposts: 2, likes: 56, topicIndex: 2 },
@@ -528,44 +530,44 @@ const STREAM_MESSAGES = {
 /** Fake "new" messages to prepend when user clicks blue New Posts pill (load-in effect) */
 const LOAD_IN_MESSAGES = {
   TSLA: [
-    { id: 90001, user: 'LiveTrader', avatar: '/avatars/top-voice-1.png', body: 'Just saw the move. $TSLA breaking out. New high incoming.', time: 'Just now', comments: 2, reposts: 0, likes: 12, topicIndex: 0 },
+    { id: 90001, user: 'LiveTrader', avatar: '/avatars/top-voice-1.png', body: 'Just saw the move. $TSLA breaking out. New high incoming.', time: 'Just now', comments: 2, reposts: 1, likes: 12, topicIndex: 0 },
     { id: 90002, user: 'FSDUpdate', avatar: '/avatars/top-voice-2.png', body: 'FSD v12.5 rolling out to more users. This is the one.', time: '30s', comments: 5, reposts: 1, likes: 34, topicIndex: 1 },
     { id: 90003, user: 'MomentumRider', avatar: '/avatars/top-voice-3.png', body: 'Cybertruck sighting at the mall. Lines still long.', time: '1m', comments: 8, reposts: 2, likes: 45, topicIndex: 0 },
-    { id: 90004, user: 'RobotaxiWatch', avatar: '/avatars/howard-lindzon.png', body: 'Robotaxi permits expanding. California leading the way.', time: '1m', comments: 3, reposts: 0, likes: 21, topicIndex: 1 },
+    { id: 90004, user: 'RobotaxiWatch', avatar: '/avatars/howard-lindzon.png', body: 'Robotaxi permits expanding. California leading the way.', time: '1m', comments: 3, reposts: 1, likes: 21, topicIndex: 1 },
     { id: 90005, user: 'EnergyBull', avatar: '/avatars/michele-steele.png', body: 'Megapack order from utility. Storage demand insane.', time: '2m', comments: 4, reposts: 1, likes: 28, topicIndex: 0 },
     { id: 90006, user: 'SemiFleet', avatar: '/avatars/ross-cameron.png', body: 'Pepsi just added 50 more Semis. Fleet expansion accelerating.', time: '2m', comments: 6, reposts: 2, likes: 39, topicIndex: 2 },
   ],
   NVDA: [
     { id: 90001, user: 'AIBull', avatar: '/avatars/top-voice-1.png', body: 'Data center demand update. Another hyperscaler increasing spend.', time: 'Just now', comments: 4, reposts: 1, likes: 28, topicIndex: 0 },
     { id: 90002, user: 'ChipWatcher', avatar: '/avatars/top-voice-2.png', body: 'Blackwell sampling feedback positive. Ramp on track.', time: '45s', comments: 6, reposts: 2, likes: 42, topicIndex: 1 },
-    { id: 90003, user: 'EarningsFocus', avatar: '/avatars/top-voice-3.png', body: 'Street raising estimates again. Consensus catching up.', time: '1m', comments: 3, reposts: 0, likes: 19, topicIndex: 3 },
+    { id: 90003, user: 'EarningsFocus', avatar: '/avatars/top-voice-3.png', body: 'Street raising estimates again. Consensus catching up.', time: '1m', comments: 3, reposts: 1, likes: 19, topicIndex: 3 },
     { id: 90004, user: 'CapexBull', avatar: '/avatars/howard-lindzon.png', body: 'AI capex cycle has 2+ years. $NVDA at the center.', time: '1m', comments: 5, reposts: 1, likes: 31, topicIndex: 2 },
     { id: 90005, user: 'HyperscaleSpend', avatar: '/avatars/michele-steele.png', body: 'MSFT guide beat. More AI spend. $NVDA wins.', time: '2m', comments: 7, reposts: 2, likes: 48, topicIndex: 0 },
-    { id: 90006, user: 'SupplyChain', avatar: '/avatars/ross-cameron.png', body: 'CoWoS capacity expanding. Supply no longer constraint.', time: '2m', comments: 2, reposts: 0, likes: 15, topicIndex: 1 },
+    { id: 90006, user: 'SupplyChain', avatar: '/avatars/ross-cameron.png', body: 'CoWoS capacity expanding. Supply no longer constraint.', time: '2m', comments: 2, reposts: 1, likes: 15, topicIndex: 1 },
   ],
   AAPL: [
-    { id: 90001, user: 'AppleLong', avatar: '/avatars/top-voice-1.png', body: 'Services growth accelerating. Margin story intact.', time: 'Just now', comments: 3, reposts: 0, likes: 22, topicIndex: 0 },
+    { id: 90001, user: 'AppleLong', avatar: '/avatars/top-voice-1.png', body: 'Services growth accelerating. Margin story intact.', time: 'Just now', comments: 3, reposts: 1, likes: 22, topicIndex: 0 },
     { id: 90002, user: 'ChinaWatcher', avatar: '/avatars/top-voice-2.png', body: 'China data points improving. Stimulus working.', time: '30s', comments: 5, reposts: 1, likes: 35, topicIndex: 1 },
-    { id: 90003, user: 'BuybackBull', avatar: '/avatars/top-voice-3.png', body: '$90B buyback pace. Share count shrinking.', time: '1m', comments: 2, reposts: 0, likes: 18, topicIndex: 2 },
+    { id: 90003, user: 'BuybackBull', avatar: '/avatars/top-voice-3.png', body: '$90B buyback pace. Share count shrinking.', time: '1m', comments: 2, reposts: 1, likes: 18, topicIndex: 2 },
     { id: 90004, user: 'EcosystemLock', avatar: '/avatars/howard-lindzon.png', body: 'iPhone retention 92%. Ecosystem stickier than ever.', time: '1m', comments: 4, reposts: 1, likes: 27, topicIndex: 3 },
-    { id: 90005, user: 'ServicesMargin', avatar: '/avatars/michele-steele.png', body: 'App Store margins expanding. Recurring rev growing.', time: '2m', comments: 3, reposts: 0, likes: 21, topicIndex: 0 },
+    { id: 90005, user: 'ServicesMargin', avatar: '/avatars/michele-steele.png', body: 'App Store margins expanding. Recurring rev growing.', time: '2m', comments: 3, reposts: 1, likes: 21, topicIndex: 0 },
     { id: 90006, user: 'DividendYield', avatar: '/avatars/ross-cameron.png', body: 'Yield plus buyback. Total return compelling.', time: '2m', comments: 6, reposts: 2, likes: 41, topicIndex: 2 },
   ],
   AMD: [
     { id: 90001, user: 'ChipFan', avatar: '/avatars/top-voice-1.png', body: 'MI300 adoption update. Another hyperscaler testing.', time: 'Just now', comments: 4, reposts: 1, likes: 29, topicIndex: 0 },
     { id: 90002, user: 'DataCenterShare', avatar: '/avatars/top-voice-2.png', body: 'Inference share gains. Taking business from NVDA.', time: '45s', comments: 5, reposts: 1, likes: 36, topicIndex: 1 },
     { id: 90003, user: 'GuideRaise', avatar: '/avatars/top-voice-3.png', body: 'Full year guide will be raised. Data center strong.', time: '1m', comments: 6, reposts: 2, likes: 44, topicIndex: 2 },
-    { id: 90004, user: 'ExecutionPro', avatar: '/avatars/howard-lindzon.png', body: 'Lisa Su delivery. Another beat and raise.', time: '1m', comments: 3, reposts: 0, likes: 24, topicIndex: 3 },
+    { id: 90004, user: 'ExecutionPro', avatar: '/avatars/howard-lindzon.png', body: 'Lisa Su delivery. Another beat and raise.', time: '1m', comments: 3, reposts: 1, likes: 24, topicIndex: 3 },
     { id: 90005, user: 'InstinctDemand', avatar: '/avatars/michele-steele.png', body: 'MI300X allocations sold out. Demand > supply.', time: '2m', comments: 4, reposts: 1, likes: 31, topicIndex: 0 },
     { id: 90006, user: 'BeatExpect', avatar: '/avatars/ross-cameron.png', body: 'Quarter will beat. Guide raised again.', time: '2m', comments: 7, reposts: 2, likes: 52, topicIndex: 2 },
   ],
   AMZN: [
     { id: 90001, user: 'CloudBull', avatar: '/avatars/top-voice-1.png', body: 'AWS growth reaccelerating. GenAI workloads driving.', time: 'Just now', comments: 5, reposts: 1, likes: 38, topicIndex: 0 },
-    { id: 90002, user: 'AdRevenue', avatar: '/avatars/top-voice-2.png', body: 'Sponsored products CTR up. Monetization improving.', time: '30s', comments: 3, reposts: 0, likes: 22, topicIndex: 1 },
+    { id: 90002, user: 'AdRevenue', avatar: '/avatars/top-voice-2.png', body: 'Sponsored products CTR up. Monetization improving.', time: '30s', comments: 3, reposts: 1, likes: 22, topicIndex: 1 },
     { id: 90003, user: 'FCFStory', avatar: '/avatars/top-voice-3.png', body: 'Operating cash flow beat. CapEx discipline.', time: '1m', comments: 4, reposts: 1, likes: 28, topicIndex: 3 },
-    { id: 90004, user: 'PrimeGrowth', avatar: '/avatars/howard-lindzon.png', body: 'Prime membership steady. Churn at record low.', time: '1m', comments: 2, reposts: 0, likes: 16, topicIndex: 2 },
+    { id: 90004, user: 'PrimeGrowth', avatar: '/avatars/howard-lindzon.png', body: 'Prime membership steady. Churn at record low.', time: '1m', comments: 2, reposts: 1, likes: 16, topicIndex: 2 },
     { id: 90005, user: 'BedrockAdoption', avatar: '/avatars/michele-steele.png', body: 'Bedrock adoption accelerating. Enterprise AI.', time: '2m', comments: 6, reposts: 2, likes: 45, topicIndex: 0 },
-    { id: 90006, user: 'MarginExpand', avatar: '/avatars/ross-cameron.png', body: 'Ads + AWS margin expansion. Multi-year trend.', time: '2m', comments: 3, reposts: 0, likes: 21, topicIndex: 3 },
+    { id: 90006, user: 'MarginExpand', avatar: '/avatars/ross-cameron.png', body: 'Ads + AWS margin expansion. Multi-year trend.', time: '2m', comments: 3, reposts: 1, likes: 21, topicIndex: 3 },
   ],
 }
 
@@ -881,6 +883,8 @@ export default function Homepage3() {
   const { watchlist } = useWatchlist()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [wtfHomeCat, setWtfHomeCat] = useState('Trending')
+
+  const handleDebateVote = () => {}
 
   const isHome2 = location.pathname === '/home2'
   const isHome3 = location.pathname === '/home' || location.pathname === '/home3' // Homepage3 now renders on /home
@@ -1883,6 +1887,9 @@ export default function Homepage3() {
                       )}
                     </div>
                     <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
+                    {msg.hasReaction && msg.debate && (
+                      <DebateBox postId={msg.id} debate={msg.debate} onVote={handleDebateVote} />
+                    )}
                     {msg.articlePreview ? (
                       <Link to={`/article/${msg.articlePreview.slug}`} className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
                         <div className="relative">
@@ -1972,6 +1979,9 @@ export default function Homepage3() {
                       )}
                     </div>
                     <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
+                    {msg.hasReaction && msg.debate && (
+                      <DebateBox postId={msg.id} debate={msg.debate} onVote={handleDebateVote} />
+                    )}
                     {msg.articlePreview ? (
                       <Link to={`/article/${msg.articlePreview.slug}`} className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
                         <div className="relative">
@@ -2173,6 +2183,9 @@ export default function Homepage3() {
                         )}
                       </div>
                       <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={msg.body} /></p>
+                      {msg.hasReaction && msg.debate && (
+                        <DebateBox postId={msg.id} debate={msg.debate} onVote={handleDebateVote} />
+                      )}
                       {msg.articlePreview ? (
                         <Link to={`/article/${msg.articlePreview.slug}`} className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
                           <div className="relative">

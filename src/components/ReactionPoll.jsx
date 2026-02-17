@@ -44,7 +44,7 @@ export default function ReactionPoll({
   const bearsPct = total > 0 ? (bearsCount / total) * 100 : 50
 
   return (
-    <div className="mt-3 rounded-xl border border-border bg-white dark:bg-surface overflow-hidden">
+    <div className="mt-3 rounded-xl border border-border bg-white dark:bg-surface overflow-hidden max-w-[90%]">
       <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p className="text-sm font-bold text-text">Do you agree?</p>
         <div className="flex items-center gap-2">

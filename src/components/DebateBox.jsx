@@ -18,28 +18,35 @@ function ThumbsDownIcon({ className, filled }) {
 
 export default function DebateBox({ postId, debate, onVote }) {
   const [justVoted, setJustVoted] = useState(false)
+  const [localVote, setLocalVote] = useState(null)
   const {
     thumbsUp: thumbsUpCount,
     thumbsDown: thumbsDownCount,
     upVoters = [],
     downVoters = [],
   } = debate
-  const thumbsUp = thumbsUpCount ?? upVoters.length
-  const thumbsDown = thumbsDownCount ?? downVoters.length
+
+  const baseUp = thumbsUpCount ?? upVoters.length
+  const baseDown = thumbsDownCount ?? downVoters.length
+  const thumbsUp = baseUp + (localVote === 'up' ? 1 : 0)
+  const thumbsDown = baseDown + (localVote === 'down' ? 1 : 0)
   const total = thumbsUp + thumbsDown
   const upPct = total > 0 ? Math.round((thumbsUp / total) * 100) : 0
   const downPct = total > 0 ? Math.round((thumbsDown / total) * 100) : 0
 
-  const userVote = upVoters.some((v) => v.id === 'current')
-    ? 'up'
-    : downVoters.some((v) => v.id === 'current')
-    ? 'down'
-    : null
+  const userVote = localVote || (
+    upVoters.some((v) => v.id === 'current')
+      ? 'up'
+      : downVoters.some((v) => v.id === 'current')
+      ? 'down'
+      : null
+  )
 
   const hasVoted = userVote !== null
 
   const handleVote = (vote) => {
-    const newVote = userVote === vote ? null : vote
+    const newVote = localVote === vote ? null : vote
+    setLocalVote(newVote)
     onVote?.(postId, newVote)
     if (newVote) {
       setJustVoted(true)
@@ -50,7 +57,7 @@ export default function DebateBox({ postId, debate, onVote }) {
   const isWithMajority = hasVoted && ((userVote === 'up' && upPct >= 50) || (userVote === 'down' && downPct >= 50))
 
   return (
-    <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 p-3">
+    <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 p-3 max-w-[90%]">
       <p className="text-sm font-medium text-text mb-2">
         Do you agree?
         {total > 0 && (
