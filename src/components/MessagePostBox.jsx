@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
 function clsx(...values) {
@@ -39,6 +39,7 @@ const POST_ACTIONS = [
   { key: 'gifs', label: 'GIFs', color: '#7c3aed' },
   { key: 'polls', label: 'Polls', color: '#0d9488' },
   { key: 'emoji', label: 'Emoji', color: '#ea580c' },
+  { key: 'chart', label: 'Chart', color: '#0891b2' },
   { key: 'predict', label: 'Predict', color: '#2563eb' },
   { key: 'marketTags', label: 'Tags', color: '#eab308' },
   { key: 'reaction', label: 'Debate', color: '#16a34a' },
@@ -74,6 +75,30 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   const [isScheduled, setIsScheduled] = useState(false)
   const [showTagsModal, setShowTagsModal] = useState(false)
   const [selectedTags, setSelectedTags] = useState([])
+  const [showChartModal, setShowChartModal] = useState(false)
+  const [chartTool, setChartTool] = useState('free')
+  const [chartStrokes, setChartStrokes] = useState([])
+  const [currentStroke, setCurrentStroke] = useState([])
+  const [chartTrendlines, setChartTrendlines] = useState([])
+  const [trendlineStart, setTrendlineStart] = useState(null)
+  const [trendlinePreview, setTrendlinePreview] = useState(null)
+  const [chartTextLabels, setChartTextLabels] = useState([])
+  const [chartIndicators, setChartIndicators] = useState([])
+  const [chartSnapshotUrl, setChartSnapshotUrl] = useState(null)
+  const [chartPriceSinceStamp, setChartPriceSinceStamp] = useState(null)
+  const [stampDragging, setStampDragging] = useState(false)
+  const stampDragStart = useRef({ clientX: 0, clientY: 0, stampX: 0, stampY: 0 })
+  const chartCanvasRef = useRef(null)
+  const chartContainerRef = useRef(null)
+  const chartSize = { w: 560, h: 320 }
+  const STAMP_PADDING = 50
+  const PRICE_SINCE_LABEL = '$TSLA +3.52%'
+  const PRICE_SINCE_TICKER = '$TSLA '
+  const PRICE_SINCE_PCT = '+3.52%'
+  const clampStamp = (x, y) => ({
+    x: Math.max(STAMP_PADDING, Math.min(chartSize.w - STAMP_PADDING, x)),
+    y: Math.max(14, Math.min(chartSize.h - 14, y)),
+  })
 
   const POLL_CHOICE_MAX = 4
   const TAGS_MAX = 3
@@ -88,7 +113,9 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
     hasReaction ||
     (showPoll && pollChoices.some((c) => c.trim())) ||
     isScheduled ||
-    selectedTags.length > 0
+    selectedTags.length > 0 ||
+    chartSnapshotUrl ||
+    showChartModal
 
   const isReadyToPost = hasInteracted
 
@@ -147,11 +174,12 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
         : undefined
       const scheduledAt = isScheduled ? scheduledDateToDate().toISOString() : undefined
       const tags = selectedTags.length > 0 ? selectedTags : undefined
-      onPost?.({ body, visibility, hasReaction, poll, scheduledAt, tags })
+      onPost?.({ body, visibility, hasReaction, poll, scheduledAt, tags, chartSnapshotUrl: chartSnapshotUrl || undefined })
       setMessage('')
       setHasReaction(false)
       setIsScheduled(false)
       setSelectedTags([])
+      setChartSnapshotUrl(null)
       if (showPoll) {
         setShowPoll(false)
         setPollChoices(['', ''])
@@ -188,6 +216,106 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
     return () => window.removeEventListener('keydown', onEsc)
   }, [showTagsModal])
 
+  useEffect(() => {
+    if (!showChartModal) return
+    const onEsc = (e) => { if (e.key === 'Escape') setShowChartModal(false) }
+    window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
+  }, [showChartModal])
+
+  useEffect(() => {
+    if (!stampDragging || !chartContainerRef.current) return
+    const el = chartContainerRef.current
+    const onMove = (e) => {
+      const rect = el.getBoundingClientRect()
+      const start = stampDragStart.current
+      const deltaX = ((e.clientX - start.clientX) / rect.width) * chartSize.w
+      const deltaY = ((e.clientY - start.clientY) / rect.height) * chartSize.h
+      const next = clampStamp(start.stampX + deltaX, start.stampY + deltaY)
+      setChartPriceSinceStamp(next)
+      stampDragStart.current = { clientX: e.clientX, clientY: e.clientY, stampX: next.x, stampY: next.y }
+    }
+    const onUp = () => setStampDragging(false)
+    window.addEventListener('pointermove', onMove, { capture: true })
+    window.addEventListener('pointerup', onUp, { capture: true })
+    window.addEventListener('pointercancel', onUp, { capture: true })
+    return () => {
+      window.removeEventListener('pointermove', onMove, { capture: true })
+      window.removeEventListener('pointerup', onUp, { capture: true })
+      window.removeEventListener('pointercancel', onUp, { capture: true })
+    }
+  }, [stampDragging])
+
+  useEffect(() => {
+    if (!showChartModal || !chartCanvasRef.current) return
+    const canvas = chartCanvasRef.current
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const { w, h } = chartSize
+    ctx.clearRect(0, 0, w, h)
+    const drawStrokes = (strokes) => {
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.9)'
+      ctx.lineWidth = 3
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      strokes.forEach((stroke) => {
+        if (stroke.length < 2) return
+        ctx.beginPath()
+        ctx.moveTo(stroke[0].x, stroke[0].y)
+        stroke.slice(1).forEach((p) => ctx.lineTo(p.x, p.y))
+        ctx.stroke()
+      })
+    }
+    drawStrokes(chartStrokes)
+    drawStrokes(currentStroke.length ? [currentStroke] : [])
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.95)'
+    ctx.lineWidth = 2
+    ctx.setLineDash([6, 4])
+    chartTrendlines.forEach(({ x1, y1, x2, y2 }) => {
+      ctx.beginPath()
+      ctx.moveTo(x1, y1)
+      ctx.lineTo(x2, y2)
+      ctx.stroke()
+    })
+    if (trendlineStart && trendlinePreview) {
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)'
+      ctx.setLineDash([4, 4])
+      ctx.beginPath()
+      ctx.moveTo(trendlineStart.x, trendlineStart.y)
+      ctx.lineTo(trendlinePreview.x, trendlinePreview.y)
+      ctx.stroke()
+    }
+    ctx.setLineDash([])
+    ctx.font = 'bold 14px system-ui, sans-serif'
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)'
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+    ctx.lineWidth = 2
+    chartTextLabels.forEach(({ x, y, text }) => {
+      ctx.strokeText(text, x, y)
+      ctx.fillText(text, x, y)
+    })
+    if (chartIndicators.length > 0) {
+      const colors = { ma20: 'rgba(234, 179, 8, 0.9)', ma50: 'rgba(168, 85, 247, 0.9)' }
+      chartIndicators.forEach((key) => {
+        const color = colors[key] || 'rgba(100, 116, 139, 0.9)'
+        ctx.strokeStyle = color
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 2])
+        ctx.beginPath()
+        const pts = key === 'ma20' ? 8 : 6
+        for (let j = 0; j <= pts; j++) {
+          const t = j / pts
+          const x = 40 + t * (w - 80)
+          const y = h - 60 - (h - 100) * (0.3 + 0.5 * t + 0.1 * Math.sin(t * 8))
+          if (j === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+      })
+      ctx.setLineDash([])
+    }
+  }, [showChartModal, chartStrokes, currentStroke, chartTrendlines, chartTextLabels, chartIndicators, trendlineStart, trendlinePreview])
+
   const [sentiment, setSentiment] = useState(null)
 
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -197,7 +325,65 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   const minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
   const timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone
 
+  const getChartCoords = (e) => {
+    const canvas = chartCanvasRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY }
+  }
+
+  const captureChartSnapshot = () => {
+    const { w, h } = chartSize
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const temp = document.createElement('canvas')
+      temp.width = w
+      temp.height = h
+      const ctx = temp.getContext('2d')
+      if (!ctx) return
+      ctx.drawImage(img, 0, 0, w, h)
+      if (chartCanvasRef.current) ctx.drawImage(chartCanvasRef.current, 0, 0, w, h)
+      if (chartPriceSinceStamp) {
+        const sx = chartPriceSinceStamp.x
+        const sy = chartPriceSinceStamp.y
+        ctx.font = 'bold 14px system-ui, sans-serif'
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'center'
+        const tickerW = ctx.measureText(PRICE_SINCE_TICKER).width
+        const pctW = ctx.measureText(PRICE_SINCE_PCT).width
+        const totalW = tickerW + pctW
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)'
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+        ctx.lineWidth = 2
+        ctx.strokeText(PRICE_SINCE_TICKER, sx - totalW / 2 + tickerW / 2, sy)
+        ctx.fillText(PRICE_SINCE_TICKER, sx - totalW / 2 + tickerW / 2, sy)
+        ctx.fillStyle = '#16a34a'
+        ctx.strokeText(PRICE_SINCE_PCT, sx - totalW / 2 + tickerW + pctW / 2, sy)
+        ctx.fillText(PRICE_SINCE_PCT, sx - totalW / 2 + tickerW + pctW / 2, sy)
+      }
+      const watermarkW = 130
+      const watermarkH = 32
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+      ctx.fillRect(w - watermarkW - 8, 8, watermarkW, watermarkH)
+      ctx.font = '600 14px system-ui, sans-serif'
+      ctx.fillStyle = '#000000'
+      ctx.fillText('Stocktwits', w - watermarkW, 29)
+      setChartSnapshotUrl(temp.toDataURL('image/png'))
+      setShowChartModal(false)
+    }
+    img.src = '/images/chart-draw.png'
+  }
+
   const actionIcons = {
+    chart: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18" />
+        <path d="M7 14l4-4 4 2 5-6" />
+      </svg>
+    ),
     // Bullseye target (concentric circles)
     predict: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -421,6 +607,19 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                   </div>
                 </div>
               )}
+              {chartSnapshotUrl && (
+                <div className="mt-3 relative inline-block rounded-xl overflow-hidden border border-border max-w-full">
+                  <img src={chartSnapshotUrl} alt="Chart snapshot" className="block max-w-full h-auto max-h-64 object-contain" />
+                  <button
+                    type="button"
+                    onClick={() => setChartSnapshotUrl(null)}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white"
+                    aria-label="Remove chart"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                </div>
+              )}
               {hasReaction && (
                 <div className="mt-2 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/30">
@@ -563,6 +762,8 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                     ? () => setHasReaction((v) => !v)
                     : action.key === 'polls'
                     ? () => setShowPoll((v) => !v)
+                    : action.key === 'chart'
+                    ? () => setShowChartModal(true)
                     : action.key === 'scheduler'
                     ? () => setShowScheduleModal(true)
                     : action.key === 'marketTags'
@@ -635,6 +836,185 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
               >
                 OK
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showChartModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setShowChartModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="chart-modal-title"
+        >
+          <div
+            className="bg-surface border border-border rounded-xl shadow-xl max-w-2xl w-full overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 id="chart-modal-title" className="text-base font-bold text-text">Draw on chart</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setChartStrokes([]); setCurrentStroke([]); setChartTrendlines([]); setChartTextLabels([]); setChartPriceSinceStamp(null); setTrendlineStart(null) }}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:bg-surface-muted"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={captureChartSnapshot}
+                  className="px-3 py-1.5 rounded-lg text-sm font-semibold text-white hover:opacity-90"
+                  style={{ backgroundColor: '#2563eb' }}
+                >
+                  Insert
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowChartModal(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:bg-surface-muted"
+                  aria-label="Close"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+              </div>
+            </div>
+            <div className="px-4 pb-2 flex flex-wrap items-center gap-2 border-b border-border">
+              <span className="text-xs font-medium text-muted mr-1">Tools:</span>
+              <button
+                type="button"
+                onClick={() => setChartTool('free')}
+                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartTool === 'free' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Free draw"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /></svg>
+                Free draw
+              </button>
+              <button
+                type="button"
+                onClick={() => { setChartTool('trendline'); setTrendlineStart(null) }}
+                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartTool === 'trendline' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Trendline"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 19L19 5M5 5l14 14" /></svg>
+                Trendline
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartTool('text')}
+                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartTool === 'text' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Text"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16" /></svg>
+                Text
+              </button>
+              <button
+                type="button"
+                onClick={() => { if (chartPriceSinceStamp == null) setChartPriceSinceStamp({ x: chartSize.w / 2 - 45, y: chartSize.h / 2 - 10 }) }}
+                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartPriceSinceStamp ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Price Since"
+              >
+                Price Since
+              </button>
+              <span className="text-xs font-medium text-muted mx-1">Indicators:</span>
+              {['ma20', 'ma50'].map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setChartIndicators((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key])}
+                  className={clsx('px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartIndicators.includes(key) ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                >
+                  MA {key === 'ma20' ? '20' : '50'}
+                </button>
+              ))}
+            </div>
+            <div className="p-4">
+              <div
+                ref={chartContainerRef}
+                className="relative rounded-lg overflow-hidden border border-border bg-surface-muted mx-auto"
+                style={{ width: '100%', maxWidth: chartSize.w, aspectRatio: `${chartSize.w} / ${chartSize.h}` }}
+              >
+                <img
+                  src="/images/chart-draw.png"
+                  alt="Stock chart"
+                  className="block w-full h-full absolute inset-0 object-cover"
+                />
+                <div
+                  className="absolute top-0 left-0 right-0 h-[10%] min-h-[28px] bg-white pointer-events-none dark:bg-surface"
+                  style={{ borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }}
+                  aria-hidden
+                />
+                <canvas
+                  ref={chartCanvasRef}
+                  width={chartSize.w}
+                  height={chartSize.h}
+                  className="absolute inset-0 w-full h-full cursor-crosshair pointer-events-auto"
+                  style={{ touchAction: 'none' }}
+                  onPointerDown={(e) => {
+                    const p = getChartCoords(e)
+                    if (!p) return
+                    if (chartTool === 'free') setCurrentStroke([p])
+                    if (chartTool === 'trendline') {
+                      if (trendlineStart) {
+                        setChartTrendlines((prev) => [...prev, { x1: trendlineStart.x, y1: trendlineStart.y, x2: p.x, y2: p.y }])
+                        setTrendlineStart(null)
+                      } else setTrendlineStart(p)
+                    }
+                    if (chartTool === 'text') {
+                      const text = window.prompt('Enter text label:', '')
+                      if (text != null && text.trim()) setChartTextLabels((prev) => [...prev, { x: p.x, y: p.y, text: text.trim() }])
+                    }
+                  }}
+                  onPointerMove={(e) => {
+                    const p = getChartCoords(e)
+                    if (chartTool === 'trendline' && trendlineStart && p) setTrendlinePreview(p)
+                    if (chartTool === 'free' && currentStroke.length > 0 && p) setCurrentStroke((prev) => [...prev, p])
+                  }}
+                  onPointerUp={() => {
+                    if (chartTool === 'free' && currentStroke.length > 0) {
+                      setChartStrokes((prev) => [...prev, currentStroke])
+                      setCurrentStroke([])
+                    }
+                  }}
+                  onPointerLeave={() => {
+                    if (chartTool === 'free' && currentStroke.length > 0) {
+                      setChartStrokes((prev) => [...prev, currentStroke])
+                      setCurrentStroke([])
+                    }
+                    if (chartTool === 'trendline') setTrendlinePreview(null)
+                  }}
+                />
+                {chartPriceSinceStamp && (
+                  <div
+                    className="absolute pointer-events-auto cursor-grab active:cursor-grabbing select-none"
+                    style={{
+                      left: `${(chartPriceSinceStamp.x / chartSize.w) * 100}%`,
+                      top: `${(chartPriceSinceStamp.y / chartSize.h) * 100}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    onPointerDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setStampDragging(true)
+                      stampDragStart.current = {
+                        clientX: e.clientX,
+                        clientY: e.clientY,
+                        stampX: chartPriceSinceStamp.x,
+                        stampY: chartPriceSinceStamp.y,
+                      }
+                    }}
+                    role="button"
+                    aria-label="Drag to move Price Since stamp"
+                  >
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white/95 shadow border border-black/10 text-sm font-semibold whitespace-nowrap dark:bg-surface dark:border-border">
+                      <span className="text-gray-900 dark:text-text">{PRICE_SINCE_TICKER}</span>
+                      <span className="text-green-600">{PRICE_SINCE_PCT}</span>
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

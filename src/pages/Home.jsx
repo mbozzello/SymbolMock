@@ -507,6 +507,57 @@ export default function Home() {
               </div>
             </article>
 
+            {/* ChartWizard article comment */}
+            <article className="border-b border-border pb-4">
+              <div className="flex items-start gap-3 pt-4">
+                <img src="/avatars/top-voice-3.png" alt="" className="w-10 h-10 rounded-full object-cover border border-border shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">ChartWizard</span>
+                    <span className="text-xs muted">15m</span>
+                  </div>
+                  <p className="mt-1 text-sm text-text leading-snug">
+                    <TickerLinkedText text="The $250 level is the key. A daily close above on volume and I'm adding. Below $230 and I'm out." />
+                  </p>
+                  <Link to="/article/tsla-breaking-out" className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
+                    <div className="relative">
+                      <img src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=314&fit=crop" alt="" className="w-full aspect-[1.91/1] object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/90 text-white">$TSLA +2.4%</span>
+                    </div>
+                    <div className="p-2.5 bg-surface">
+                      <div className="text-[11px] text-text-muted flex items-center gap-1.5 mb-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                        Commented on article · Stocktwits
+                      </div>
+                      <h4 className="text-sm font-bold text-text leading-tight group-hover/card:text-primary transition-colors">Is $TSLA finally breaking out?</h4>
+                      <p className="text-xs text-text-muted mt-0.5 leading-relaxed line-clamp-2">Technical setup and sentiment point to a potential breakout above key resistance levels.</p>
+                    </div>
+                  </Link>
+                  <div className="flex items-center justify-between w-full mt-3 text-sm muted">
+                    <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                      15
+                    </button>
+                    <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      6
+                    </button>
+                    <button className="flex items-center gap-1.5 hover:text-text transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                      67
+                    </button>
+                    <button className="p-1 hover:text-text transition-colors" aria-label="Share">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                    </button>
+                    <button type="button" className="p-1 hover:text-text transition-colors" aria-label="Bookmark">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-5-7 5V5z" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
             {/* Feed: howardlindzon price prediction */}
             <article className="border-b border-border pb-4">
               <div className="flex items-start gap-3 pt-4">

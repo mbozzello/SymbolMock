@@ -263,6 +263,7 @@ const STREAM_MESSAGES = {
     { id: 2, user: 'ElonFan', avatar: '/avatars/top-voice-2.png', body: 'FSD rollout accelerating. This is the year Tesla becomes an AI company.', time: '4m', comments: 62, reposts: 19, likes: 391, topicIndex: 1 },
     { id: 3, user: 'AutoAnalyst', avatar: '/avatars/top-voice-3.png', body: 'Margins holding up better than expected. Long $TSLA.', time: '7m', comments: 22, reposts: 6, likes: 134, topicIndex: 3 },
     { id: 4, user: 'RobotaxiHopeful', avatar: '/avatars/howard-lindzon.png', body: 'Robotaxi timeline is the key. Regulatory approval could be a catalyst.', time: '12m', comments: 18, reposts: 5, likes: 89, topicIndex: 1 },
+    { id: 4.5, user: 'ChartWizard', avatar: '/avatars/top-voice-3.png', body: 'The $250 level is the key. A daily close above on volume and I\'m adding. Below $230 and I\'m out.', time: '15m', comments: 15, reposts: 6, likes: 67, topicIndex: 3, articlePreview: { slug: 'tsla-breaking-out', headline: 'Is $TSLA finally breaking out?', description: 'Technical setup and sentiment point to a potential breakout above key resistance levels.', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=314&fit=crop', source: 'Stocktwits', ticker: 'TSLA', pctChange: 2.4 } },
     { id: 5, user: 'EVSkeptic', avatar: '/avatars/top-voice-1.png', body: 'Semi production ramping. Fleets are testing.', time: '18m', comments: 9, reposts: 2, likes: 56, topicIndex: 2 },
     { id: 6, user: 'TechTrader', avatar: '/avatars/top-voice-2.png', body: 'Energy storage margins improving. Megapack backlog is huge.', time: '24m', comments: 12, reposts: 4, likes: 67, topicIndex: 0 },
     { id: 7, user: 'GrowthHawk', avatar: '/avatars/top-voice-3.png', body: '$TSLA at $242 and still room to run. Cybertruck margin inflection coming.', time: '31m', comments: 18, reposts: 5, likes: 94, topicIndex: 3 },
@@ -1882,11 +1883,31 @@ export default function Homepage3() {
                       )}
                     </div>
                     <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
-                    {idx % 4 === 0 && (
+                    {msg.articlePreview ? (
+                      <Link to={`/article/${msg.articlePreview.slug}`} className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
+                        <div className="relative">
+                          <img src={msg.articlePreview.image} alt="" className="w-full aspect-[1.91/1] object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          {msg.articlePreview.ticker && (
+                            <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${(msg.articlePreview.pctChange ?? 0) >= 0 ? 'bg-green-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
+                              ${msg.articlePreview.ticker} {(msg.articlePreview.pctChange ?? 0) >= 0 ? '+' : ''}{msg.articlePreview.pctChange}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="p-2.5 bg-surface">
+                          <div className="text-[11px] text-text-muted flex items-center gap-1.5 mb-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                            Commented on article · {msg.articlePreview.source}
+                          </div>
+                          <h4 className="text-sm font-bold text-text leading-tight group-hover/card:text-primary transition-colors">{msg.articlePreview.headline}</h4>
+                          <p className="text-xs text-text-muted mt-0.5 leading-relaxed line-clamp-2">{msg.articlePreview.description}</p>
+                        </div>
+                      </Link>
+                    ) : idx % 4 === 0 ? (
                       <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
                         <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
                       </div>
-                    )}
+                    ) : null}
                     <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
                       <div className="flex items-center gap-4">
                         <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
@@ -1951,11 +1972,31 @@ export default function Homepage3() {
                       )}
                     </div>
                     <p className="text-sm text-text mt-0.5 leading-snug"><TickerLinkedText text={msg.body} /></p>
-                    {idx % 4 === 0 && (
+                    {msg.articlePreview ? (
+                      <Link to={`/article/${msg.articlePreview.slug}`} className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
+                        <div className="relative">
+                          <img src={msg.articlePreview.image} alt="" className="w-full aspect-[1.91/1] object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          {msg.articlePreview.ticker && (
+                            <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${(msg.articlePreview.pctChange ?? 0) >= 0 ? 'bg-green-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
+                              ${msg.articlePreview.ticker} {(msg.articlePreview.pctChange ?? 0) >= 0 ? '+' : ''}{msg.articlePreview.pctChange}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="p-2.5 bg-surface">
+                          <div className="text-[11px] text-text-muted flex items-center gap-1.5 mb-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                            Commented on article · {msg.articlePreview.source}
+                          </div>
+                          <h4 className="text-sm font-bold text-text leading-tight group-hover/card:text-primary transition-colors">{msg.articlePreview.headline}</h4>
+                          <p className="text-xs text-text-muted mt-0.5 leading-relaxed line-clamp-2">{msg.articlePreview.description}</p>
+                        </div>
+                      </Link>
+                    ) : idx % 4 === 0 ? (
                       <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
                         <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
                       </div>
-                    )}
+                    ) : null}
                     <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
                       <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -2132,11 +2173,31 @@ export default function Homepage3() {
                         )}
                       </div>
                       <p className="mt-1 text-sm text-text leading-snug"><TickerLinkedText text={msg.body} /></p>
-                      {idx % 3 === 0 && (
+                      {msg.articlePreview ? (
+                        <Link to={`/article/${msg.articlePreview.slug}`} className="mt-2 block max-w-[380px] rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-colors group/card">
+                          <div className="relative">
+                            <img src={msg.articlePreview.image} alt="" className="w-full aspect-[1.91/1] object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                            {msg.articlePreview.ticker && (
+                              <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${(msg.articlePreview.pctChange ?? 0) >= 0 ? 'bg-green-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
+                                ${msg.articlePreview.ticker} {(msg.articlePreview.pctChange ?? 0) >= 0 ? '+' : ''}{msg.articlePreview.pctChange}%
+                              </span>
+                            )}
+                          </div>
+                          <div className="p-3 bg-surface">
+                            <div className="text-[11px] text-text-muted flex items-center gap-1.5 mb-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                              Commented on article · {msg.articlePreview.source}
+                            </div>
+                            <h4 className="text-sm font-bold text-text leading-tight group-hover/card:text-primary transition-colors">{msg.articlePreview.headline}</h4>
+                            <p className="text-xs text-text-muted mt-1 leading-relaxed line-clamp-2">{msg.articlePreview.description}</p>
+                          </div>
+                        </Link>
+                      ) : idx % 3 === 0 ? (
                         <div className="mt-2 rounded-xl overflow-hidden border border-border max-w-sm">
                           <img src={FEED_IMAGES[idx % FEED_IMAGES.length]} alt="" className="w-full aspect-video object-cover" />
                         </div>
-                      )}
+                      ) : null}
                       <div className="flex items-center justify-between w-full mt-3 text-sm text-text-muted">
                         <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>{msg.comments ?? 0}</button>
                         <button type="button" className="flex items-center gap-1.5 hover:text-text transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>{msg.reposts ?? 0}</button>
