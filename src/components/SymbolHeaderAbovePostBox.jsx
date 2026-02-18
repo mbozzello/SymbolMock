@@ -315,7 +315,7 @@ const DEFAULT_PREDICTION = {
   ],
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false }) {
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
@@ -356,10 +356,12 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               <span className="text-white font-bold text-2xl">{symbol.ticker.slice(0, 1)}</span>
             )}
           </div>
-          <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-purple-600 border-2 border-white dark:border-surface" />
-          </span>
+          {!hidePills && (
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-purple-600 border-2 border-white dark:border-surface" />
+            </span>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
@@ -387,7 +389,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       </div>
 
       {/* Row 2: Earnings Call + Trending pills */}
-      <div className="flex items-center gap-2 mb-2 flex-wrap">
+      {!hidePills && <div className="flex items-center gap-2 mb-2 flex-wrap">
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-full py-2 px-4 text-white text-sm font-semibold shadow-sm"
@@ -412,7 +414,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
           <span className="text-text">Trending #1</span>
           <span className="text-orange-500 font-semibold">See Why</span>
         </button>
-      </div>
+      </div>}
 
       {/* Row 3: Watchers pill, Earnings, Mkt Cap, Vol */}
       <div className="flex flex-wrap items-center gap-3 pb-3 border-b border-border relative">
