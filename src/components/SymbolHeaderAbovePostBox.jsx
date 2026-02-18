@@ -179,6 +179,7 @@ const DEFAULT_SYMBOL = {
 const TABS = ['Feed', 'News', 'Sentiment', 'Earnings', 'Fundamentals', 'Info']
 
 const WATCHER_CHUNKS = [2, 5, 10, 3, 5, 8]
+const PREDICTOR_INCREMENTS = [1, 3, 4, 1, 1, 1, 3]
 
 const CHART_RANGES = ['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All']
 const CHART_OVERLAYS = ['Watchers', 'Sentiment', 'Message Vol']
@@ -325,6 +326,8 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
   const [floatingWatchers, setFloatingWatchers] = useState(null)
+  const [predictorsCount, setPredictorsCount] = useState(10200)
+  const predictorIndexRef = useRef(0)
   const [chartExpanded, setChartExpanded] = useState(false)
   const [chartRange, setChartRange] = useState('1D')
   const [chartType, setChartType] = useState('line')
@@ -341,6 +344,15 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       setWatchersCount((prev) => prev + chunk)
       setFloatingWatchers({ value: chunk, key: Date.now() })
     }, 1800)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const increment = PREDICTOR_INCREMENTS[predictorIndexRef.current % PREDICTOR_INCREMENTS.length]
+      predictorIndexRef.current += 1
+      setPredictorsCount((prev) => prev + increment)
+    }, 2200)
     return () => clearInterval(id)
   }, [])
 
@@ -683,7 +695,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               {!predictionExpanded && <PredictionGauge value={prediction.chancePct ?? 26} size={48} strokeWidth={4} showLabel />}
               <p className="min-w-0 flex-1 text-sm font-semibold text-text leading-snug text-left">{predictionExpanded ? (prediction.expandedQuestion ?? prediction.question) : prediction.question}</p>
               <div className="shrink-0 flex flex-col items-end gap-0.5">
-                <span className="text-xs font-medium text-text-muted whitespace-nowrap">10,200 predictors</span>
+                <span className="text-xs font-medium text-text-muted whitespace-nowrap">{predictorsCount.toLocaleString()} predictors</span>
                 {predictionExpanded && (
                   <span className="flex items-center gap-1 text-xs text-text-muted whitespace-nowrap">
                     <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" strokeLinecap="round"/></svg>

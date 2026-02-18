@@ -105,6 +105,7 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
   const isNewsPage = location.pathname === '/news'
   const isEarningsPage = location.pathname === '/earnings'
   const isMarketsPage = location.pathname === '/markets'
+  const isLeaderboardPage = location.pathname === '/leaderboard'
   const isHomePage = location.pathname === '/home'
 
   // Keep search input in sync with URL when on search page (e.g. "elon musk" stays in box)
@@ -769,7 +770,8 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
             const isNews = item === 'News'
             const isEarnings = item === 'Earnings'
             const isMarkets = item === 'Social Tools'
-            const isActive = isNews ? isNewsPage : isEarnings ? isEarningsPage : isMarkets ? isMarketsPage : activeTab === item
+            const isLeaderboards = item === 'Leaderboards'
+            const isActive = isNews ? isNewsPage : isEarnings ? isEarningsPage : isMarkets ? isMarketsPage : isLeaderboards ? isLeaderboardPage : activeTab === item
             const content = (
               <span
                 className={clsx(
@@ -797,6 +799,13 @@ export default function TopNavigation({ onSearch, darkMode, toggleDarkMode, sear
             if (isMarkets) {
               return (
                 <Link key={item} to="/markets" onClick={() => setActiveTab(null)}>
+                  {content}
+                </Link>
+              )
+            }
+            if (isLeaderboards) {
+              return (
+                <Link key={item} to="/leaderboard" onClick={() => setActiveTab(null)}>
                   {content}
                 </Link>
               )
