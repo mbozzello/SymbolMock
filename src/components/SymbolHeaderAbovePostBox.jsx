@@ -315,12 +315,13 @@ const DEFAULT_PREDICTION = {
   ],
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION }) {
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
   const [predictionExpanded, setPredictionExpanded] = useState(false)
   const [predictionVotes, setPredictionVotes] = useState({})
+  const [rulesModalOpen, setRulesModalOpen] = useState(false)
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
   const [floatingWatchers, setFloatingWatchers] = useState(null)
@@ -579,10 +580,9 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       {/* Row 4: Sentiment / Prediction content */}
       <div className="border-b border-border">
         {variant === 'predict' && (
-          <div className="w-full flex items-center justify-start pt-0 pb-2">
+          <div className="w-full flex items-center pt-0 pb-2">
             <div
               className="relative grid w-fit grid-cols-2 items-center rounded-full bg-gray-300/95 p-0.5 overflow-hidden border border-gray-400/50"
-              style={{ marginLeft: 0, marginRight: 'auto' }}
             >
               <span
                 aria-hidden="true"
@@ -612,6 +612,17 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                 Sentiment
               </button>
             </div>
+            <button
+              type="button"
+              className="ml-auto w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
+              aria-label="Share"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="16 6 12 2 8 6" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="12" y1="2" x2="12" y2="15" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
         )}
         {sentimentMode === 'sentiment' ? (
@@ -683,11 +694,28 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               </span>
             </button>
 
+            {predictionExpanded && (
+              <button
+                type="button"
+                onClick={() => setRulesModalOpen(true)}
+                className="mt-1.5 flex items-center gap-1 text-xs font-medium text-text-muted hover:text-text transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" strokeLinecap="round"/></svg>
+                Rules
+              </button>
+            )}
+
             {/* Expanded: option rows */}
             {predictionExpanded && (
               <div className="mt-3 space-y-3">
                 {(prediction.options ?? []).map((opt, i) => {
                   const vote = predictionVotes[i]
+                  // Prediction market math:
+                  // YES share costs P, pays $1 → return = 1/P
+                  // NO share costs (1-P), pays $1 → return = 1/(1-P)
+                  const p = Math.max(0.01, Math.min(0.99, opt.pct / 100))
+                  const yesReturn = (1 / p).toFixed(2)
+                  const noReturn = (1 / (1 - p)).toFixed(2)
                   return (
                     <div key={i} className="flex items-center gap-4">
                       <PredictionGauge value={opt.pct} size={52} strokeWidth={4.5} showLabel />
@@ -697,26 +725,30 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                           type="button"
                           onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'yes' ? null : 'yes' }))}
                           className={clsx(
-                            'px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors',
+                            'flex items-center justify-center gap-2 w-[130px] py-2.5 rounded-full text-base font-bold border transition-colors',
                             vote === 'yes'
                               ? 'bg-green-600 border-green-600 text-white'
                               : 'bg-surface border-border text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20'
                           )}
                         >
-                          Yes
+                          <span>Yes</span>
+                          <span className={clsx('text-xs font-medium', vote === 'yes' ? 'text-green-100' : 'text-green-500')}>{yesReturn}x</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'no' ? null : 'no' }))}
-                          className={clsx(
-                            'px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors',
-                            vote === 'no'
-                              ? 'bg-red-600 border-red-600 text-white'
-                              : 'bg-surface border-border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'
-                          )}
-                        >
-                          No
-                        </button>
+                        {!hideNo && (
+                          <button
+                            type="button"
+                            onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'no' ? null : 'no' }))}
+                            className={clsx(
+                              'flex items-center justify-center gap-2 w-[130px] py-2.5 rounded-full text-base font-bold border transition-colors',
+                              vote === 'no'
+                                ? 'bg-red-600 border-red-600 text-white'
+                                : 'bg-surface border-border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'
+                            )}
+                          >
+                            <span>No</span>
+                            <span className={clsx('text-xs font-medium', vote === 'no' ? 'text-red-100' : 'text-red-400')}>{noReturn}x</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   )
@@ -726,6 +758,29 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
           </div>
         )}
       </div>
+
+      {/* Rules modal */}
+      {rulesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setRulesModalOpen(false)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative w-full max-w-lg bg-white dark:bg-surface rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h2 className="text-base font-bold text-text">Rules</h2>
+              <button type="button" onClick={() => setRulesModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-muted transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg>
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4 text-sm text-text leading-relaxed max-h-[70vh] overflow-y-auto">
+              <p>This market will resolve according to the exact amount of cuts of 25 basis points in 2026 by the Fed (including any cuts made during the December meeting).</p>
+              <p>Emergency rate cuts outside of scheduled FOMC meetings will also count toward the total number of cuts in 2026. This market will remain open until December 31, 2026, 11:59 PM ET, to account for any such emergency actions.</p>
+              <p>For example, if the Fed cuts rates by 50 bps after a meeting, it would be considered 2 cuts (of 25 bps each).</p>
+              <p>This market will resolve early to "No" if the specified number of cuts becomes impossible — i.e., if more cuts have already occurred than the strike in question.</p>
+              <p>Note that cuts between 1–24 bps (inclusive) will also be considered 1 rate cut.</p>
+              <p className="text-text-muted">The resolution source for this market will be FOMC statements after meetings scheduled in 2026 according to the official calendar: <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" className="text-blue-500 underline break-all" target="_blank" rel="noreferrer">federalreserve.gov/monetarypolicy/fomccalendars.htm</a>. The level and change of the target federal funds rate is also published at the official website of the Federal Reserve at <a href="https://www.federalreserve.gov/monetarypolicy/openmarket.htm" className="text-blue-500 underline break-all" target="_blank" rel="noreferrer">federalreserve.gov/monetarypolicy/openmarket.htm</a>.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Row 5: Tabs */}
       <nav className="flex items-center gap-1 sm:gap-2 pt-0.5" aria-label="Symbol tabs">
