@@ -44,9 +44,28 @@ const POST_ACTIONS = [
   { key: 'reaction', label: 'Debate', color: '#16a34a' },
 ]
 
+const FAKE_DRAFTS = [
+  {
+    id: 'd1',
+    text: '26% odds still feels too high. My base case is one cut late in Q4 if labor cools further.',
+    updated: 'Edited 8m ago',
+  },
+  {
+    id: 'd2',
+    text: '$TSLA watchers are diverging from price action again. Sentiment is cooling while volume stays elevated.',
+    updated: 'Edited 42m ago',
+  },
+  {
+    id: 'd3',
+    text: 'If CPI comes in hot again, risk assets likely fade and rate-cut expectations reprice lower.',
+    updated: 'Edited 2h ago',
+  },
+]
+
 export default function MessagePostBox({ placeholder = "What're your thoughts on $TSLA?", onPost }) {
   const [message, setMessage] = useState('')
   const [isFocused, setIsFocused] = useState(false)
+  const [showDraftsMenu, setShowDraftsMenu] = useState(false)
   const [visibility, setVisibility] = useState('everyone')
   const [showPrivateInfoModal, setShowPrivateInfoModal] = useState(false)
   const [showPredictionModal, setShowPredictionModal] = useState(false)
@@ -190,6 +209,13 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
     }
   }
 
+  const applyDraft = (draftText) => {
+    setMessage(draftText)
+    setShowDraftsMenu(false)
+    setIsFocused(true)
+    requestAnimationFrame(() => inputRef.current?.focus())
+  }
+
   useEffect(() => {
     if (!showPrivateInfoModal) return
     const onEsc = (e) => { if (e.key === 'Escape') setShowPrivateInfoModal(false) }
@@ -215,6 +241,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
     const handleMouseDown = (e) => {
       if (postBoxRef.current && !postBoxRef.current.contains(e.target)) {
         setIsFocused(false)
+        setShowDraftsMenu(false)
         inputRef.current?.blur()
       }
     }
@@ -328,6 +355,13 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
       ctx.setLineDash([])
     }
   }, [showChartModal, chartStrokes, currentStroke, chartTrendlines, chartTextLabels, chartIndicators, trendlineStart, trendlinePreview])
+
+  useEffect(() => {
+    if (!showDraftsMenu) return
+    const onEsc = (e) => { if (e.key === 'Escape') setShowDraftsMenu(false) }
+    window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
+  }, [showDraftsMenu])
 
   const [sentiment, setSentiment] = useState(null)
 
@@ -460,7 +494,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
     <div ref={postBoxRef} className="px-0 py-4">
       <div
           className={clsx(
-            'rounded-2xl bg-surface border-2 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] overflow-hidden transition-colors',
+            'relative rounded-2xl bg-surface border-2 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] overflow-hidden transition-colors',
             sentiment === 'bullish' ? 'border-success' : sentiment === 'bearish' ? 'border-danger' : 'border-border'
           )}
         >
@@ -474,10 +508,23 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
             <div className="flex-1 min-w-0 flex flex-col">
               <div
                 className={clsx(
-                  'rounded-2xl transition-all',
+                  'rounded-2xl transition-all relative',
                   isFocused ? 'bg-[#F5F5F7] dark:bg-surface-muted p-3' : ''
                 )}
               >
+                {isFocused && (
+                  <div className="absolute top-2 right-2 z-20">
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowDraftsMenu((v) => !v)}
+                      className="text-xs font-semibold text-primary hover:opacity-80 transition-opacity"
+                      aria-label="Open drafts"
+                    >
+                      Drafts
+                    </button>
+                  </div>
+                )}
                 <input
                   ref={inputRef}
                   type="text"
@@ -487,7 +534,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                   placeholder={placeholder}
                   className={clsx(
                     'w-full border-0 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-0',
-                    isFocused ? 'px-2 py-2 bg-transparent' : 'px-4 py-3 rounded-full bg-[#F5F5F7] dark:bg-surface-muted focus:ring-2 focus:ring-primary/30'
+                    isFocused ? 'px-2 py-2 pr-24 bg-transparent' : 'px-4 py-3 rounded-full bg-[#F5F5F7] dark:bg-surface-muted focus:ring-2 focus:ring-primary/30'
                   )}
                 />
                 {isFocused && (
@@ -866,6 +913,50 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
           </div>
         </div>
       </div>
+
+      {showDraftsMenu && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setShowDraftsMenu(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Saved drafts"
+        >
+          <div
+            className="w-full max-w-[420px] rounded-xl border border-border bg-white dark:bg-surface shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                Saved Drafts
+              </div>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setShowDraftsMenu(false)}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
+                aria-label="Close drafts"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {FAKE_DRAFTS.map((draft) => (
+                <button
+                  key={draft.id}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => applyDraft(draft.text)}
+                  className="w-full text-left px-4 py-3 border-b border-border last:border-b-0 hover:bg-surface-muted transition-colors"
+                >
+                  <p className="text-sm text-text line-clamp-2">{draft.text}</p>
+                  <p className="text-xs text-text-muted mt-1">{draft.updated}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showPrivateInfoModal && (
         <div

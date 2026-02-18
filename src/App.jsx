@@ -24,6 +24,7 @@ import Scheduled from './pages/Scheduled.jsx'
 import Profile from './pages/Profile.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import SymbolPredict from './pages/SymbolPredict.jsx'
+import SymbolPredict2 from './pages/SymbolPredict2.jsx'
 import HomeIOS from './pages/HomeIOS.jsx'
 import IOSTools from './pages/IOSTools.jsx'
 import IOSNotifications from './pages/IOSNotifications.jsx'
@@ -758,6 +759,7 @@ export default function App() {
         <Route path="/home3" element={<Homepage2 />} />
         <Route path="/symbol" element={<Home />} />
         <Route path="/symbolpredict" element={<SymbolPredict />} />
+        <Route path="/symbolpredict2" element={<SymbolPredict2 />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/notifications" element={<Notifications />} />
@@ -785,5 +787,4 @@ export default function App() {
     </BookmarkProvider>
   )
 }
-
 

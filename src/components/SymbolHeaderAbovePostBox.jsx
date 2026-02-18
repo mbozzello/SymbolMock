@@ -278,7 +278,7 @@ function PredictionGauge({ value = 54, size = 52, strokeWidth = 5 }) {
   const cy = size / 2
   const circumference = 2 * Math.PI * radius
   const filled = (value / 100) * circumference
-  const color = '#f59e0b'
+  const color = value < 40 ? '#ef4444' : '#f59e0b'
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="shrink-0" style={{ width: size, height: size }}>
       <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} strokeLinecap="round" />
@@ -294,8 +294,8 @@ function PredictionGauge({ value = 54, size = 52, strokeWidth = 5 }) {
 }
 
 const DEFAULT_PREDICTION = {
-  question: 'How many jobless claims during the week ending Feb 14?',
-  chancePct: 54,
+  question: 'Will 2 Fed Rate Cust Happen in 2026?',
+  chancePct: 26,
 }
 
 export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION }) {
@@ -560,12 +560,15 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       {/* Row 4: Sentiment / Prediction content */}
       <div className="border-b border-border">
         {variant === 'predict' && (
-          <div className="flex justify-end pt-1 pb-0 -mb-1">
-            <div className="relative inline-grid grid-cols-2 items-center rounded-full bg-gray-300 p-1 overflow-hidden">
+          <div className="w-full flex items-center justify-start pt-0 pb-2">
+            <div
+              className="relative grid w-fit grid-cols-2 items-center rounded-full bg-gray-300/95 p-0.5 overflow-hidden border border-gray-400/50"
+              style={{ marginLeft: 0, marginRight: 'auto' }}
+            >
               <span
                 aria-hidden="true"
                 className={clsx(
-                  'absolute top-1 bottom-1 left-1 w-[calc(50%_-_0.25rem)] rounded-full bg-white shadow-sm transition-transform duration-200 ease-out',
+                  'absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%_-_0.125rem)] rounded-[999px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.14)] transition-transform duration-300 ease-out',
                   sentimentMode === 'prediction' ? 'translate-x-0' : 'translate-x-full'
                 )}
               />
@@ -573,7 +576,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                 type="button"
                 onClick={() => setSentimentMode('prediction')}
                 className={clsx(
-                  'relative z-10 px-4 py-1.5 text-xs font-semibold transition-colors',
+                  'relative z-10 px-3.5 py-1 text-[13px] font-semibold transition-colors duration-200',
                   sentimentMode === 'prediction' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
                 )}
               >
@@ -583,7 +586,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                 type="button"
                 onClick={() => setSentimentMode('sentiment')}
                 className={clsx(
-                  'relative z-10 px-4 py-1.5 text-xs font-semibold transition-colors',
+                  'relative z-10 px-3.5 py-1 text-[13px] font-semibold transition-colors duration-200',
                   sentimentMode === 'sentiment' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
                 )}
               >
