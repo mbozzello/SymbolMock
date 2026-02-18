@@ -13,7 +13,8 @@
 
 ## User Preferences
 - `/symbol` is the production page — never break it when experimenting
-- `/symbolpredict` is the playground — clone of `/symbol` for new ideas
+- `/symbolpredict` is the active playground — all new work goes here unless told otherwise
+- `/symbolpredict2` exists but is frozen — do NOT touch unless explicitly asked
 - Spacing: prefer tighter/compact layouts; user frequently asks to remove extra padding
 - Component variants: use a `variant` prop to conditionally render alternate UI rather than creating separate components
 - Pill toggles: black bg, white active pill, white/40 inactive text — not underline tabs

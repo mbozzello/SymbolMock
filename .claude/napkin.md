@@ -13,7 +13,10 @@
 - Keep the Prediction/Sentiment switch left-aligned in its row and remove extra top padding above it.
 - Add a bit of space below the Prediction/Sentiment switch and keep the switch slightly shorter in height.
 - `/symbolpredict` default prediction prompt should be "Will 2 Fed Rate Cust Happen in 2026?" with a 26% chance.
+- `/symbolpredict` default prediction prompt should read "Will 2 Fed Rate Cuts Happen in 2026?" with a 26% chance.
 - Low prediction probabilities (e.g., 26%) should render as red, not orange.
+- Show "10,200 predictors" next to the prediction dropdown chevron in the header row.
+- In prediction mode, show a Powell image tile to the left of the percentage gauge.
 - Keep a full replica page at `/symbolpredict2` as the sandbox/playground for new ideas.
 - In the post composer, show a small top-right Drafts control on focus; tapping it should open fake drafts and selecting one should populate the message box (X-style behavior).
 - Keep drafts UI simple: clicking Drafts should open a standard modal (full-screen backdrop + centered panel), not a complex in-card overlay.

@@ -272,36 +272,55 @@ function ExpandedChart({ values, volumeBars, isUp }) {
   )
 }
 
-function PredictionGauge({ value = 54, size = 52, strokeWidth = 5 }) {
+function PredictionGauge({ value = 54, size = 36, strokeWidth = 3.5, showLabel = false }) {
   const radius = (size - strokeWidth) / 2
   const cx = size / 2
   const cy = size / 2
   const circumference = 2 * Math.PI * radius
   const filled = (value / 100) * circumference
-  const color = value < 40 ? '#ef4444' : '#f59e0b'
+  const color = value >= 50 ? '#22c55e' : value >= 30 ? '#f59e0b' : '#ef4444'
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="shrink-0" style={{ width: size, height: size }}>
       <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} strokeLinecap="round" />
       <circle cx={cx} cy={cy} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference - filled} transform={`rotate(-90 ${cx} ${cy})`} />
-      <text x={cx} y={cy - 2} textAnchor="middle" fontSize="14" fontWeight="700" fill={color}>
-        {value}%
-      </text>
-      <text x={cx} y={cy + 11} textAnchor="middle" fontSize="8" fontWeight="600" fill="#9ca3af">
-        chance
-      </text>
+      {showLabel ? (
+        <>
+          <text x={cx} y={cy - 2} textAnchor="middle" fontSize={size * 0.28} fontWeight="700" fill={color}>
+            {value}%
+          </text>
+          <text x={cx} y={cy + size * 0.2} textAnchor="middle" fontSize={size * 0.16} fontWeight="600" fill="#9ca3af">
+            chance
+          </text>
+        </>
+      ) : (
+        <text x={cx} y={cy + 4} textAnchor="middle" fontSize="10" fontWeight="700" fill={color}>
+          {value}%
+        </text>
+      )}
     </svg>
   )
 }
 
 const DEFAULT_PREDICTION = {
-  question: 'Will 2 Fed Rate Cust Happen in 2026?',
+  question: 'Will 2 Fed Rate Cuts Happen in 2026?',
   chancePct: 26,
+  expandedQuestion: 'How many Fed rate cuts in 2026?',
+  options: [
+    { label: '0 (0 bps)', pct: 3 },
+    { label: '1 (25 bps)', pct: 8 },
+    { label: '2 (50 bps)', pct: 26 },
+    { label: '3 (75 bps)', pct: 55 },
+    { label: '4 (100 bps)', pct: 6 },
+    { label: '>5 (+125 bps)', pct: 2 },
+  ],
 }
 
 export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
+  const [predictionExpanded, setPredictionExpanded] = useState(false)
+  const [predictionVotes, setPredictionVotes] = useState({})
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
   const [floatingWatchers, setFloatingWatchers] = useState(null)
@@ -636,16 +655,74 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 pt-2 pb-3">
-            <PredictionGauge value={prediction.chancePct ?? 54} size={52} strokeWidth={5} />
-            <p className="min-w-0 flex-1 text-sm font-semibold text-text leading-snug">{prediction.question}</p>
+          <div className="pt-2 pb-3">
+            {/* Header row: image + gauge + question + predictors + chevron */}
             <button
               type="button"
-              className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
-              aria-label="Expand prediction"
+              onClick={() => setPredictionExpanded((v) => !v)}
+              className="w-full flex items-center gap-3"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <img
+                src="/images/powell-streaming.png"
+                alt=""
+                className="w-12 h-12 rounded-lg object-cover border border-border shrink-0"
+              />
+              {!predictionExpanded && <PredictionGauge value={prediction.chancePct ?? 26} size={48} strokeWidth={4} showLabel />}
+              <p className="min-w-0 flex-1 text-sm font-semibold text-text leading-snug text-left">{predictionExpanded ? (prediction.expandedQuestion ?? prediction.question) : prediction.question}</p>
+              <div className="shrink-0 flex flex-col items-end gap-0.5">
+                <span className="text-xs font-medium text-text-muted whitespace-nowrap">10,200 predictors</span>
+                {predictionExpanded && (
+                  <span className="flex items-center gap-1 text-xs text-text-muted whitespace-nowrap">
+                    <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" strokeLinecap="round"/></svg>
+                    Dec 31, 2026
+                  </span>
+                )}
+              </div>
+              <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-text-muted">
+                <svg className={clsx('w-4 h-4 transition-transform', predictionExpanded && 'rotate-180')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
             </button>
+
+            {/* Expanded: option rows */}
+            {predictionExpanded && (
+              <div className="mt-3 space-y-3">
+                {(prediction.options ?? []).map((opt, i) => {
+                  const vote = predictionVotes[i]
+                  return (
+                    <div key={i} className="flex items-center gap-4">
+                      <PredictionGauge value={opt.pct} size={52} strokeWidth={4.5} showLabel />
+                      <span className="min-w-0 flex-1 text-base font-semibold text-text">{opt.label}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'yes' ? null : 'yes' }))}
+                          className={clsx(
+                            'px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors',
+                            vote === 'yes'
+                              ? 'bg-green-600 border-green-600 text-white'
+                              : 'bg-surface border-border text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20'
+                          )}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'no' ? null : 'no' }))}
+                          className={clsx(
+                            'px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors',
+                            vote === 'no'
+                              ? 'bg-red-600 border-red-600 text-white'
+                              : 'bg-surface border-border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'
+                          )}
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
