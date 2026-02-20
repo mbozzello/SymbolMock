@@ -848,7 +848,8 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
               {hasReaction && (
                 <div className="mt-2 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/30">
-                    ⚖️ Users can debate this message
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" /><path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" /><path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" /><path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" /></svg>
+                    Users can debate this message
                   </span>
                   <button type="button" onClick={() => setHasReaction(false)} className="p-0.5 rounded-full hover:bg-surface-muted text-muted hover:text-text" aria-label="Remove debate">
                     <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
