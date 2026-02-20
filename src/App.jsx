@@ -32,6 +32,7 @@ import HomeIOS from './pages/HomeIOS.jsx'
 import IOSTools from './pages/IOSTools.jsx'
 import IOSNotifications from './pages/IOSNotifications.jsx'
 import IOSExplore from './pages/IOSExplore.jsx'
+import IOSExplore2 from './pages/IOSExplore2.jsx'
 import IOSSearch from './pages/IOSSearch.jsx'
 import { BookmarkProvider } from './contexts/BookmarkContext.jsx'
 import { TickerTapeProvider } from './contexts/TickerTapeContext.jsx'
@@ -784,6 +785,7 @@ export default function App() {
         <Route path="/iosnotifications" element={<IOSNotifications />} />
         <Route path="/exploreios" element={<IOSExplore />} />
         <Route path="/iosforyou" element={<IOSExplore />} />
+        <Route path="/iosforyou2" element={<IOSExplore2 />} />
         <Route path="/iossearch" element={<IOSSearch />} />
         <Route path="/newpage" element={<NewPage />} />
       </Routes>

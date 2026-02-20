@@ -371,7 +371,7 @@ function formatCount(n) {
 /* ══════════════════════════════════════════════════════════════
    COMPONENT
    ══════════════════════════════════════════════════════════════ */
-export default function IOSExplore() {
+export default function IOSExplore2() {
   const navigate = useNavigate()
   const location = useLocation()
   const { toggleWatch, isWatched } = useWatchlist()

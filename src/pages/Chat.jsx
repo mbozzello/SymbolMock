@@ -1055,7 +1055,15 @@ export default function Chat() {
                         className="p-2 rounded-full hover:bg-surface-muted text-text-muted hover:text-text transition-colors"
                         title="Price Prediction"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <circle cx="12" cy="12" r="6" />
+                          <circle cx="12" cy="12" r="2" />
+                          <line x1="22" y1="2" x2="12" y2="12" />
+                          <path d="M22 2l-5.5 1.5L18 5z" fill="currentColor" stroke="none" />
+                          <line x1="22" y1="2" x2="16.5" y2="3.5" />
+                          <line x1="22" y1="2" x2="18" y2="5" />
+                        </svg>
                       </button>
                     )}
                   </div>
@@ -1181,7 +1189,15 @@ export default function Chat() {
           <div className="relative w-full max-w-sm bg-white dark:bg-surface rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h3 className="text-base font-bold text-text flex items-center gap-2">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                  <line x1="22" y1="2" x2="12" y2="12" />
+                  <path d="M22 2l-5.5 1.5L18 5z" fill="currentColor" stroke="none" />
+                  <line x1="22" y1="2" x2="16.5" y2="3.5" />
+                  <line x1="22" y1="2" x2="18" y2="5" />
+                </svg>
                 Price Prediction
               </h3>
               <button type="button" onClick={() => setShowPredictModal(false)} className="p-1 rounded-full hover:bg-surface-muted text-text-muted hover:text-text transition-colors">

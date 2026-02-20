@@ -431,13 +431,15 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
         <path d="M7 14l4-4 4 2 5-6" />
       </svg>
     ),
-    // Bullseye target (concentric circles)
     predict: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
-        <circle cx="12" cy="12" r="7" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="12" cy="12" r="2" fill="currentColor" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="2" />
+        <line x1="22" y1="2" x2="12" y2="12" />
+        <path d="M22 2l-5.5 1.5L18 5z" fill="currentColor" stroke="none" />
+        <line x1="22" y1="2" x2="16.5" y2="3.5" />
+        <line x1="22" y1="2" x2="18" y2="5" />
       </svg>
     ),
     // Red picture frame with white mountains and sun
@@ -487,7 +489,14 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
         <line x1="7" y1="7" x2="7.01" y2="7" />
       </svg>
     ),
-    reaction: <span className="text-lg leading-none" aria-hidden>⚖️</span>,
+    reaction: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" />
+        <path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" />
+        <path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" />
+        <path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" />
+      </svg>
+    ),
   }
 
   return (
@@ -645,12 +654,15 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                 <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 overflow-hidden">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15" style={{ color: 'var(--color-primary)' }} aria-hidden>
-                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <span className="flex items-center justify-center w-6 h-6" aria-hidden>
+                        <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="12" r="10" />
-                          <circle cx="12" cy="12" r="7" />
-                          <circle cx="12" cy="12" r="4" />
-                          <circle cx="12" cy="12" r="2" fill="currentColor" />
+                          <circle cx="12" cy="12" r="6" />
+                          <circle cx="12" cy="12" r="2" />
+                          <line x1="22" y1="2" x2="12" y2="12" />
+                          <path d="M22 2l-5.5 1.5L18 5z" fill="currentColor" stroke="none" />
+                          <line x1="22" y1="2" x2="16.5" y2="3.5" />
+                          <line x1="22" y1="2" x2="18" y2="5" />
                         </svg>
                       </span>
                       <span className="text-sm font-semibold text-text">Create Price Prediction</span>
