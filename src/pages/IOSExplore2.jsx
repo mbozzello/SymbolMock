@@ -220,37 +220,16 @@ const SHOWS = [
    ══════════════════════════════════════════════════════════════ */
 const FYF_ITEMS = [
   {
-    id: 1, type: 'video',
-    user: { handle: 'steeletwits', name: 'Michele Steele', avatar: '/avatars/michele-steele.png', verified: true },
-    ticker: 'MSTR', price: 312.45, pctChange: -4.23,
-    caption: 'oh boy we might actually be in trouble',
-    videoSrc: 'https://videos.pexels.com/video-files/3945057/3945057-sd_506_960_25fps.mp4',
-    videoThumb: '/images/shah-video.gif',
-    overlay: 'Michael Saylor says credit risk over Strategy overblown',
+    id: 1, type: 'video', useGif: false,
+    user: { handle: 'stocktwitstv', name: 'Stocktwits TV', avatar: '/images/stocktwits-icon.png', verified: true },
+    ticker: 'OPEN', price: 312.45, pctChange: 4.23,
+    caption: '',
+    videoSrc: '/images/stocktwits-tv-clip.mp4',
+    videoThumb: '/images/stocktwits-tv-clip.mp4',
+    overlay: '',
     duration: '00:43', elapsed: '00:05',
     comments: 752, reposts: 706, likes: 3300, views: '867K',
     time: '8h',
-  },
-  {
-    id: 2, type: 'message',
-    user: { handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', verified: true, badge: 'EDGE' },
-    ticker: 'HOOD', sentiment: 'bullish', price: 46.64, pctChange: 2.35,
-    body: '$HOOD updated robinhood cheat sheet',
-    embed: { source: 'EquityResearch...', sourceIcon: '📊', date: '2/10/26, 8:15 PM', title: '$HOOD 4Q25 - The SuperApp Nobody\'s Pricing In. Robinhood\'s 2026 Roadmap Is Insane. Bull $175', domain: 'open.substack.com', hasChart: true },
-    comments: 1, reposts: 0, likes: 7,
-    time: '11:18 AM',
-  },
-  {
-    id: 3, type: 'video',
-    user: { handle: 'MickeyMarkets', name: 'Michael Bolling', avatar: '/avatars/michael-bolling.png', verified: true },
-    ticker: 'NVDA', price: 875.32, pctChange: 3.87,
-    caption: '$NVDA Blackwell ramp is real. Jensen confirmed another quarter of insane demand.',
-    videoSrc: 'https://videos.pexels.com/video-files/7579953/7579953-sd_506_960_25fps.mp4',
-    videoThumb: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=430&h=760&fit=crop',
-    overlay: 'NVIDIA CEO confirms Blackwell demand far exceeds supply',
-    duration: '01:22', elapsed: '00:15',
-    comments: 423, reposts: 189, likes: 2100, views: '412K',
-    time: '3h',
   },
   {
     id: 15, type: 'message',
@@ -260,6 +239,27 @@ const FYF_ITEMS = [
     embed: null,
     comments: 1847, reposts: 623, likes: 8920,
     time: '2h',
+  },
+  {
+    id: 3, type: 'video',
+    user: { handle: 'Jonathan_Morgan', name: 'Jonathan Morgan', avatar: '/avatars/jonathan-morgan.png', verified: true },
+    ticker: 'SLV', price: 875.32, pctChange: 3.87,
+    caption: '$SLV Silver catching a bid as metals rally continues.',
+    videoSrc: '/images/slv-clip.mp4',
+    videoThumb: '/images/slv-clip.mp4',
+    overlay: '',
+    duration: '01:22', elapsed: '00:15',
+    comments: 423, reposts: 189, likes: 2100, views: '412K',
+    time: '3h',
+  },
+  {
+    id: 2, type: 'message',
+    user: { handle: 'howardlindzon', name: 'Howard Lindzon', avatar: '/avatars/howard-lindzon.png', verified: true, badge: 'EDGE' },
+    ticker: 'HOOD', sentiment: 'bullish', price: 46.64, pctChange: 2.35,
+    body: '$HOOD updated robinhood cheat sheet',
+    embed: { source: 'EquityResearch...', sourceIcon: '📊', date: '2/10/26, 8:15 PM', title: '$HOOD 4Q25 - The SuperApp Nobody\'s Pricing In. Robinhood\'s 2026 Roadmap Is Insane. Bull $175', domain: 'open.substack.com', hasChart: true },
+    comments: 1, reposts: 0, likes: 7,
+    time: '11:18 AM',
   },
   {
     id: 4, type: 'message',
@@ -939,9 +939,11 @@ export default function IOSExplore2() {
 
                 {/* Overlay text on video — pinned near bottom */}
                 <div className="absolute bottom-4 left-0 right-14 px-4 z-10">
-                  <div className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 mb-3 inline-block">
-                    <p className="text-sm font-semibold leading-snug text-white">{fyItem.overlay}</p>
-                  </div>
+                  {fyItem.overlay && (
+                    <div className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 mb-3 inline-block">
+                      <p className="text-sm font-semibold leading-snug text-white">{fyItem.overlay}</p>
+                    </div>
+                  )}
                   {/* Animated progress bar */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-[10px] text-white/60 tabular-nums">{fyItem.elapsed}</span>
@@ -963,7 +965,7 @@ export default function IOSExplore2() {
                       Follow
                     </button>
                   </div>
-                  <p className="text-[13px] text-white mt-2 leading-snug">{fyItem.caption}</p>
+                  {fyItem.caption && <p className="text-[13px] text-white mt-2 leading-snug">{fyItem.caption}</p>}
                   <span className="text-[11px] text-white/50 mt-1 block">{fyItem.time}</span>
 
                   {/* Ticker + price pill */}
@@ -2003,7 +2005,7 @@ export default function IOSExplore2() {
       </div>
 
       {/* ── Share Sheet ── */}
-      <IOSShareSheet open={shareSheetOpen} onClose={() => setShareSheetOpen(false)} />
+      <IOSShareSheet open={shareSheetOpen} onClose={() => setShareSheetOpen(false)} lightMode />
 
       {/* ── Bottom Navigation ── */}
       <IOSBottomNav lightMode />
