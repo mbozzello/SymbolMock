@@ -58,4 +58,6 @@
 - WatchlistContext, BookmarkContext, LiveQuotesContext are the main shared contexts
 - Watcher animation class `animate-watchers-float-wiggle` is defined in Tailwind config or index.css
 - `/leaderboard` → Leaderboard.jsx (full-width, no right rail — two leaderboards side by side)
+- `/chat` → Chat.jsx (1:1 DMs + group chats, conversation list sidebar, create-group modal, chat bubbles with send)
 - Nav items in TopNavigation: `['Earnings', 'News', 'Leaderboards', 'Social Tools']` — each linked via `isXxxPage` pattern + `<Link>` block
+- Chat sidebar button in LeftSidebar now links to `/chat`
