@@ -90,7 +90,7 @@ const DEFAULT_SYMBOL = {
   chartValues: [410, 412, 418, 422, 425, 428, 430, 433.07],
 }
 
-export default function SymbolPredict2() {
+export default function SymbolPredict3() {
   const { toggleBookmark, isBookmarked } = useBookmarks()
   const { watchlist } = useWatchlist()
   const { getQuote } = useLiveQuotesContext()
@@ -290,7 +290,7 @@ export default function SymbolPredict2() {
         <div className="max-w-[1200px] mx-auto pl-0 pr-0 py-4 flex gap-0">
           {/* Main feed column */}
           <div className="flex-1 min-w-0 max-w-[660px] pl-0 pr-0">
-            <SymbolHeaderAbovePostBox symbol={symbol} variant="predict" hideNo enableBetting />
+            <SymbolHeaderAbovePostBox symbol={symbol} variant="predict" hideNo />
             <div className="px-3">
               <MessagePostBox placeholder="What're your thoughts on $TSLA?" onPost={handlePost} />
             </div>

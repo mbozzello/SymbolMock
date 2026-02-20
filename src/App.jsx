@@ -25,6 +25,7 @@ import Profile from './pages/Profile.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import SymbolPredict from './pages/SymbolPredict.jsx'
 import SymbolPredict2 from './pages/SymbolPredict2.jsx'
+import SymbolPredict3 from './pages/SymbolPredict3.jsx'
 import Leaderboard from './pages/Leaderboard.jsx'
 import HomeIOS from './pages/HomeIOS.jsx'
 import IOSTools from './pages/IOSTools.jsx'
@@ -761,6 +762,7 @@ export default function App() {
         <Route path="/symbol" element={<Home />} />
         <Route path="/symbolpredict" element={<SymbolPredict />} />
         <Route path="/symbolpredict2" element={<SymbolPredict2 />} />
+        <Route path="/symbolpredict3" element={<SymbolPredict3 />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/search" element={<Search />} />
         <Route path="/bookmarks" element={<Bookmarks />} />

@@ -16,7 +16,8 @@
 ## User Preferences
 - `/symbol` is the production page — never break it when experimenting
 - `/symbolpredict` is the active playground — all new work goes here unless told otherwise
-- `/symbolpredict2` is a checkpoint snapshot — only update when user explicitly says "copy to symbolpredict2"; treat it as frozen otherwise
+- `/symbolpredict2` has betting flow enabled via `enableBetting` prop — modal with slider/input, success screen, avatar + wager display
+- `/symbolpredict3` is a copy of symbolpredict2 for variation 3 experiments
 - Per-page feature flags: use dedicated boolean props (e.g. `hidePills`, `hideNo`) passed from the page file — never key off `variant` for page-specific differences since both predict pages share `variant="predict"`
 - Spacing: prefer tighter/compact layouts; user frequently asks to remove extra padding
 - Component variants: use a `variant` prop to conditionally render alternate UI rather than creating separate components

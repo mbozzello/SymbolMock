@@ -316,13 +316,17 @@ const DEFAULT_PREDICTION = {
   ],
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false }) {
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
   const [predictionExpanded, setPredictionExpanded] = useState(false)
   const [predictionVotes, setPredictionVotes] = useState({})
   const [rulesModalOpen, setRulesModalOpen] = useState(false)
+  const [betModal, setBetModal] = useState(null)
+  const [betAmount, setBetAmount] = useState(50)
+  const [betSuccess, setBetSuccess] = useState(null)
+  const [placedBets, setPlacedBets] = useState({})
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
   const [floatingWatchers, setFloatingWatchers] = useState(null)
@@ -696,6 +700,12 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               <p className="min-w-0 flex-1 text-sm font-semibold text-text leading-snug text-left">{predictionExpanded ? (prediction.expandedQuestion ?? prediction.question) : prediction.question}</p>
               <div className="shrink-0 flex flex-col items-end gap-0.5">
                 <span className="text-xs font-medium text-text-muted whitespace-nowrap">{predictorsCount.toLocaleString()} predictors</span>
+                {enableBetting && Object.keys(placedBets).length > 0 && !predictionExpanded && (
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                    {Object.keys(placedBets).length} active · {Object.values(placedBets).reduce((s, b) => s + b.amount, 0).toLocaleString()} wagered · {Object.values(placedBets).reduce((s, b) => s + Number(b.potentialReturn), 0).toLocaleString()} to win
+                  </span>
+                )}
                 {predictionExpanded && (
                   <span className="flex items-center gap-1 text-xs text-text-muted whitespace-nowrap">
                     <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" strokeLinecap="round"/></svg>
@@ -730,39 +740,72 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                   const p = Math.max(0.01, Math.min(0.99, opt.pct / 100))
                   const yesReturn = (1 / p).toFixed(2)
                   const noReturn = (1 / (1 - p)).toFixed(2)
+                  const yesBet = placedBets[`${i}-yes`]
+                  const noBet = placedBets[`${i}-no`]
                   return (
-                    <div key={i} className="flex items-center gap-4">
-                      <PredictionGauge value={opt.pct} size={52} strokeWidth={4.5} showLabel />
-                      <span className="min-w-0 flex-1 text-base font-semibold text-text">{opt.label}</span>
+                    <div key={i}>
+                      <div className="flex items-center gap-4">
+                      {enableBetting && (yesBet || noBet) ? (
+                        <div className="relative">
+                          <PredictionGauge value={opt.pct} size={52} strokeWidth={4.5} showLabel />
+                          <img src="/avatars/howard-lindzon.png" alt="" className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white dark:border-surface object-cover" />
+                        </div>
+                      ) : (
+                        <PredictionGauge value={opt.pct} size={52} strokeWidth={4.5} showLabel />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span className="text-base font-semibold text-text block">{opt.label}</span>
+                        {enableBetting && yesBet && (
+                          <span className="text-[11px] text-green-600 font-medium">You Wagered {Number(yesBet.amount).toLocaleString()} To Win {Number(yesBet.potentialReturn).toLocaleString()}</span>
+                        )}
+                        {enableBetting && noBet && (
+                          <span className="text-[11px] text-red-600 font-medium">You Wagered {Number(noBet.amount).toLocaleString()} To Win {Number(noBet.potentialReturn).toLocaleString()}</span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
-                          onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'yes' ? null : 'yes' }))}
+                          onClick={() => {
+                            if (enableBetting) {
+                              setBetAmount(50)
+                              setBetModal({ optionIndex: i, side: 'yes', label: opt.label, multiplier: yesReturn, pct: opt.pct })
+                            } else {
+                              setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'yes' ? null : 'yes' }))
+                            }
+                          }}
                           className={clsx(
                             'flex items-center justify-center gap-2 w-[130px] py-2.5 rounded-full text-base font-bold border transition-colors',
-                            vote === 'yes'
+                            (vote === 'yes' || placedBets[`${i}-yes`])
                               ? 'bg-green-600 border-green-600 text-white'
                               : 'bg-surface border-border text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20'
                           )}
                         >
                           <span>Yes</span>
-                          <span className={clsx('text-xs font-medium', vote === 'yes' ? 'text-green-100' : 'text-green-500')}>{yesReturn}x</span>
+                          <span className={clsx('text-xs font-medium', (vote === 'yes' || placedBets[`${i}-yes`]) ? 'text-green-100' : 'text-green-500')}>{yesReturn}x</span>
                         </button>
                         {!hideNo && (
                           <button
                             type="button"
-                            onClick={() => setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'no' ? null : 'no' }))}
+                            onClick={() => {
+                              if (enableBetting) {
+                                setBetAmount(50)
+                                setBetModal({ optionIndex: i, side: 'no', label: opt.label, multiplier: noReturn, pct: opt.pct })
+                              } else {
+                                setPredictionVotes((v) => ({ ...v, [i]: v[i] === 'no' ? null : 'no' }))
+                              }
+                            }}
                             className={clsx(
                               'flex items-center justify-center gap-2 w-[130px] py-2.5 rounded-full text-base font-bold border transition-colors',
-                              vote === 'no'
+                              (vote === 'no' || placedBets[`${i}-no`])
                                 ? 'bg-red-600 border-red-600 text-white'
                                 : 'bg-surface border-border text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'
                             )}
                           >
                             <span>No</span>
-                            <span className={clsx('text-xs font-medium', vote === 'no' ? 'text-red-100' : 'text-red-400')}>{noReturn}x</span>
+                            <span className={clsx('text-xs font-medium', (vote === 'no' || placedBets[`${i}-no`]) ? 'text-red-100' : 'text-red-400')}>{noReturn}x</span>
                           </button>
                         )}
+                      </div>
                       </div>
                     </div>
                   )
@@ -772,6 +815,141 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
           </div>
         )}
       </div>
+
+      {/* Bet modal */}
+      {betModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setBetModal(null)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative w-full max-w-sm bg-white dark:bg-surface rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {!betSuccess ? (
+              <>
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                  <h3 className="text-lg font-bold text-text">Place Your Prediction</h3>
+                  <button type="button" onClick={() => setBetModal(null)} className="p-1 rounded-full hover:bg-surface-muted text-text-muted hover:text-text transition-colors">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                </div>
+                <div className="px-5 py-5 space-y-5">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-muted/50 border border-border">
+                    <PredictionGauge value={betModal.pct} size={48} strokeWidth={4} showLabel />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-text">{betModal.label}</div>
+                      <div className={clsx('text-xs font-medium', betModal.side === 'yes' ? 'text-green-600' : 'text-red-600')}>
+                        {betModal.side === 'yes' ? 'Yes' : 'No'} · {betModal.multiplier}x return
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-semibold text-text">Wager Amount</label>
+                      <span className="text-xs text-text-muted">Balance: {1000 - Object.values(placedBets).reduce((sum, b) => sum + b.amount, 0)} coins</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={1}
+                        max={Math.max(1, 1000 - Object.values(placedBets).reduce((sum, b) => sum + b.amount, 0))}
+                        value={betAmount}
+                        onChange={(e) => setBetAmount(Number(e.target.value))}
+                        className="flex-1 h-2 rounded-full appearance-none bg-border accent-primary cursor-pointer"
+                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-muted"></span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={Math.max(1, 1000 - Object.values(placedBets).reduce((sum, b) => sum + b.amount, 0))}
+                          value={betAmount}
+                          onChange={(e) => setBetAmount(Math.min(Math.max(1, Number(e.target.value) || 0), 1000 - Object.values(placedBets).reduce((sum, b) => sum + b.amount, 0)))}
+                          className="w-24 pl-8 pr-3 py-2 text-sm font-semibold text-text rounded-lg border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      {[10, 25, 50, 100].map((q) => (
+                        <button
+                          key={q}
+                          type="button"
+                          onClick={() => setBetAmount(Math.min(q, 1000 - Object.values(placedBets).reduce((sum, b) => sum + b.amount, 0)))}
+                          className={clsx(
+                            'flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors',
+                            betAmount === q ? 'bg-primary text-white border-primary' : 'bg-surface border-border text-text hover:bg-surface-muted'
+                          )}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200 dark:border-green-900/40">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-text-muted">Your wager</span>
+                      <span className="text-sm font-bold text-text">{betAmount}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm text-text-muted">Potential return</span>
+                      <span className="text-lg font-bold text-green-600">{(betAmount * parseFloat(betModal.multiplier)).toFixed(0)}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-text-muted">Profit</span>
+                      <span className="text-sm font-semibold text-green-600">+{(betAmount * parseFloat(betModal.multiplier) - betAmount).toFixed(0)} coins</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const key = `${betModal.optionIndex}-${betModal.side}`
+                      const existing = placedBets[key]
+                      const newAmount = existing ? existing.amount + betAmount : betAmount
+                      const potentialReturn = (newAmount * parseFloat(betModal.multiplier)).toFixed(0)
+                      setPlacedBets((prev) => ({
+                        ...prev,
+                        [key]: { amount: newAmount, multiplier: betModal.multiplier, potentialReturn, side: betModal.side },
+                      }))
+                      setPredictionVotes((v) => ({ ...v, [betModal.optionIndex]: betModal.side }))
+                      setBetSuccess({ amount: betAmount, potentialReturn, label: betModal.label, side: betModal.side, multiplier: betModal.multiplier })
+                    }}
+                    className={clsx(
+                      'w-full py-3 rounded-xl text-base font-bold text-white transition-opacity hover:opacity-90',
+                      betModal.side === 'yes' ? 'bg-green-600' : 'bg-red-600'
+                    )}
+                  >
+                    Confirm {betModal.side === 'yes' ? 'Yes' : 'No'} · {betAmount}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="px-5 py-8 text-center space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <h3 className="text-lg font-bold text-text">Prediction Placed!</h3>
+                <div className="space-y-1">
+                  <p className="text-sm text-text-muted">
+                    You wagered <span className="font-bold text-text">{betSuccess.amount}</span> on <span className={clsx('font-bold', betSuccess.side === 'yes' ? 'text-green-600' : 'text-red-600')}>{betSuccess.side === 'yes' ? 'Yes' : 'No'}</span>
+                  </p>
+                  <p className="text-sm text-text-muted">
+                    "{betSuccess.label}" at <span className="font-bold text-text">{betSuccess.multiplier}x</span>
+                  </p>
+                  <p className="text-base font-bold text-green-600 mt-2">
+                    Potential return: {betSuccess.potentialReturn}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setBetSuccess(null); setBetModal(null) }}
+                  className="mt-2 px-8 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Rules modal */}
       {rulesModalOpen && (
