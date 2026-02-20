@@ -101,11 +101,19 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   const [chartTrendlines, setChartTrendlines] = useState([])
   const [trendlineStart, setTrendlineStart] = useState(null)
   const [trendlinePreview, setTrendlinePreview] = useState(null)
+  const [chartArrows, setChartArrows] = useState([])
+  const [arrowStart, setArrowStart] = useState(null)
+  const [arrowPreview, setArrowPreview] = useState(null)
+  const [chartCircles, setChartCircles] = useState([])
+  const [circleStart, setCircleStart] = useState(null)
+  const [circlePreview, setCirclePreview] = useState(null)
   const [chartTextLabels, setChartTextLabels] = useState([])
   const [chartIndicators, setChartIndicators] = useState([])
   const [chartSnapshotUrl, setChartSnapshotUrl] = useState(null)
   const [chartPriceSinceStamp, setChartPriceSinceStamp] = useState(null)
   const [stampDragging, setStampDragging] = useState(false)
+  const [pendingTextLabel, setPendingTextLabel] = useState(null)
+  const textInputRef = useRef(null)
   const stampDragStart = useRef({ clientX: 0, clientY: 0, stampX: 0, stampY: 0 })
   const chartCanvasRef = useRef(null)
   const chartContainerRef = useRef(null)
@@ -113,9 +121,9 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
   const inputRef = useRef(null)
   const chartSize = { w: 560, h: 320 }
   const STAMP_PADDING = 50
-  const PRICE_SINCE_LABEL = '$TSLA +3.52%'
-  const PRICE_SINCE_TICKER = '$TSLA '
-  const PRICE_SINCE_PCT = '+3.52%'
+  const PRICE_SINCE_LABEL = 'Snapshot Change +1.04%'
+  const PRICE_SINCE_TICKER = 'Snapshot Change '
+  const PRICE_SINCE_PCT = '+1.04%'
   const clampStamp = (x, y) => ({
     x: Math.max(STAMP_PADDING, Math.min(chartSize.w - STAMP_PADDING, x)),
     y: Math.max(14, Math.min(chartSize.h - 14, y)),
@@ -326,6 +334,54 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
       ctx.stroke()
     }
     ctx.setLineDash([])
+    const drawArrowhead = (x1, y1, x2, y2, size) => {
+      const angle = Math.atan2(y2 - y1, x2 - x1)
+      ctx.beginPath()
+      ctx.moveTo(x2, y2)
+      ctx.lineTo(x2 - size * Math.cos(angle - Math.PI / 6), y2 - size * Math.sin(angle - Math.PI / 6))
+      ctx.moveTo(x2, y2)
+      ctx.lineTo(x2 - size * Math.cos(angle + Math.PI / 6), y2 - size * Math.sin(angle + Math.PI / 6))
+      ctx.stroke()
+    }
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.95)'
+    ctx.lineWidth = 2.5
+    ctx.lineCap = 'round'
+    ctx.setLineDash([])
+    chartArrows.forEach(({ x1, y1, x2, y2 }) => {
+      ctx.beginPath()
+      ctx.moveTo(x1, y1)
+      ctx.lineTo(x2, y2)
+      ctx.stroke()
+      drawArrowhead(x1, y1, x2, y2, 12)
+    })
+    if (arrowStart && arrowPreview) {
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(arrowStart.x, arrowStart.y)
+      ctx.lineTo(arrowPreview.x, arrowPreview.y)
+      ctx.stroke()
+      drawArrowhead(arrowStart.x, arrowStart.y, arrowPreview.x, arrowPreview.y, 12)
+    }
+    ctx.strokeStyle = 'rgba(234, 179, 8, 0.9)'
+    ctx.lineWidth = 2.5
+    ctx.setLineDash([])
+    chartCircles.forEach(({ cx, cy, rx, ry }) => {
+      ctx.beginPath()
+      ctx.ellipse(cx, cy, Math.abs(rx), Math.abs(ry), 0, 0, Math.PI * 2)
+      ctx.stroke()
+    })
+    if (circleStart && circlePreview) {
+      ctx.strokeStyle = 'rgba(234, 179, 8, 0.5)'
+      ctx.lineWidth = 2
+      const rx = Math.abs(circlePreview.x - circleStart.x)
+      const ry = Math.abs(circlePreview.y - circleStart.y)
+      const cx = (circleStart.x + circlePreview.x) / 2
+      const cy = (circleStart.y + circlePreview.y) / 2
+      ctx.beginPath()
+      ctx.ellipse(cx, cy, rx / 2, ry / 2, 0, 0, Math.PI * 2)
+      ctx.stroke()
+    }
     ctx.font = 'bold 14px system-ui, sans-serif'
     ctx.fillStyle = 'rgba(0, 0, 0, 0.85)'
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
@@ -335,18 +391,46 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
       ctx.fillText(text, x, y)
     })
     if (chartIndicators.length > 0) {
-      const colors = { ma20: 'rgba(234, 179, 8, 0.9)', ma50: 'rgba(168, 85, 247, 0.9)' }
+      const colors = {
+        ma20: 'rgba(234, 179, 8, 0.9)',
+        ma50: 'rgba(168, 85, 247, 0.9)',
+        ma100: 'rgba(236, 72, 153, 0.9)',
+        ma200: 'rgba(20, 184, 166, 0.9)',
+        vwap: 'rgba(59, 130, 246, 0.9)',
+        fib: 'rgba(245, 158, 11, 0.7)',
+      }
       chartIndicators.forEach((key) => {
+        if (key === 'fib') {
+          const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
+          ctx.setLineDash([4, 3])
+          ctx.lineWidth = 1
+          ctx.font = '10px system-ui, sans-serif'
+          levels.forEach((lvl) => {
+            const y = 30 + lvl * (h - 60)
+            ctx.strokeStyle = colors.fib
+            ctx.beginPath()
+            ctx.moveTo(40, y)
+            ctx.lineTo(w - 40, y)
+            ctx.stroke()
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.8)'
+            ctx.fillText(`${(lvl * 100).toFixed(1)}%`, w - 38, y - 3)
+          })
+          ctx.setLineDash([])
+          return
+        }
         const color = colors[key] || 'rgba(100, 116, 139, 0.9)'
         ctx.strokeStyle = color
         ctx.lineWidth = 2
         ctx.setLineDash([4, 2])
         ctx.beginPath()
-        const pts = key === 'ma20' ? 8 : 6
+        const ptsMap = { ma20: 10, ma50: 8, ma100: 7, ma200: 6, vwap: 9 }
+        const pts = ptsMap[key] || 8
+        const offsetMap = { ma20: 0, ma50: 0.05, ma100: 0.1, ma200: 0.15, vwap: -0.03 }
+        const offset = offsetMap[key] || 0
         for (let j = 0; j <= pts; j++) {
           const t = j / pts
           const x = 40 + t * (w - 80)
-          const y = h - 60 - (h - 100) * (0.3 + 0.5 * t + 0.1 * Math.sin(t * 8))
+          const y = h - 60 - (h - 100) * (0.3 + offset + 0.5 * t + 0.1 * Math.sin(t * 8))
           if (j === 0) ctx.moveTo(x, y)
           else ctx.lineTo(x, y)
         }
@@ -354,7 +438,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
       })
       ctx.setLineDash([])
     }
-  }, [showChartModal, chartStrokes, currentStroke, chartTrendlines, chartTextLabels, chartIndicators, trendlineStart, trendlinePreview])
+  }, [showChartModal, chartStrokes, currentStroke, chartTrendlines, chartTextLabels, chartIndicators, trendlineStart, trendlinePreview, chartArrows, arrowStart, arrowPreview, chartCircles, circleStart, circlePreview])
 
   useEffect(() => {
     if (!showDraftsMenu) return
@@ -383,14 +467,16 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
 
   const captureChartSnapshot = () => {
     const { w, h } = chartSize
+    const dpr = window.devicePixelRatio || 2
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
       const temp = document.createElement('canvas')
-      temp.width = w
-      temp.height = h
+      temp.width = w * dpr
+      temp.height = h * dpr
       const ctx = temp.getContext('2d')
       if (!ctx) return
+      ctx.scale(dpr, dpr)
       ctx.drawImage(img, 0, 0, w, h)
       if (chartCanvasRef.current) ctx.drawImage(chartCanvasRef.current, 0, 0, w, h)
       if (chartPriceSinceStamp) {
@@ -1019,7 +1105,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => { setChartStrokes([]); setCurrentStroke([]); setChartTrendlines([]); setChartTextLabels([]); setChartPriceSinceStamp(null); setTrendlineStart(null) }}
+                  onClick={() => { setChartStrokes([]); setCurrentStroke([]); setChartTrendlines([]); setChartArrows([]); setChartCircles([]); setChartTextLabels([]); setChartPriceSinceStamp(null); setTrendlineStart(null); setArrowStart(null); setCircleStart(null); setPendingTextLabel(null) }}
                   className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:bg-surface-muted"
                 >
                   Clear
@@ -1042,52 +1128,80 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                 </button>
               </div>
             </div>
-            <div className="px-4 pb-2 flex flex-wrap items-center gap-2 border-b border-border">
-              <span className="text-xs font-medium text-muted mr-1">Tools:</span>
+            <div className="px-4 pb-1.5 flex flex-wrap items-center gap-1.5 border-b border-border">
+              <span className="text-xs font-medium text-muted mr-0.5">Tools:</span>
               <button
                 type="button"
                 onClick={() => setChartTool('free')}
-                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartTool === 'free' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartTool === 'free' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
                 title="Free draw"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /></svg>
-                Free draw
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /></svg>
+                Draw
               </button>
               <button
                 type="button"
                 onClick={() => { setChartTool('trendline'); setTrendlineStart(null) }}
-                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartTool === 'trendline' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartTool === 'trendline' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
                 title="Trendline"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 19L19 5M5 5l14 14" /></svg>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="4" y1="20" x2="20" y2="4" /><circle cx="4" cy="20" r="2.5" fill="currentColor" stroke="none" /><circle cx="20" cy="4" r="2.5" fill="currentColor" stroke="none" /></svg>
                 Trendline
               </button>
               <button
                 type="button"
+                onClick={() => { setChartTool('arrow'); setArrowStart(null) }}
+                className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartTool === 'arrow' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Arrow"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="19" x2="19" y2="5" /><polyline points="10 5 19 5 19 14" /></svg>
+                Arrow
+              </button>
+              <button
+                type="button"
+                onClick={() => { setChartTool('circle'); setCircleStart(null) }}
+                className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartTool === 'circle' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Circle"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /></svg>
+                Circle
+              </button>
+              <button
+                type="button"
                 onClick={() => setChartTool('text')}
-                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartTool === 'text' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartTool === 'text' ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
                 title="Text"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16" /></svg>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3M9 20h6M12 4v16" /></svg>
                 Text
               </button>
               <button
                 type="button"
                 onClick={() => { if (chartPriceSinceStamp == null) setChartPriceSinceStamp({ x: chartSize.w / 2 - 45, y: chartSize.h / 2 - 10 }) }}
-                className={clsx('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartPriceSinceStamp ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
-                title="Price Since"
+                className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartPriceSinceStamp ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                title="Snapshot Change"
               >
-                Price Since
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="7" cy="7" r="2.5" /><circle cx="17" cy="17" r="2.5" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
+                Change Snapshot
               </button>
-              <span className="text-xs font-medium text-muted mx-1">Indicators:</span>
-              {['ma20', 'ma50'].map((key) => (
+            </div>
+            <div className="px-4 pb-2 flex flex-wrap items-center gap-1.5 border-b border-border">
+              <span className="text-xs font-medium text-muted mr-0.5">Indicators:</span>
+              {[
+                { key: 'ma20', label: 'MA 20' },
+                { key: 'ma50', label: 'MA 50' },
+                { key: 'ma100', label: 'MA 100' },
+                { key: 'ma200', label: 'MA 200' },
+                { key: 'vwap', label: 'VWAP' },
+                { key: 'fib', label: 'Fibonacci' },
+              ].map(({ key, label }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setChartIndicators((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key])}
-                  className={clsx('px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors', chartIndicators.includes(key) ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
+                  className={clsx('px-2 py-1 rounded-lg text-xs font-medium transition-colors', chartIndicators.includes(key) ? 'bg-primary/15 text-primary' : 'text-muted hover:bg-surface-muted')}
                 >
-                  MA {key === 'ma20' ? '20' : '50'}
+                  {label}
                 </button>
               ))}
             </div>
@@ -1100,12 +1214,7 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                 <img
                   src="/images/chart-draw.png"
                   alt="Stock chart"
-                  className="block w-full h-full absolute inset-0 object-cover"
-                />
-                <div
-                  className="absolute top-0 left-0 right-0 h-[10%] min-h-[28px] bg-white pointer-events-none dark:bg-surface"
-                  style={{ borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }}
-                  aria-hidden
+                  className="block w-full h-full absolute inset-0 object-fill"
                 />
                 <canvas
                   ref={chartCanvasRef}
@@ -1123,20 +1232,42 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                         setTrendlineStart(null)
                       } else setTrendlineStart(p)
                     }
+                    if (chartTool === 'arrow') {
+                      setArrowStart(p)
+                    }
+                    if (chartTool === 'circle') {
+                      setCircleStart(p)
+                    }
                     if (chartTool === 'text') {
-                      const text = window.prompt('Enter text label:', '')
-                      if (text != null && text.trim()) setChartTextLabels((prev) => [...prev, { x: p.x, y: p.y, text: text.trim() }])
+                      setPendingTextLabel({ x: p.x, y: p.y, text: '' })
+                      requestAnimationFrame(() => textInputRef.current?.focus())
                     }
                   }}
                   onPointerMove={(e) => {
                     const p = getChartCoords(e)
                     if (chartTool === 'trendline' && trendlineStart && p) setTrendlinePreview(p)
+                    if (chartTool === 'arrow' && arrowStart && p) setArrowPreview(p)
+                    if (chartTool === 'circle' && circleStart && p) setCirclePreview(p)
                     if (chartTool === 'free' && currentStroke.length > 0 && p) setCurrentStroke((prev) => [...prev, p])
                   }}
                   onPointerUp={() => {
                     if (chartTool === 'free' && currentStroke.length > 0) {
                       setChartStrokes((prev) => [...prev, currentStroke])
                       setCurrentStroke([])
+                    }
+                    if (chartTool === 'arrow' && arrowStart && arrowPreview) {
+                      setChartArrows((prev) => [...prev, { x1: arrowStart.x, y1: arrowStart.y, x2: arrowPreview.x, y2: arrowPreview.y }])
+                      setArrowStart(null)
+                      setArrowPreview(null)
+                    }
+                    if (chartTool === 'circle' && circleStart && circlePreview) {
+                      const rx = Math.abs(circlePreview.x - circleStart.x) / 2
+                      const ry = Math.abs(circlePreview.y - circleStart.y) / 2
+                      const cx = (circleStart.x + circlePreview.x) / 2
+                      const cy = (circleStart.y + circlePreview.y) / 2
+                      if (rx > 2 && ry > 2) setChartCircles((prev) => [...prev, { cx, cy, rx, ry }])
+                      setCircleStart(null)
+                      setCirclePreview(null)
                     }
                   }}
                   onPointerLeave={() => {
@@ -1145,6 +1276,8 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                       setCurrentStroke([])
                     }
                     if (chartTool === 'trendline') setTrendlinePreview(null)
+                    if (chartTool === 'arrow') { setArrowStart(null); setArrowPreview(null) }
+                    if (chartTool === 'circle') { setCircleStart(null); setCirclePreview(null) }
                   }}
                 />
                 {chartPriceSinceStamp && (
@@ -1167,12 +1300,50 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
                       }
                     }}
                     role="button"
-                    aria-label="Drag to move Price Since stamp"
+                    aria-label="Drag to move Snapshot Change stamp"
                   >
                     <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white/95 shadow border border-black/10 text-sm font-semibold whitespace-nowrap dark:bg-surface dark:border-border">
                       <span className="text-gray-900 dark:text-text">{PRICE_SINCE_TICKER}</span>
                       <span className="text-green-600">{PRICE_SINCE_PCT}</span>
                     </span>
+                  </div>
+                )}
+                {pendingTextLabel && (
+                  <div
+                    className="absolute pointer-events-auto z-20"
+                    style={{
+                      left: `${(pendingTextLabel.x / chartSize.w) * 100}%`,
+                      top: `${(pendingTextLabel.y / chartSize.h) * 100}%`,
+                      transform: 'translate(-4px, -50%)',
+                    }}
+                  >
+                    <input
+                      ref={textInputRef}
+                      type="text"
+                      value={pendingTextLabel.text}
+                      onChange={(e) => setPendingTextLabel((prev) => prev ? { ...prev, text: e.target.value } : null)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (pendingTextLabel.text.trim()) {
+                            setChartTextLabels((prev) => [...prev, { x: pendingTextLabel.x, y: pendingTextLabel.y, text: pendingTextLabel.text.trim() }])
+                          }
+                          setPendingTextLabel(null)
+                        }
+                        if (e.key === 'Escape') {
+                          setPendingTextLabel(null)
+                        }
+                      }}
+                      onBlur={() => {
+                        if (pendingTextLabel && pendingTextLabel.text.trim()) {
+                          setChartTextLabels((prev) => [...prev, { x: pendingTextLabel.x, y: pendingTextLabel.y, text: pendingTextLabel.text.trim() }])
+                        }
+                        setPendingTextLabel(null)
+                      }}
+                      className="px-2 py-1 rounded bg-white/95 shadow border border-blue-400 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-36"
+                      placeholder="Type label..."
+                      autoComplete="off"
+                    />
                   </div>
                 )}
               </div>
