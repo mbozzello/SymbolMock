@@ -576,11 +576,11 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
       </svg>
     ),
     reaction: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" />
-        <path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" />
-        <path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" />
-        <path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" />
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" stroke="#16a34a" />
+        <path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" stroke="#16a34a" />
+        <path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" stroke="#dc2626" />
+        <path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" stroke="#dc2626" />
       </svg>
     ),
   }
@@ -847,8 +847,8 @@ export default function MessagePostBox({ placeholder = "What're your thoughts on
               )}
               {hasReaction && (
                 <div className="mt-2 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/30">
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" /><path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" /><path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" /><path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" /></svg>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600" style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(220,38,38,0.12) 100%)', color: '#000000' }}>
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" stroke="#16a34a" /><path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" stroke="#16a34a" /><path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" stroke="#dc2626" /><path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" stroke="#dc2626" /></svg>
                     Users can debate this message
                   </span>
                   <button type="button" onClick={() => setHasReaction(false)} className="p-0.5 rounded-full hover:bg-surface-muted text-muted hover:text-text" aria-label="Remove debate">

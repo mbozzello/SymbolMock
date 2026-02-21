@@ -54,7 +54,6 @@ export default function DebateBox({ postId, debate, onVote }) {
     }
   }
 
-  const isWithMajority = hasVoted && ((userVote === 'up' && upPct >= 50) || (userVote === 'down' && downPct >= 50))
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-surface-muted/50 p-3 max-w-[90%]">
@@ -96,15 +95,6 @@ export default function DebateBox({ postId, debate, onVote }) {
       </div>
       {hasVoted && total > 0 && (
         <div className="mt-3 pt-3 border-t border-border">
-          {hasVoted && justVoted && (
-            <p className="text-xs font-semibold mb-2 text-center">
-              {isWithMajority ? (
-                <span className="text-success">You're with the majority!</span>
-              ) : (
-                <span className="text-amber-600 dark:text-amber-400">Contrarian — you're in the minority!</span>
-              )}
-            </p>
-          )}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 shrink-0">
               <div className="flex -space-x-1.5">
