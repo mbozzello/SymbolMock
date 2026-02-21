@@ -316,7 +316,7 @@ const DEFAULT_PREDICTION = {
   ],
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false }) {
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false, showContentPill = false }) {
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
@@ -431,6 +431,51 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
           <span className="text-orange-500 font-semibold">See Why</span>
         </button>
       </div>}
+
+      {/* Row 2b: Content pills — shown only on Discover */}
+      {showContentPill && (
+        <div className="flex gap-2 mb-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {/* Top Debate pill */}
+          <button
+            type="button"
+            className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
+            style={{ height: 32, maxWidth: 400 }}
+          >
+            <span className="inline-flex items-center justify-center px-2 h-full shrink-0" style={{ background: 'linear-gradient(135deg,#16a34a,#dc2626)' }}>
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" stroke="white" /><path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" stroke="white" /><path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" stroke="white" /><path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" stroke="white" />
+              </svg>
+            </span>
+            <span className="w-px h-full bg-border shrink-0" />
+            <img src="/avatars/michael-bolling.png" alt="" className="w-5 h-5 rounded-full object-cover shrink-0 ml-2" />
+            <span className="text-xs font-medium text-text truncate px-2">I might just invest in a state-of-the-art AI assistant from their amazing robotics team!</span>
+            <span className="text-[10px] text-text-muted shrink-0 whitespace-nowrap pr-1.5">2,312 votes</span>
+            <span className="w-px h-full bg-border shrink-0" />
+            <span className="px-2 shrink-0 text-text-muted">
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </span>
+          </button>
+
+          {/* Top Comment pill */}
+          <button
+            type="button"
+            className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
+            style={{ height: 32, maxWidth: 400 }}
+          >
+            <span className="inline-flex items-center justify-center px-2 h-full bg-primary shrink-0">
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+            </span>
+            <span className="w-px h-full bg-border shrink-0" />
+            <img src="/avatars/top-voice-2.png" alt="" className="w-5 h-5 rounded-full object-cover shrink-0 ml-2" />
+            <span className="text-xs font-medium text-text truncate px-2">TESLA boasts a massive, rapidly growing cash position, with approximately $60.6 billion in total cash and cash equivalents as of late 2025, driven by immense AI data center demand. The company is experiencing a "CASH GUSHER" effect, with free cash flow (ttm) exceeding $53 billion. Consequently, NVIDIA is aggressively returning capital, utilizing over $37 billion in the first nine months of fiscal 2026 for share repurchases and dividends.</span>
+            <span className="text-[10px] text-text-muted shrink-0 whitespace-nowrap pr-1.5">❤️ 43</span>
+            <span className="w-px h-full bg-border shrink-0" />
+            <span className="px-2 shrink-0 text-text-muted">
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Row 3: Watchers pill, Earnings, Mkt Cap, Vol */}
       <div className="flex flex-wrap items-center gap-3 pb-3 border-b border-border relative">
@@ -606,19 +651,9 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                 aria-hidden="true"
                 className={clsx(
                   'absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%_-_0.125rem)] rounded-[999px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.14)] transition-transform duration-300 ease-out',
-                  sentimentMode === 'prediction' ? 'translate-x-0' : 'translate-x-full'
+                  sentimentMode === 'sentiment' ? 'translate-x-0' : 'translate-x-full'
                 )}
               />
-              <button
-                type="button"
-                onClick={() => setSentimentMode('prediction')}
-                className={clsx(
-                  'relative z-10 px-3.5 py-1 text-[13px] font-semibold transition-colors duration-200',
-                  sentimentMode === 'prediction' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
-                )}
-              >
-                Prediction
-              </button>
               <button
                 type="button"
                 onClick={() => setSentimentMode('sentiment')}
@@ -628,6 +663,16 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                 )}
               >
                 Sentiment
+              </button>
+              <button
+                type="button"
+                onClick={() => setSentimentMode('prediction')}
+                className={clsx(
+                  'relative z-10 px-3.5 py-1 text-[13px] font-semibold transition-colors duration-200',
+                  sentimentMode === 'prediction' ? 'text-black' : 'text-gray-600 hover:text-gray-800'
+                )}
+              >
+                Prediction
               </button>
             </div>
             <button
