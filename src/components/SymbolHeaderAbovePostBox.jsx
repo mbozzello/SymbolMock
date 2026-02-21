@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
@@ -317,6 +318,7 @@ const DEFAULT_PREDICTION = {
 }
 
 export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false, showContentPill = false }) {
+  const navigate = useNavigate()
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [sentimentMode, setSentimentMode] = useState(variant === 'predict' ? 'prediction' : 'sentiment')
@@ -438,6 +440,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
           {/* Top Debate pill */}
           <button
             type="button"
+            onClick={() => navigate('/conversation/BearCaseKing/debate-1')}
             className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
             style={{ height: 32, maxWidth: 400 }}
           >
@@ -459,6 +462,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
           {/* Top Comment pill */}
           <button
             type="button"
+            onClick={() => navigate('/conversation/OptionsFlow/toppost-1')}
             className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
             style={{ height: 32, maxWidth: 400 }}
           >
