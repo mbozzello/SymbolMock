@@ -347,12 +347,14 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
         else setPlacedBets({})
       } catch {}
     }
+    const onVisChange = () => { if (document.visibilityState === 'visible') sync() }
     sync()
     window.addEventListener('focus', sync)
     window.addEventListener('popstate', sync)
     window.addEventListener('storage', sync)
-    const interval = setInterval(sync, 2000)
-    return () => { window.removeEventListener('focus', sync); window.removeEventListener('popstate', sync); window.removeEventListener('storage', sync); clearInterval(interval) }
+    document.addEventListener('visibilitychange', onVisChange)
+    const interval = setInterval(sync, 1000)
+    return () => { window.removeEventListener('focus', sync); window.removeEventListener('popstate', sync); window.removeEventListener('storage', sync); document.removeEventListener('visibilitychange', onVisChange); clearInterval(interval) }
   }, [predictionLink])
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))

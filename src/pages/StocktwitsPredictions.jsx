@@ -45,7 +45,7 @@ const MARKETS = [
       { label: '4 (100 bps)', pct: 6 },
       { label: '>5 (+125 bps)', pct: 2 },
     ],
-    volume: '$64.38k',
+    volume: '64.38k',
     endDate: 'Dec 31',
     predictors: 8412,
     category: 'Macro',
@@ -59,7 +59,7 @@ const MARKETS = [
       { label: 'Yes', pct: 64 },
       { label: 'No', pct: 36 },
     ],
-    volume: '$59.53k',
+    volume: '59.53k',
     endDate: 'Dec 31',
     predictors: 6_320,
     category: 'Stocks',
@@ -73,7 +73,7 @@ const MARKETS = [
       { label: 'Yes', pct: 78 },
       { label: 'No', pct: 22 },
     ],
-    volume: '$124.8k',
+    volume: '124.8k',
     endDate: 'Aug 28',
     predictors: 12_480,
     category: 'Earnings',
@@ -87,7 +87,7 @@ const MARKETS = [
       { label: 'Yes', pct: 41 },
       { label: 'No', pct: 59 },
     ],
-    volume: '$89.2k',
+    volume: '89.2k',
     endDate: 'Jul 01',
     predictors: 9_140,
     category: 'Crypto',
@@ -101,7 +101,7 @@ const MARKETS = [
       { label: 'Yes', pct: 73 },
       { label: 'No', pct: 27 },
     ],
-    volume: '$64.38k',
+    volume: '64.38k',
     endDate: 'Sep 01',
     predictors: 7_290,
     category: 'Macro',
@@ -115,7 +115,7 @@ const MARKETS = [
       { label: 'Yes', pct: 61 },
       { label: 'No', pct: 39 },
     ],
-    volume: '$6.32k',
+    volume: '6.32k',
     endDate: 'Dec 31',
     predictors: 4_970,
     category: 'Stocks',
@@ -129,7 +129,7 @@ const MARKETS = [
       { label: 'Yes', pct: 12 },
       { label: 'No', pct: 88 },
     ],
-    volume: '$4.08k',
+    volume: '4.08k',
     endDate: 'Jan 01',
     predictors: 3_120,
     category: 'Crypto',
@@ -143,7 +143,7 @@ const MARKETS = [
       { label: 'Yes', pct: 55 },
       { label: 'No', pct: 45 },
     ],
-    volume: '$79.26k',
+    volume: '79.26k',
     endDate: 'Sep 30',
     predictors: 5_680,
     category: 'Macro',
@@ -157,7 +157,7 @@ const MARKETS = [
       { label: 'Yes', pct: 28 },
       { label: 'No', pct: 72 },
     ],
-    volume: '$9.91k',
+    volume: '9.91k',
     endDate: 'Dec 31',
     predictors: 2_340,
     category: 'Tech',
@@ -171,7 +171,7 @@ const MARKETS = [
       { label: 'Yes', pct: 34 },
       { label: 'No', pct: 66 },
     ],
-    volume: '$12.4k',
+    volume: '12.4k',
     endDate: 'Dec 31',
     predictors: 1_890,
     category: 'Commodities',
@@ -185,7 +185,7 @@ const MARKETS = [
       { label: '400k–450k', pct: 61 },
       { label: '450k–500k', pct: 39 },
     ],
-    volume: '$1.98k',
+    volume: '1.98k',
     endDate: 'Jul 01',
     predictors: 1_420,
     category: 'Earnings',
@@ -199,7 +199,7 @@ const MARKETS = [
       { label: 'Yes', pct: 47 },
       { label: 'No', pct: 53 },
     ],
-    volume: '$24.75k',
+    volume: '24.75k',
     endDate: 'Dec 31',
     predictors: 4_210,
     category: 'Crypto',
@@ -213,7 +213,7 @@ const MARKETS = [
       { label: 'Yes', pct: 52 },
       { label: 'No', pct: 48 },
     ],
-    volume: '$3.56k',
+    volume: '3.56k',
     endDate: 'Jun 30',
     predictors: 2_150,
     category: 'Stocks',
@@ -227,7 +227,7 @@ const MARKETS = [
       { label: 'Yes', pct: 68 },
       { label: 'No', pct: 32 },
     ],
-    volume: '$33.1k',
+    volume: '33.1k',
     endDate: 'Oct 01',
     predictors: 3_870,
     category: 'Commodities',
@@ -241,7 +241,7 @@ const MARKETS = [
       { label: 'Yes', pct: 38 },
       { label: 'No', pct: 62 },
     ],
-    volume: '$9.9k',
+    volume: '9.9k',
     endDate: 'Dec 31',
     predictors: 2_640,
     category: 'IPOs',
@@ -255,7 +255,7 @@ const MARKETS = [
       { label: 'Jul 31, 2026', pct: 45 },
       { label: 'Mar 31, 2026', pct: 5 },
     ],
-    volume: '$24.75k',
+    volume: '24.75k',
     endDate: 'Dec 31',
     predictors: 5_120,
     category: 'Tech',
@@ -269,7 +269,7 @@ const MARKETS = [
       { label: 'OpenAI', pct: 50 },
       { label: 'Anthropic', pct: 50 },
     ],
-    volume: '$3',
+    volume: '3',
     endDate: 'May 31',
     predictors: 1_980,
     category: 'Tech',
@@ -295,7 +295,12 @@ function TradeModal({ market, onClose, onBetPlaced, coinBalance, onDeductCoins }
   const [votes, setVotes] = useState({})
   const [betModal, setBetModal] = useState(null)
   const [betAmount, setBetAmount] = useState(50)
-  const [placedBets, setPlacedBets] = useState({})
+  const [placedBets, setPlacedBets] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`stpred-bets-${market.id}`)
+      return saved ? JSON.parse(saved) : {}
+    } catch { return {} }
+  })
   const [betSuccess, setBetSuccess] = useState(null)
 
   const options = market.options ?? []
@@ -425,14 +430,12 @@ function TradeModal({ market, onClose, onBetPlaced, coinBalance, onDeductCoins }
                   onClick={() => {
                     const key = `${betModal.optionIndex}-${betModal.side}`
                     const newBet = { amount: betAmount, potentialReturn: Math.round(betAmount * Number(betModal.multiplier)), side: betModal.side, label: betModal.label, ts: Date.now() }
-                    setPlacedBets((prev) => {
-                      const next = { ...prev, [key]: newBet }
-                      try { localStorage.setItem(`stpred-bets-${market.id}`, JSON.stringify(next)) } catch {}
-                      return next
-                    })
+                    const nextBets = { ...placedBets, [key]: newBet }
+                    try { localStorage.setItem(`stpred-bets-${market.id}`, JSON.stringify(nextBets)) } catch {}
+                    setPlacedBets(nextBets)
                     if (onDeductCoins) onDeductCoins(betAmount)
                     setBetSuccess({ amount: betAmount, potentialReturn: Math.round(betAmount * Number(betModal.multiplier)) })
-                    if (onBetPlaced) onBetPlaced()
+                    setTimeout(() => { if (onBetPlaced) onBetPlaced() }, 50)
                   }}
                   className={clsx(
                     'w-full max-w-xs py-3 rounded-xl text-base font-bold text-white transition-opacity hover:opacity-90',
@@ -533,8 +536,10 @@ export default function StocktwitsPredictions() {
         const saved = localStorage.getItem(`stpred-bets-${m.id}`)
         if (saved) {
           const parsed = JSON.parse(saved)
-          Object.values(parsed).forEach((b) => {
-            bets.push({ question: m.question, side: b.side === 'yes' ? 'Yes' : 'No', amount: b.amount, potentialReturn: b.potentialReturn, endDate: m.endDate, ts: b.ts || 0 })
+          Object.entries(parsed).forEach(([key, b]) => {
+            const betSide = b.side === 'yes' ? 'Yes' : b.side === 'no' ? 'No' : b.side
+            const label = b.label ? `${m.question} — ${b.label}` : m.question
+            bets.push({ question: label, side: betSide, amount: b.amount, potentialReturn: b.potentialReturn, endDate: m.endDate, ts: b.ts || 0 })
           })
         }
       }
@@ -561,8 +566,10 @@ export default function StocktwitsPredictions() {
         const saved = localStorage.getItem(`stpred-bets-${m.id}`)
         if (saved) {
           const parsed = JSON.parse(saved)
-          Object.values(parsed).forEach((b) => {
-            bets.push({ question: m.question, side: b.side === 'yes' ? 'Yes' : 'No', amount: b.amount, potentialReturn: b.potentialReturn, endDate: m.endDate, ts: b.ts || 0 })
+          Object.entries(parsed).forEach(([key, b]) => {
+            const betSide = b.side === 'yes' ? 'Yes' : b.side === 'no' ? 'No' : b.side
+            const label = b.label ? `${m.question} — ${b.label}` : m.question
+            bets.push({ question: label, side: betSide, amount: b.amount, potentialReturn: b.potentialReturn, endDate: m.endDate, ts: b.ts || 0 })
           })
         }
       }
@@ -775,9 +782,11 @@ export default function StocktwitsPredictions() {
           onBetPlaced={refreshLiveBets}
           coinBalance={coinBalance}
           onDeductCoins={(amount) => {
-            const next = Math.max(0, coinBalance - amount)
-            setCoinBalance(next)
-            setStoredBalance(next)
+            setCoinBalance((prev) => {
+              const next = Math.max(0, prev - amount)
+              setStoredBalance(next)
+              return next
+            })
           }}
         />
       )}
