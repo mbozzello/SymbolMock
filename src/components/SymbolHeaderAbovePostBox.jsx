@@ -317,7 +317,7 @@ const DEFAULT_PREDICTION = {
   ],
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false, showContentPill = false }) {
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false, showContentPill = false, predictionLink = null }) {
   const navigate = useNavigate()
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
@@ -328,7 +328,32 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
   const [betModal, setBetModal] = useState(null)
   const [betAmount, setBetAmount] = useState(50)
   const [betSuccess, setBetSuccess] = useState(null)
-  const [placedBets, setPlacedBets] = useState({})
+  const [placedBets, setPlacedBets] = useState(() => {
+    if (predictionLink) {
+      try {
+        const saved = localStorage.getItem('stpred-bets-m-fed')
+        if (saved) return JSON.parse(saved)
+      } catch {}
+    }
+    return {}
+  })
+
+  useEffect(() => {
+    if (!predictionLink) return
+    const sync = () => {
+      try {
+        const saved = localStorage.getItem('stpred-bets-m-fed')
+        if (saved) setPlacedBets(JSON.parse(saved))
+        else setPlacedBets({})
+      } catch {}
+    }
+    sync()
+    window.addEventListener('focus', sync)
+    window.addEventListener('popstate', sync)
+    window.addEventListener('storage', sync)
+    const interval = setInterval(sync, 2000)
+    return () => { window.removeEventListener('focus', sync); window.removeEventListener('popstate', sync); window.removeEventListener('storage', sync); clearInterval(interval) }
+  }, [predictionLink])
   const [internalTab, setInternalTab] = useState('Feed')
   const [watchersCount, setWatchersCount] = useState(() => parseWatchers(symbol.followers))
   const [floatingWatchers, setFloatingWatchers] = useState(null)
@@ -759,7 +784,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
             {/* Header row: image + gauge + question + predictors + chevron */}
             <button
               type="button"
-              onClick={() => setPredictionExpanded((v) => !v)}
+              onClick={() => predictionLink ? navigate(predictionLink) : setPredictionExpanded((v) => !v)}
               className="w-full flex items-center gap-3"
             >
               <img
@@ -771,7 +796,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               <p className="min-w-0 flex-1 text-sm font-semibold text-text leading-snug text-left">{predictionExpanded ? (prediction.expandedQuestion ?? prediction.question) : prediction.question}</p>
               <div className="shrink-0 flex flex-col items-end gap-0.5">
                 <span className="text-xs font-medium text-text-muted whitespace-nowrap">{predictorsCount.toLocaleString()} predictors</span>
-                {enableBetting && Object.keys(placedBets).length > 0 && !predictionExpanded && (
+                {(enableBetting || predictionLink) && Object.keys(placedBets).length > 0 && !predictionExpanded && (
                   <span className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 whitespace-nowrap">
                     <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                     {Object.keys(placedBets).length} active · {Object.values(placedBets).reduce((s, b) => s + b.amount, 0).toLocaleString()} wagered · {Object.values(placedBets).reduce((s, b) => s + Number(b.potentialReturn), 0).toLocaleString()} to win
@@ -785,7 +810,11 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
                 )}
               </div>
               <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-text-muted">
-                <svg className={clsx('w-4 h-4 transition-transform', predictionExpanded && 'rotate-180')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                {predictionLink ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                ) : (
+                  <svg className={clsx('w-4 h-4 transition-transform', predictionExpanded && 'rotate-180')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                )}
               </span>
             </button>
 

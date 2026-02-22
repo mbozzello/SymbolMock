@@ -284,6 +284,7 @@ export default function Home() {
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
         leftPadding={50}
+        hideCoins
       />
 
       <main className="lg:pl-[350px]">

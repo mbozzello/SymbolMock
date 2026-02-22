@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import TopNavigation from '../components/TopNavigation.jsx'
 import TickerTape from '../components/TickerTape.jsx'
+import MessagePostBox from '../components/MessagePostBox.jsx'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 import { getTickerLogo } from '../constants/tickerLogos.js'
 
@@ -395,6 +396,7 @@ export default function Leaderboard() {
   const [marketPage, setMarketPage] = useState(0)
   const [pricePage, setPricePage] = useState(0)
   const [timeframe, setTimeframe] = useState('All time')
+  const [showPricePredict, setShowPricePredict] = useState(false)
 
   useEffect(() => {
     if (darkMode) {
@@ -492,7 +494,7 @@ export default function Leaderboard() {
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
                     <span className="text-xs text-text-muted font-medium">155k participants</span>
-                    <button type="button" className="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-white hover:opacity-90 transition-opacity">Predict</button>
+                    <Link to="/stocktwitspredictions" className="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-white hover:opacity-90 transition-opacity">Predict</Link>
                   </div>
                 </div>
               </div>
@@ -552,7 +554,7 @@ export default function Leaderboard() {
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
                     <span className="text-xs text-text-muted font-medium">66k participants</span>
-                    <button type="button" className="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-white hover:opacity-90 transition-opacity">Predict</button>
+                    <button type="button" onClick={() => setShowPricePredict(true)} className="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-white hover:opacity-90 transition-opacity">Predict</button>
                   </div>
                 </div>
               </div>
@@ -629,6 +631,28 @@ export default function Leaderboard() {
           </div>
         </div>
       </main>
+
+      {showPricePredict && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowPricePredict(false)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative w-full max-w-[600px] bg-white dark:bg-surface rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h2 className="text-base font-bold text-text">Create Price Prediction</h2>
+              <button type="button" onClick={() => setShowPricePredict(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-muted transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <MessagePostBox
+                placeholder="What's your price prediction?"
+                initialPredictionOpen
+                blankSymbol
+                onPost={(post) => setShowPricePredict(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

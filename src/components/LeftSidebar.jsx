@@ -35,7 +35,45 @@ function MiniSparkline({ values = [], isUp }) {
   )
 }
 
-export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode, leftPadding = 0 }) {
+function CoinBalanceLink() {
+  const [coins, setCoins] = useState(() => {
+    try {
+      const v = localStorage.getItem('stpred-coins')
+      if (v !== null) return Number(v)
+    } catch {}
+    return 4820
+  })
+
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const v = localStorage.getItem('stpred-coins')
+        if (v !== null) setCoins(Number(v))
+        else setCoins(4820)
+      } catch {}
+    }
+    window.addEventListener('focus', sync)
+    window.addEventListener('storage', sync)
+    const interval = setInterval(sync, 2000)
+    return () => { window.removeEventListener('focus', sync); window.removeEventListener('storage', sync); clearInterval(interval) }
+  }, [])
+
+  return (
+    <Link
+      to="/stocktwitspredictions"
+      className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 hover:from-cyan-500/20 hover:to-blue-500/20 transition-all group"
+    >
+      <img src="/icons/st-coin.png" alt="" className="w-7 h-7 rounded-md object-contain shrink-0" />
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-bold text-text">{coins.toLocaleString()}</span>
+        <span className="text-[10px] text-text-muted ml-1">coins</span>
+      </div>
+      <svg className="w-4 h-4 text-text-muted group-hover:text-text transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+    </Link>
+  )
+}
+
+export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, toggleDarkMode, leftPadding = 0, hideCoins = false }) {
   const {
     watchlists,
     currentWatchlistId,
@@ -228,6 +266,7 @@ export default function LeftSidebar({ isOpen, onClose, watchlist, darkMode, togg
           )}
         </button>
       </div>
+      {!hideCoins && <CoinBalanceLink />}
       <div className="flex flex-col gap-1">
         <Link to="/notifications" className="btn justify-start gap-2">
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
