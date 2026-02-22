@@ -478,6 +478,28 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
               <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
             </span>
           </button>
+
+          {/* Poll pill */}
+          <button
+            type="button"
+            onClick={() => navigate('/conversation/TeslaWatcher/poll-1')}
+            className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
+            style={{ height: 32, maxWidth: 400 }}
+          >
+            <span className="inline-flex items-center justify-center px-2 h-full shrink-0" style={{ background: '#7c3aed' }}>
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="12" width="4" height="9" rx="1" /><rect x="10" y="7" width="4" height="14" rx="1" /><rect x="17" y="3" width="4" height="18" rx="1" />
+              </svg>
+            </span>
+            <span className="w-px h-full bg-border shrink-0" />
+            <img src="/avatars/leader-4.png" alt="" className="w-5 h-5 rounded-full object-cover shrink-0 ml-2" />
+            <span className="text-xs font-medium text-text truncate px-2">Will TSLA hit $500 by year end?</span>
+            <span className="text-[10px] text-text-muted shrink-0 whitespace-nowrap pr-1.5">3,424 votes</span>
+            <span className="w-px h-full bg-border shrink-0" />
+            <span className="px-2 shrink-0 text-text-muted">
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </span>
+          </button>
         </div>
       )}
 

@@ -6,6 +6,65 @@ import TickerTape from '../components/TickerTape.jsx'
 import DebateBox from '../components/DebateBox.jsx'
 import { useWatchlist } from '../contexts/WatchlistContext.jsx'
 
+function PollWidget({ poll }) {
+  const [voted, setVoted] = useState(null)
+  const total = voted ? poll.totalVotes + 1 : poll.totalVotes
+
+  return (
+    <div className="mt-3 rounded-xl border border-border bg-surface-muted/40 p-4 space-y-2.5">
+      <p className="text-sm font-semibold text-text">{poll.question}</p>
+      <div className="space-y-2">
+        {poll.options.map((opt) => {
+          const extraVote = voted === opt.label ? 1 : 0
+          const votes = opt.votes + extraVote
+          const pct = Math.round((votes / total) * 100)
+          const isChosen = voted === opt.label
+          return (
+            <button
+              key={opt.label}
+              type="button"
+              onClick={() => !voted && setVoted(opt.label)}
+              disabled={!!voted}
+              className={clsx(
+                'relative w-full rounded-lg border overflow-hidden text-left transition-colors',
+                voted
+                  ? isChosen
+                    ? 'border-primary'
+                    : 'border-border'
+                  : 'border-border hover:border-primary/50 cursor-pointer'
+              )}
+            >
+              {/* Fill bar */}
+              <span
+                className={clsx(
+                  'absolute inset-0 rounded-lg transition-all duration-500',
+                  isChosen ? 'bg-primary/15' : 'bg-surface-muted/60'
+                )}
+                style={{ width: voted ? `${pct}%` : '0%' }}
+              />
+              <span className="relative flex items-center justify-between px-3 py-2">
+                <span className={clsx('text-sm font-medium', isChosen ? 'text-primary' : 'text-text')}>
+                  {opt.label}
+                  {isChosen && (
+                    <svg className="inline-block ml-1.5 w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                  )}
+                </span>
+                {voted && (
+                  <span className={clsx('text-xs font-bold', isChosen ? 'text-primary' : 'text-text-muted')}>{pct}%</span>
+                )}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-[11px] text-text-muted">
+        {total.toLocaleString()} votes
+        {!voted && <span className="ml-1">· Tap to vote</span>}
+      </p>
+    </div>
+  )
+}
+
 function clsx(...v) { return v.filter(Boolean).join(' ') }
 
 const THREADS = {
@@ -40,8 +99,39 @@ const THREADS = {
       { id: 'r2', username: 'RealityCheck', avatar: '/avatars/top-voice-1.png', time: '6m', body: "The robotics team is impressive but we're still years away from commercial scale. Don't confuse demo videos with actual revenue.", likes: 54, reposts: 8, sentiment: 'bearish' },
       { id: 'r3', username: 'AIBeliever', avatar: '/avatars/top-voice-2.png', time: '5m', body: 'Tesla AI day showed real progress. The neural net training on actual road data is unlike anything competitors have. Long term this is the moat.', likes: 112, reposts: 23, sentiment: 'bullish' },
       { id: 'r4', username: 'EVSkeptic', avatar: '/avatars/top-voice-3.png', time: '4m', body: "Every year it's \"robotics will be huge next year.\" Meanwhile legacy auto is catching up on EVs and margins keep shrinking.", likes: 67, reposts: 6, sentiment: 'bearish' },
-      { id: 'r5', username: 'ChartWatcher', avatar: '/avatars/who-follow-1.png', time: '3m', body: 'Whatever you think about the fundamentals, the chart looks constructive right here. Tight consolidation above the 200MA.', likes: 43, reposts: 9 },
-      { id: 'r6', username: 'MomentumKing', avatar: '/avatars/who-follow-2.png', time: '2m', body: 'Bought calls this morning. Robotaxi + Optimus + FSD = multi-trillion dollar company within 5 years. Fight me.', likes: 78, reposts: 15, sentiment: 'bullish' },
+      { id: 'r5', username: 'ChartWatcher', avatar: '/avatars/leader-1.png', time: '3m', body: 'Whatever you think about the fundamentals, the chart looks constructive right here. Tight consolidation above the 200MA.', likes: 43, reposts: 9 },
+      { id: 'r6', username: 'MomentumKing', avatar: '/avatars/leader-2.png', time: '2m', body: 'Bought calls this morning. Robotaxi + Optimus + FSD = multi-trillion dollar company within 5 years. Fight me.', likes: 78, reposts: 15, sentiment: 'bullish' },
+    ],
+  },
+  'TeslaWatcher-poll-1': {
+    id: 'poll-1',
+    username: 'TeslaWatcher',
+    avatar: '/avatars/leader-4.png',
+    time: '22m',
+    ticker: 'TSLA',
+    sentiment: null,
+    body: 'Will TSLA hit $500 by year end?',
+    likes: 214,
+    reposts: 87,
+    comments: 193,
+    hasDebate: false,
+    poll: {
+      question: 'Will TSLA hit $500 by year end?',
+      totalVotes: 3424,
+      options: [
+        { label: 'Yes', votes: 2191, pct: 64 },
+        { label: 'No',  votes: 1233, pct: 36 },
+      ],
+    },
+    replies: [
+      { id: 'r1', username: 'BullRunKing', avatar: '/avatars/top-voice-1.png', time: '20m', body: 'Easy yes. Robotaxi launch + Optimus production ramp + FSD licensing deals. The catalysts are stacking up. $500 is conservative honestly.', likes: 97, reposts: 28, sentiment: 'bullish' },
+      { id: 'r2', username: 'RealityCheck', avatar: '/avatars/top-voice-3.png', time: '18m', body: "Voted no. Current macro headwinds, margin compression, and Elon's political baggage are real overhangs. $500 would require a near-perfect setup.", likes: 54, reposts: 11, sentiment: 'bearish' },
+      { id: 'r3', username: 'OptionsFlow', avatar: '/avatars/top-voice-2.png', time: '16m', body: 'The options market is pricing in a 28% probability of touching $500 by December. Market agrees it\'s possible but not a sure thing. I\'m long calls.', likes: 113, reposts: 34, sentiment: 'bullish' },
+      { id: 'r4', username: 'MacroMike', avatar: '/avatars/leader-2.png', time: '14m', body: 'Depends entirely on whether the Fed cuts in Q3. Rate-sensitive growth names like TSLA have huge beta to rate expectations right now.', likes: 62, reposts: 17 },
+      { id: 'r5', username: 'ChartWizard', avatar: '/avatars/leader-1.png', time: '11m', body: 'Chart-wise there\'s a clear path to 420 resistance first. Break that with volume and 500 becomes very realistic by Q4. Watching closely.', likes: 78, reposts: 22, sentiment: 'bullish' },
+      { id: 'r6', username: 'BearishTruth', avatar: '/avatars/top-voice-3.png', time: '8m', body: 'People voting yes are forgetting that TSLA at $500 would put it at a 180x PE. Name one fundamental justification for that valuation today.', likes: 45, reposts: 9, sentiment: 'bearish' },
+      { id: 'r7', username: 'RetailTrader42', avatar: '/avatars/leader-5.png', time: '5m', body: 'Been holding since $180 and voted yes obviously. Not financial advice but this thing has surprised everyone before and will again.', likes: 89, reposts: 19, sentiment: 'bullish' },
+      { id: 'r8', username: 'GammaSqueeze', avatar: '/avatars/leader-3.png', time: '2m', body: 'Short gamma above $380 means dealer hedging flows could turbocharge any breakout. If we gap above that level, $500 could happen faster than people think.', likes: 67, reposts: 14 },
     ],
   },
   'OptionsFlow-toppost-1': {
@@ -58,11 +148,11 @@ const THREADS = {
     hasDebate: false,
     replies: [
       { id: 'r1', username: 'CashFlowKing', avatar: '/avatars/top-voice-1.png', time: '12m', body: "$53B FCF on a trailing basis is absolutely insane. That's more than most S&P 500 companies earn in total revenue. The compounding effect here is extraordinary.", likes: 34, reposts: 11, sentiment: 'bullish' },
-      { id: 'r2', username: 'ValueHunter', avatar: '/avatars/who-follow-3.png', time: '11m', body: "Worth noting the $37B in buybacks is actually shrinking the float meaningfully. At this pace the share count drops 3-4% annually.", likes: 28, reposts: 7 },
+      { id: 'r2', username: 'ValueHunter', avatar: '/avatars/leader-3.png', time: '11m', body: "Worth noting the $37B in buybacks is actually shrinking the float meaningfully. At this pace the share count drops 3-4% annually.", likes: 28, reposts: 7 },
       { id: 'r3', username: 'BearishTruth', avatar: '/avatars/top-voice-3.png', time: '10m', body: 'The NVIDIA comparison is a bit of a stretch here. These are two very different businesses. TSLA cash flows are more cyclical and tied to auto delivery cycles.', likes: 19, reposts: 4, sentiment: 'bearish' },
-      { id: 'r4', username: 'MacroMike', avatar: '/avatars/who-follow-2.png', time: '8m', body: 'Cash position this strong means they could fund Optimus, Robotaxi, and a new Gigafactory simultaneously without touching debt markets. Optionality is underpriced.', likes: 51, reposts: 14, sentiment: 'bullish' },
-      { id: 'r5', username: 'DividendWatch', avatar: '/avatars/who-follow-1.png', time: '6m', body: 'When does TSLA initiate a dividend? At $60B cash and growing, shareholders should start asking this question louder.', likes: 22, reposts: 5 },
-      { id: 'r6', username: 'QuantTrader', avatar: '/avatars/who-follow-4.png', time: '4m', body: 'My DCF adds $85/share for the cash position alone. Market is not fully pricing this balance sheet strength.', likes: 39, reposts: 10, sentiment: 'bullish' },
+      { id: 'r4', username: 'MacroMike', avatar: '/avatars/leader-2.png', time: '8m', body: 'Cash position this strong means they could fund Optimus, Robotaxi, and a new Gigafactory simultaneously without touching debt markets. Optionality is underpriced.', likes: 51, reposts: 14, sentiment: 'bullish' },
+      { id: 'r5', username: 'DividendWatch', avatar: '/avatars/leader-1.png', time: '6m', body: 'When does TSLA initiate a dividend? At $60B cash and growing, shareholders should start asking this question louder.', likes: 22, reposts: 5 },
+      { id: 'r6', username: 'QuantTrader', avatar: '/avatars/leader-5.png', time: '4m', body: 'My DCF adds $85/share for the cash position alone. Market is not fully pricing this balance sheet strength.', likes: 39, reposts: 10, sentiment: 'bullish' },
       { id: 'r7', username: 'ShortSqueeze', avatar: '/avatars/ross-cameron.png', time: '2m', body: "Short interest has been declining steadily as bears realize they're fighting a company that can literally fund its own competition into oblivion.", likes: 31, reposts: 8 },
     ],
   },
@@ -197,6 +287,9 @@ export default function ConversationThread() {
 
                   {thread.hasDebate && debate && (
                     <DebateBox postId={thread.id} debate={debate} onVote={handleDebateVote} />
+                  )}
+                  {thread.poll && (
+                    <PollWidget poll={thread.poll} />
                   )}
                 </div>
               </div>
