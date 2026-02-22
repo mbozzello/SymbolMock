@@ -317,7 +317,7 @@ const DEFAULT_PREDICTION = {
   ],
 }
 
-export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false, showContentPill = false, predictionLink = null }) {
+export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, activeTab: controlledTab, onTabChange, variant = 'sentiment', prediction = DEFAULT_PREDICTION, hideNo = false, hidePills = false, enableBetting = false, showContentPill = false, predictionLink = null, combineCarousel = false }) {
   const navigate = useNavigate()
   const { isWatched, toggleWatch } = useWatchlist()
   const [selectedSentiment, setSelectedSentiment] = useState(null)
@@ -434,7 +434,7 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
       </div>
 
       {/* Row 2: Earnings Call + Trending pills */}
-      {!hidePills && <div className="flex items-center gap-2 mb-2 flex-wrap">
+      {!hidePills && !combineCarousel && <div className="flex items-center gap-2 mb-2 flex-wrap">
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-full py-2 px-4 text-white text-sm font-semibold shadow-sm"
@@ -461,8 +461,99 @@ export default function SymbolHeaderAbovePostBox({ symbol = DEFAULT_SYMBOL, acti
         </button>
       </div>}
 
-      {/* Row 2b: Content pills — shown only on Discover */}
-      {showContentPill && (
+      {/* Combined carousel: Earnings + Trending + Content pills on one line */}
+      {combineCarousel && (
+        <div className="flex gap-2 mb-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-full py-2 px-4 text-white text-sm font-semibold shadow-sm shrink-0"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}
+          >
+            <div className="flex -space-x-1.5">
+              <img src="/avatars/top-voice-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#7c3aed] object-cover" />
+              <img src="/avatars/top-voice-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#7c3aed] object-cover" />
+              <img src="/avatars/top-voice-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#7c3aed] object-cover" />
+            </div>
+            <span>Earnings Call · Started 21m</span>
+            <span className="flex items-center gap-1 opacity-90">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 12h.01" /><circle cx="12" cy="12" r="2" fill="currentColor" /></svg>
+              2.1K+
+            </span>
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-full py-2 px-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 text-sm font-semibold hover:bg-orange-100 dark:hover:bg-orange-950/30 transition-colors shrink-0"
+          >
+            <span>🔥</span>
+            <span className="text-text">Trending #1</span>
+            <span className="text-orange-500 font-semibold">See Why</span>
+          </button>
+          {/* Top Debate pill — sized to match */}
+          <button
+            type="button"
+            onClick={() => navigate('/conversation/BearCaseKing/debate-1')}
+            className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
+            style={{ maxWidth: 420 }}
+          >
+            <span className="inline-flex items-center justify-center px-2.5 self-stretch shrink-0 rounded-l-full" style={{ background: 'linear-gradient(135deg,#16a34a,#dc2626)' }}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 11h2V6H3a1 1 0 00-1 1v3a1 1 0 001 1z" stroke="white" /><path d="M5 6l2.5-3a1 1 0 011.8.6V6h2.2a1 1 0 011 1.2l-.8 3.8H5V6z" stroke="white" /><path d="M21 13h-2v5h2a1 1 0 001-1v-3a1 1 0 00-1-1z" stroke="white" /><path d="M19 18l-2.5 3a1 1 0 01-1.8-.6V18h-2.2a1 1 0 01-1-1.2l.8-3.8H19v5z" stroke="white" />
+              </svg>
+            </span>
+            <span className="w-px self-stretch bg-border shrink-0" />
+            <img src="/avatars/michael-bolling.png" alt="" className="w-6 h-6 rounded-full object-cover shrink-0 ml-2.5" />
+            <span className="text-sm font-medium text-text truncate px-2.5 py-2">I might just invest in a state-of-the-art AI assistant from their amazing robotics team!</span>
+            <span className="text-xs text-text-muted shrink-0 whitespace-nowrap pr-2">2,312 votes</span>
+            <span className="w-px self-stretch bg-border shrink-0" />
+            <span className="px-2.5 shrink-0 text-text-muted">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </span>
+          </button>
+          {/* Top Comment pill — sized to match */}
+          <button
+            type="button"
+            onClick={() => navigate('/conversation/OptionsFlow/toppost-1')}
+            className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
+            style={{ maxWidth: 420 }}
+          >
+            <span className="inline-flex items-center justify-center px-2.5 self-stretch bg-primary shrink-0 rounded-l-full">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+            </span>
+            <span className="w-px self-stretch bg-border shrink-0" />
+            <img src="/avatars/top-voice-2.png" alt="" className="w-6 h-6 rounded-full object-cover shrink-0 ml-2.5" />
+            <span className="text-sm font-medium text-text truncate px-2.5 py-2">TESLA boasts a massive, rapidly growing cash position, with approximately $60.6 billion in total cash and cash equivalents as of late 2025, driven by immense AI data center demand. The company is experiencing a &quot;CASH GUSHER&quot; effect, with free cash flow (ttm) exceeding $53 billion. Consequently, NVIDIA is aggressively returning capital, utilizing over $37 billion in the first nine months of fiscal 2026 for share repurchases and dividends.</span>
+            <span className="text-xs text-text-muted shrink-0 whitespace-nowrap pr-2">❤️ 43</span>
+            <span className="w-px self-stretch bg-border shrink-0" />
+            <span className="px-2.5 shrink-0 text-text-muted">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </span>
+          </button>
+          {/* Poll pill — sized to match */}
+          <button
+            type="button"
+            onClick={() => navigate('/conversation/TeslaWatcher/poll-1')}
+            className="inline-flex items-center gap-0 rounded-full border border-border bg-surface hover:bg-surface-muted transition-colors overflow-hidden shrink-0 text-left"
+            style={{ maxWidth: 420 }}
+          >
+            <span className="inline-flex items-center justify-center px-2.5 self-stretch shrink-0 rounded-l-full" style={{ background: '#7c3aed' }}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="12" width="4" height="9" rx="1" /><rect x="10" y="7" width="4" height="14" rx="1" /><rect x="17" y="3" width="4" height="18" rx="1" />
+              </svg>
+            </span>
+            <span className="w-px self-stretch bg-border shrink-0" />
+            <img src="/avatars/leader-4.png" alt="" className="w-6 h-6 rounded-full object-cover shrink-0 ml-2.5" />
+            <span className="text-sm font-medium text-text truncate px-2.5 py-2">Will TSLA hit $500 by year end?</span>
+            <span className="text-xs text-text-muted shrink-0 whitespace-nowrap pr-2">3,424 votes</span>
+            <span className="w-px self-stretch bg-border shrink-0" />
+            <span className="px-2.5 shrink-0 text-text-muted">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* Row 2b: Content pills — shown only on Discover (standalone, not combined) */}
+      {showContentPill && !combineCarousel && (
         <div className="flex gap-2 mb-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {/* Top Debate pill */}
           <button

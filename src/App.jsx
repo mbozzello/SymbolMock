@@ -26,6 +26,7 @@ import Onboarding from './pages/Onboarding.jsx'
 import SymbolPredict from './pages/SymbolPredict.jsx'
 import SymbolPredict2 from './pages/SymbolPredict2.jsx'
 import SymbolDiscover from './pages/SymbolDiscover.jsx'
+import SymbolDiscover2 from './pages/SymbolDiscover2.jsx'
 import ConversationThread from './pages/ConversationThread.jsx'
 import StocktwitsPredictions from './pages/StocktwitsPredictions.jsx'
 import SymbolPredict3 from './pages/SymbolPredict3.jsx'
@@ -768,6 +769,7 @@ export default function App() {
         <Route path="/symbolpredict" element={<SymbolPredict />} />
         <Route path="/symbolpredict2" element={<SymbolPredict2 />} />
         <Route path="/symboldiscover" element={<SymbolDiscover />} />
+        <Route path="/symboldiscover2" element={<SymbolDiscover2 />} />
         <Route path="/conversation/:username/:messageId" element={<ConversationThread />} />
         <Route path="/stocktwitspredictions" element={<StocktwitsPredictions />} />
         <Route path="/symbolpredict3" element={<SymbolPredict3 />} />
